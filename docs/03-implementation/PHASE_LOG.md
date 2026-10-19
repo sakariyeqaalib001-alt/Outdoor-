@@ -78,7 +78,7 @@ CI has not run yet — it runs on the first push of this commit.
 
 ## Phase 2 — Database foundation, activity log and audit event log
 
-**Date:** 19 Oct 2026 · **Status:** Built — CI green on real Supabase (run #2). Change history and SQL Editor files added after owner feedback; awaiting the owner to paste into "Outdoor".
+**Date:** 19 Oct 2026 · **Status:** ✅ Accepted by the owner on 19 Oct 2026 — CI green (latest run, incl. real-Supabase pgTAP for change history); applied to "Outdoor" via SQL Editor.
 
 **Scope delivered**
 - Supabase CLI project (`supabase/config.toml`, project id `sogasho-outdoor`, Postgres 17), migration folder, labelled empty `seed.sql`.
@@ -114,7 +114,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 | Criterion | Result |
 |---|---|
 | Migrations apply cleanly locally | ✅ PGlite (PostgreSQL 18) |
-| Migrations apply cleanly on real Supabase | ✅ CI run #2 green (foundation); ⏳ re-run after pushing the change-history migration |
+| Migrations apply cleanly on real Supabase | ✅ CI green for both migrations (owner confirmed) |
 | Migrations apply on staging ("Outdoor") | ✅ owner applied both files in the SQL Editor on 19 Oct 2026 ("Run and enable RLS" on the bookkeeping-table prompt); Table Editor shows app_settings, activity_log, audit_events, change_log |
 | Every table records before/after history | ✅ `tests/db/change-log.test.ts` coverage test |
 | RLS enabled on every created table; denial tests pass | ✅ |

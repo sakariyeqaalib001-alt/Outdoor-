@@ -27,4 +27,4 @@ The same checks run on GitHub Actions for every push and pull request.
 
 ## Status
 
-Phase 1 accepted 19 Oct 2026. Phase 2 (database foundation) — built, awaiting review. Database workflow: [`docs/06-operations/database.md`](docs/06-operations/database.md). See [`docs/03-implementation/PHASE_LOG.md`](docs/03-implementation/PHASE_LOG.md).
+Phases 1 and 2 accepted 19 Oct 2026. Next: Phase 3 (authentication with Telesom OTP). Database workflow: [`docs/06-operations/database.md`](docs/06-operations/database.md). See [`docs/03-implementation/PHASE_LOG.md`](docs/03-implementation/PHASE_LOG.md).
