@@ -1,0 +1,62 @@
+{
+  "app": {
+    "name": "Sogasho Outdoor Sales & Audit",
+    "shortName": "SO! Outdoor",
+    "description": "Outdoor field sales, performance analytics and audit control for Sogasho."
+  },
+  "nav": {
+    "main": "main",
+    "operations": "operations",
+    "management": "management",
+    "dashboard": "Dashboard",
+    "sales": "Sales",
+    "approvals": "Approvals",
+    "stock": "Stock",
+    "followUp": "Follow-up",
+    "audit": "Audit",
+    "reports": "Reports",
+    "payroll": "Payroll",
+    "leave": "Leave",
+    "settings": "Settings",
+    "designSystem": "Brand check",
+    "comingInPhase": "Coming in Phase {phase}",
+    "toggleSidebar": "Toggle navigation"
+  },
+  "dashboard": {
+    "title": "dashboard",
+    "emptyTitle": "dashboard coming in phase 10",
+    "emptyBody": "The app frame is ready. Sales, stock and performance figures appear here once those phases are built."
+  },
+  "designSystem": {
+    "title": "brand check",
+    "intro": "Every colour, font and component below comes from the Sogasho brand kit. Use this page to review the look before business screens are built.",
+    "colors": "brand colours",
+    "typography": "typography",
+    "buttons": "buttons",
+    "statuses": "status badges",
+    "cards": "cards"
+  },
+  "status": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "flagged": "Flagged",
+    "reversed": "Refunded",
+    "active": "Active",
+    "expire": "Expire",
+    "onHold": "On hold"
+  },
+  "states": {
+    "loading": "Loading…",
+    "errorTitle": "something went wrong",
+    "errorBody": "Please try again. If the problem continues, contact your Super Admin.",
+    "retry": "Try again",
+    "notFoundTitle": "page not found",
+    "notFoundBody": "The page you are looking for does not exist or has moved.",
+    "backHome": "Back to dashboard"
+  },
+  "user": {
+    "notSignedIn": "Not signed in",
+    "signInPhase": "Sign-in arrives in Phase 3"
+  }
+}

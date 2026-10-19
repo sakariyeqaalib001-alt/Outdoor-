@@ -1,0 +1,131 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * Sogasho brand theme for shadcn/ui.
+ * Colours come only from the brand kit (brand/colors/colors.css) and must match
+ * src/lib/brand.ts exactly — tests/unit/brand.test.ts enforces this and WCAG AA contrast.
+ * Light theme only (no dark mode).
+ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-signika), "Segoe UI", system-ui, sans-serif;
+  --font-heading: var(--font-signika), "Segoe UI", system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-brand-highlight: var(--brand-highlight);
+  --color-brand-link: var(--brand-link);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-success: var(--brand-success);
+  --color-brand-warning: var(--brand-warning);
+  --color-brand-info: var(--brand-info);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #E2E8ED;
+  --foreground: #293033;
+  --card: #FFFFFF;
+  --card-foreground: #293033;
+  --popover: #FFFFFF;
+  --popover-foreground: #293033;
+  --primary: #047B95;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E2E8ED;
+  --secondary-foreground: #293033;
+  --muted: #E2E8ED;
+  --muted-foreground: #545A60;
+  --accent: #E2E8ED;
+  --accent-foreground: #00557C;
+  --destructive: #D83331;
+  --border: #CFD8DD;
+  --input: #8D939E;
+  --ring: #0095A9;
+  --chart-1: #0095A9;
+  --chart-2: #E55E32;
+  --chart-3: #5051A0;
+  --chart-4: #B22662;
+  --chart-5: #824B94;
+  --radius: 0.625rem;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #293033;
+  --sidebar-primary: #047B95;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E2E8ED;
+  --sidebar-accent-foreground: #00557C;
+  --sidebar-border: #CFD8DD;
+  --sidebar-ring: #0095A9;
+  --brand-highlight: #0095A9;
+  --brand-link: #00557C;
+  --brand-accent: #E55E32;
+  --brand-success: #03B7B8;
+  --brand-warning: #F3A843;
+  --brand-info: #5051A0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-weight: 400;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+  }
+  /* Brand rule: titles are Signika Semibold and always lowercase (page and section titles only). */
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    text-transform: lowercase;
+  }
+}
+
+@layer utilities {
+  /* Use on non-heading elements that act as section titles (e.g. card titles). */
+  .brand-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    text-transform: lowercase;
+  }
+}
