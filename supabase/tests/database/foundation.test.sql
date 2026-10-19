@@ -4,11 +4,13 @@
 create extension if not exists pgtap with schema extensions;
 
 begin;
-select plan(14);
+select plan(18);
 
 select has_table('public', 'app_settings', 'app_settings exists');
 select has_table('public', 'activity_log', 'activity_log exists');
 select has_table('public', 'audit_events', 'audit_events exists');
+select has_table('public', 'change_log', 'change_log exists');
+select has_trigger('public', 'app_settings', 'zz_change_log', 'app_settings records its change history');
 
 select ok(
   (select bool_and(c.relrowsecurity) from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -37,6 +39,10 @@ select throws_ok($$ update public.activity_log set occurred_at = now() $$, '4250
   'owner cannot update activity_log');
 select throws_ok($$ delete from public.audit_events $$, '42501', null,
   'owner cannot delete audit_events');
+
+insert into public.app_settings (key, value) values ('ci_check', '1');
+select is((select operation from public.change_log where table_name = 'app_settings' and record_key = 'ci_check'), 'INSERT', 'insert recorded in change_log');
+select throws_ok($$ delete from public.change_log $$, '42501', null, 'owner cannot delete change_log');
 
 set local role anon;
 select throws_ok($$ select * from public.app_settings $$, '42501', null, 'anon cannot read app_settings');

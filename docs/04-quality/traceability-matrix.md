@@ -41,4 +41,5 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | Staging deployment | Roadmap Phase 1 | 1 → deferred | — | Deferred (T-02) |
 | Database foundation: migrations, RLS on every table, deny-by-default helpers | SDD §7.3, §8.1 | 2 | `tests/db/foundation.test.ts`, `supabase/tests/database` | Built |
 | Insert-only activity log (FR-USER-06, FR-AUTH-07 storage) and audit events (FR-AUD-02 durable event) | SDD §8.1, §11.1, §20 | 2 | `tests/db/foundation.test.ts` | Built |
+| Automatic before/after change history on every table (FR-SALE-09 change history, BRD §7 tamper-evident trail) | T-13 | 2 | `tests/db/change-log.test.ts` | Built |
 | Business month in EAT for sale month (D-30) | SDD §8.1 | 2 | `app.business_month` tests | Built |

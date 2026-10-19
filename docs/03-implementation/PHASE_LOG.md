@@ -78,7 +78,7 @@ CI has not run yet — it runs on the first push of this commit.
 
 ## Phase 2 — Database foundation, activity log and audit event log
 
-**Date:** 19 Oct 2026 · **Status:** Built — awaiting owner review. Staging apply needs the owner's one-time setup (below).
+**Date:** 19 Oct 2026 · **Status:** Built — CI green on real Supabase (run #2). Change history and SQL Editor files added after owner feedback; awaiting the owner to paste into "Outdoor".
 
 **Scope delivered**
 - Supabase CLI project (`supabase/config.toml`, project id `sogasho-outdoor`, Postgres 17), migration folder, labelled empty `seed.sql`.
@@ -91,7 +91,9 @@ CI has not run yet — it runs on the first push of this commit.
   - `activity_log` and `audit_events`: insert-only by grants **and** triggers (UPDATE/DELETE/TRUNCATE blocked for every role, including the owner); readable only with `audit.read`; written only through `app.log_activity()` / `app.record_audit_event()`, which take the actor from the session.
 - Database tests: `tests/db` (PGlite + Supabase shim, T-10) and `supabase/tests/database/foundation.test.sql` (pgTAP on real Supabase in CI).
 - CI: new jobs `supabase-db` (apply migrations to real Supabase Postgres + pgTAP) and `migrate-staging` (push to "Outdoor" after green `main`, only once secrets are set — T-11).
-- Guide: `docs/06-operations/database.md`.
+- Migration `20261019130000_change_log.sql` (owner request — "everything recorded in Supabase", T-13): `change_log` with automatic before/after history of every insert/update/delete on every business table (trigger `zz_change_log`, helper `app.enable_change_log()`, optional masked columns); append-only; readable only with `audit.read`. Attached to `app_settings`; a test fails if any future table lacks it.
+- SQL Editor paste files (T-14): `npm run db:sql-editor` → `supabase/sql-editor/`; each runs all-or-nothing, refuses re-runs and out-of-order runs, and records itself as applied.
+- Guide: `docs/06-operations/database.md` (SQL Editor steps first).
 
 **Not in scope / not done:** user, customer, sales or stock tables; settings values (Phase 5); permission model (Phase 4).
 
@@ -101,7 +103,7 @@ CI has not run yet — it runs on the first push of this commit.
 |---|---|
 | `npm run lint` | Pass |
 | `npm run typecheck` | Pass |
-| `npm run test` | Pass — 4 files, 76 tests (26 database tests) |
+| `npm run test` | Pass — 6 files, 86 tests (36 database tests: foundation, change history, SQL Editor files) |
 | `npm run build` | Pass |
 | Sensitivity probe (temporary test, removed) | With the append-only trigger and grants removed, owner and signed-in updates succeed — confirms the real tests would catch a missing protection |
 
@@ -112,14 +114,15 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 | Criterion | Result |
 |---|---|
 | Migrations apply cleanly locally | ✅ PGlite (PostgreSQL 18) |
-| Migrations apply cleanly on real Supabase | ⏳ CI job `supabase-db` after push |
-| Migrations apply on staging ("Outdoor") | ⏳ owner one-time setup (`docs/06-operations/database.md`) |
+| Migrations apply cleanly on real Supabase | ✅ CI run #2 green (foundation); ⏳ re-run after pushing the change-history migration |
+| Migrations apply on staging ("Outdoor") | ⏳ owner pastes `supabase/sql-editor/` files 1 and 2 in the SQL Editor |
+| Every table records before/after history | ✅ `tests/db/change-log.test.ts` coverage test |
 | RLS enabled on every created table; denial tests pass | ✅ |
 | Insert-only tables reject updates/deletes (all roles incl. owner) | ✅ |
 | No service-role key reachable from the browser | ✅ no Supabase client code yet; `SUPABASE_SECRET_KEY` only in `.env.example` as a server-only name |
 | Later business tables not built | ✅ |
 
-**Manual steps for the owner** — see `docs/06-operations/database.md`: add `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` (secrets) and `SUPABASE_STAGING_PROJECT_REF` (variable) in GitHub, then confirm the tables appear in the "Outdoor" project.
+**Manual steps for the owner** — Supabase "Outdoor" → SQL Editor: paste and run `supabase/sql-editor/20261019120000_foundation.sql`, then `supabase/sql-editor/20261019130000_change_log.sql`; confirm the four tables appear in Table Editor (see `docs/06-operations/database.md`).
 
 **Risks / open items**
 - PGlite runs PostgreSQL 18 while Supabase runs 17; the CI `supabase-db` job is the safeguard.

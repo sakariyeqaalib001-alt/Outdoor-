@@ -10,7 +10,7 @@ import { PGlite } from "@electric-sql/pglite";
  * CI additionally applies the migrations to a real Supabase Postgres (.github/workflows/ci.yml).
  */
 
-const SUPABASE_SHIM = `
+export const SUPABASE_SHIM = `
 create role anon nologin noinherit;
 create role authenticated nologin noinherit;
 create role service_role nologin noinherit bypassrls;
