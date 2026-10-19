@@ -46,6 +46,9 @@ create table if not exists supabase_migrations.schema_migrations (
   statements text[],
   name text
 );
+-- Bookkeeping table only; not exposed by the API. RLS on, no policies: API roles see nothing,
+-- the Supabase CLI (table owner) is unaffected. Also avoids the SQL Editor RLS warning.
+alter table supabase_migrations.schema_migrations enable row level security;
 
 do $sogasho_guard$
 begin
