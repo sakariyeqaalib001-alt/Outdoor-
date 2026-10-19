@@ -925,9 +925,9 @@ Fake but realistic seed data: 4 cities, 2 branches each, 3 teams, 10 agents (tem
 
 | Environment | Purpose | Data |
 |---|---|---|
-| Local | Development with Supabase CLI | Fake seed |
-| Staging | Every merged change; UAT; go-live rehearsals | Fake seed only |
-| Production | Pilot (Hargeisa), then all cities | Real data |
+| Local | Development with Supabase CLI (local Supabase, no cloud project) | Fake seed |
+| Staging | Every merged change; UAT; go-live rehearsals. Supabase project "Outdoor", ref `rovaveormshdgvpbehqf` (https://rovaveormshdgvpbehqf.supabase.co) | Fake seed only |
+| Production | Pilot (Hargeisa), then all cities. New Supabase project `outdoor-production` on a paid plan (daily backups), created in Phase 11 | Real data |
 
 ## 26.2 CI/CD
 

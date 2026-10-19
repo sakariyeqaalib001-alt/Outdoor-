@@ -30,7 +30,7 @@ Never ask Claude Code to build several phases at once.
 | # | Item | Owner | Needed for |
 |---|---|---|---|
 | R-1 | GitHub repository created (private) | IT | Phase 0 |
-| R-2 | Supabase projects: development, staging, production | IT | Phase 0 |
+| R-2 | Supabase: development runs locally (Supabase CLI); **staging created** — project "Outdoor", ref `rovaveormshdgvpbehqf` (region to record); production project (paid plan) created at Phase 11 | IT | Phase 0 / 11 |
 | R-3 | Hosting account selected (e.g., Vercel or equivalent) | IT | Phase 1 |
 | R-4 | Domain/subdomain for staging and production | IT | Phase 1 / 11 |
 | R-5 | Transactional email provider account | IT | Phase 9 |
