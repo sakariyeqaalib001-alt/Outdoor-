@@ -31,8 +31,8 @@ Never ask Claude Code to build several phases at once.
 |---|---|---|---|
 | R-1 | GitHub repository created (private) | IT | Phase 0 |
 | R-2 | Supabase: development runs locally (Supabase CLI); **staging created** — project "Outdoor", ref `rovaveormshdgvpbehqf` (region to record); production project (paid plan) created at Phase 11 | IT | Phase 0 / 11 |
-| R-3 | Hosting account selected (e.g., Vercel or equivalent) | IT | Phase 1 |
-| R-4 | Domain/subdomain for staging and production | IT | Phase 1 / 11 |
+| R-3 | Hosting: **Vercel**, existing team "SO LTD" (currently Hobby plan; commercial use requires Pro before the pilot). Vercel project created in Phase 1 by importing the GitHub repository | IT | Phase 1 (Pro by Phase 11) |
+| R-4 | Domain: proposed `outdoor.sogasho.com` (production) and `outdoor-staging.sogasho.com` (staging), added in Vercel with DNS records on sogasho.com | IT | Phase 1 / 11 |
 | R-5 | Transactional email provider account | IT | Phase 9 |
 | R-6 | **Telesom SMS test completed**: Telesom SMS API credentials and sender name obtained; phone + password + OTP tested on Telesom numbers and any other network temporary agents use; delivery rate, latency and cost recorded (provider chosen: Telesom, D-20) | IT | Phase 3 |
 | R-7 | Original source PDF placed in `docs/00-source/` | Business owner | Phase 0 |
