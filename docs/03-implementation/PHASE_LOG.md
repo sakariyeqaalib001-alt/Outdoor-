@@ -115,7 +115,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 |---|---|
 | Migrations apply cleanly locally | ✅ PGlite (PostgreSQL 18) |
 | Migrations apply cleanly on real Supabase | ✅ CI run #2 green (foundation); ⏳ re-run after pushing the change-history migration |
-| Migrations apply on staging ("Outdoor") | ⏳ owner pastes `supabase/sql-editor/` files 1 and 2 in the SQL Editor |
+| Migrations apply on staging ("Outdoor") | ✅ owner applied both files in the SQL Editor on 19 Oct 2026 ("Run and enable RLS" on the bookkeeping-table prompt); Table Editor shows app_settings, activity_log, audit_events, change_log |
 | Every table records before/after history | ✅ `tests/db/change-log.test.ts` coverage test |
 | RLS enabled on every created table; denial tests pass | ✅ |
 | Insert-only tables reject updates/deletes (all roles incl. owner) | ✅ |
