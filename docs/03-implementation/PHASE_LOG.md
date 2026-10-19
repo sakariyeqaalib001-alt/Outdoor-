@@ -28,7 +28,7 @@ One entry per phase. Record only what was actually done and actually run.
 - Next.js 16.4.2 (App Router, Turbopack, Cache Components), React 19.3, TypeScript strict, Tailwind CSS 4, ESLint; npm scripts `dev`, `build`, `lint`, `typecheck`, `test`, `check`, `icons`.
 - shadcn/ui (Radix, radix-nova) themed entirely with brand-kit colours (T-01, T-04); light theme only; Signika self-hosted via `next/font/local` (weights 300/400/600/700; `font-medium` replaced with `font-semibold` so only brand weights are used).
 - Brand: `src/lib/brand.ts` (palette, theme tokens, status colours, contrast functions) mirrored in `src/app/globals.css`; lowercase semibold titles; `BrandLogo` component (white background, 1.5x clear space, 30 px minimum); decorative triangle-pattern strip in the header.
-- App frame: collapsible sidebar (logo, grouped navigation, later modules shown disabled with their phase number, user card placeholder), sticky header, mobile slide-out navigation.
+- App frame: collapsible sidebar (logo; one item per BRD module §6.2–6.16 and §9 — incl. Free-month compensation, Agent performance, Product switch, Refunds, Notifications, Products & prices — shown disabled with their phase number until built; user card placeholder), sticky header, mobile slide-out navigation. `tests/unit/navigation.test.ts` fails if a BRD module has no sidebar item.
 - Pages: dashboard placeholder (`/`), brand check (`/design-system`), loading, error, not-found.
 - Status badges for Pending / Approved / Rejected / Flagged / Refunded / Active / Expire / On hold.
 - Helpers: EAT business month and date formatting (`src/lib/dates.ts`), USD formatting (`src/lib/money.ts`), typed translations over `messages/en.json` (`src/lib/i18n.ts`).
@@ -43,7 +43,7 @@ One entry per phase. Record only what was actually done and actually run.
 |---|---|
 | `npm run lint` | Pass (0 problems) |
 | `npm run typecheck` | Pass |
-| `npm run test` | Pass — 2 files, 32 tests |
+| `npm run test` | Pass — 3 files, 50 tests (incl. BRD module coverage of the sidebar) |
 | `npm run build` | Pass — routes `/`, `/design-system`, `/_not-found`, `/manifest.webmanifest` prerendered |
 | `npm run dev` + browser check | Desktop and 375 px mobile: Signika loaded (400/600), titles lowercase, primary button `#047B95` with white text, active nav `#00557C` on `#E2E8ED`, no horizontal scroll on mobile, mobile menu opens with logo and all items, 404 page renders, manifest lists 3 icons, no console errors |
 
