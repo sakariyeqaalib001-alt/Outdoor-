@@ -1,0 +1,55 @@
+/* Sogasho (SO!) brand colours — source: SO! Brand Style Guide 2013 v1.1 */
+:root {
+  /* greens */
+  --so-green-900: #00557C; /* Pantone 647 C */
+  --so-green-700: #047B95; /* Pantone 7468 C */
+  --so-green-500: #0095A9; /* Pantone 7459 C */
+  --so-green-300: #03B7B8; /* Pantone 7465 C */
+  /* blues */
+  --so-blue-900: #3E357C; /* Pantone 534 C */
+  --so-blue-700: #3A4789; /* Pantone 653 C */
+  --so-blue-500: #5051A0; /* Pantone 660 C */
+  --so-blue-300: #6364AA; /* Pantone 2925 C */
+  /* lavenders */
+  --so-lavender-900: #00557C; /* Pantone 2685 C */
+  --so-lavender-700: #00557C; /* Pantone 653 C */
+  --so-lavender-500: #00557C; /* Pantone 7455 C */
+  --so-lavender-300: #00557C; /* Pantone 7456 C */
+  /* purples */
+  --so-purple-900: #5B398D; /* Pantone 268 C */
+  --so-purple-700: #704098; /* Pantone 526 C */
+  --so-purple-500: #824B94; /* Pantone 258 C */
+  --so-purple-300: #9C6BAD; /* Pantone 2577 C */
+  /* pinks */
+  --so-pink-900: #76256A; /* Pantone 512 C */
+  --so-pink-700: #96226E; /* Pantone 1795 C */
+  --so-pink-500: #B22662; /* Pantone 215 C */
+  --so-pink-300: #CB5084; /* Pantone 674 C */
+  /* oranges */
+  --so-orange-900: #B81F3A; /* Pantone 193 C */
+  --so-orange-700: #D83331; /* Pantone 1795 C */
+  --so-orange-500: #E55E32; /* Pantone 171 C */
+  --so-orange-300: #F3A843; /* Pantone 1365 C */
+  /* grays */
+  --so-gray-900: #293033; /* Pantone 447 C */
+  --so-gray-700: #545A60; /* Pantone 425 C */
+  --so-gray-500: #8D939E; /* Pantone 7544 C */
+  --so-gray-300: #B6C0CC; /* Pantone 537 C */
+  --so-gray-200: #CFD8DD; /* Pantone 642 C */
+  --so-gray-100: #E2E8ED; /* Pantone 656 C */
+  /* semantic (recommended mapping for the stock management UI) */
+  --so-brand-primary: #0095A9; /* primary buttons, links, active states */
+  --so-brand-primary-dark: #00557C; /* hover/pressed primary, headers */
+  --so-brand-accent: #E55E32; /* highlights, badges, calls to action */
+  --so-tagline-blue: #143885; /* only for the 'so gasho!' tagline; not a UI colour */
+  --so-text: #293033; /* body text */
+  --so-text-muted: #545A60; /* secondary text, labels */
+  --so-border: #CFD8DD; /* dividers, table rules, input borders */
+  --so-surface: #E2E8ED; /* page background, table header fill */
+  --so-surface-white: #FFFFFF; /* cards, primary logo background */
+  --so-reverse-black: #000000; /* only permitted dark background for the reverse logo */
+  --so-success: #03B7B8; /* in stock, completed */
+  --so-warning: #F3A843; /* low stock */
+  --so-danger: #D83331; /* out of stock, destructive actions */
+  --so-info: #5051A0; /* informational states */
+}

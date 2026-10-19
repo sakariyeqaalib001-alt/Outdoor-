@@ -1,0 +1,39 @@
+# Secrets — never commit (Telesom, Supabase, hosting keys)
+.env
+.env.*
+!.env.example
+supabase/.env*
+*.pem
+*.key
+
+# Dependencies and build output
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.vercel/
+.turbo/
+*.tsbuildinfo
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Personal notes and raw inputs (keep out of the repository)
+*.one
+*.onetoc2
+OUTDOOR/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/

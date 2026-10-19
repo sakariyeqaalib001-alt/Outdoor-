@@ -1,0 +1,242 @@
+{
+  "source": "SO! Brand Style Guide 2013 v1.1",
+  "palette": {
+    "greens": [
+      {
+        "name": "green-900",
+        "pantone": "647 C",
+        "hex": "#00557C"
+      },
+      {
+        "name": "green-700",
+        "pantone": "7468 C",
+        "hex": "#047B95"
+      },
+      {
+        "name": "green-500",
+        "pantone": "7459 C",
+        "hex": "#0095A9"
+      },
+      {
+        "name": "green-300",
+        "pantone": "7465 C",
+        "hex": "#03B7B8"
+      }
+    ],
+    "blues": [
+      {
+        "name": "blue-900",
+        "pantone": "534 C",
+        "hex": "#3E357C"
+      },
+      {
+        "name": "blue-700",
+        "pantone": "653 C",
+        "hex": "#3A4789"
+      },
+      {
+        "name": "blue-500",
+        "pantone": "660 C",
+        "hex": "#5051A0"
+      },
+      {
+        "name": "blue-300",
+        "pantone": "2925 C",
+        "hex": "#6364AA"
+      }
+    ],
+    "lavenders": [
+      {
+        "name": "lavender-900",
+        "pantone": "2685 C",
+        "hex": "#00557C",
+        "note": "the source PDF lists #00557C for all four lavender swatches (likely a copy error); confirm with brand owner"
+      },
+      {
+        "name": "lavender-700",
+        "pantone": "653 C",
+        "hex": "#00557C"
+      },
+      {
+        "name": "lavender-500",
+        "pantone": "7455 C",
+        "hex": "#00557C"
+      },
+      {
+        "name": "lavender-300",
+        "pantone": "7456 C",
+        "hex": "#00557C"
+      }
+    ],
+    "purples": [
+      {
+        "name": "purple-900",
+        "pantone": "268 C",
+        "hex": "#5B398D"
+      },
+      {
+        "name": "purple-700",
+        "pantone": "526 C",
+        "hex": "#704098"
+      },
+      {
+        "name": "purple-500",
+        "pantone": "258 C",
+        "hex": "#824B94"
+      },
+      {
+        "name": "purple-300",
+        "pantone": "2577 C",
+        "hex": "#9C6BAD"
+      }
+    ],
+    "pinks": [
+      {
+        "name": "pink-900",
+        "pantone": "512 C",
+        "hex": "#76256A"
+      },
+      {
+        "name": "pink-700",
+        "pantone": "1795 C",
+        "hex": "#96226E"
+      },
+      {
+        "name": "pink-500",
+        "pantone": "215 C",
+        "hex": "#B22662"
+      },
+      {
+        "name": "pink-300",
+        "pantone": "674 C",
+        "hex": "#CB5084"
+      }
+    ],
+    "oranges": [
+      {
+        "name": "orange-900",
+        "pantone": "193 C",
+        "hex": "#B81F3A"
+      },
+      {
+        "name": "orange-700",
+        "pantone": "1795 C",
+        "hex": "#D83331"
+      },
+      {
+        "name": "orange-500",
+        "pantone": "171 C",
+        "hex": "#E55E32"
+      },
+      {
+        "name": "orange-300",
+        "pantone": "1365 C",
+        "hex": "#F3A843"
+      }
+    ],
+    "grays": [
+      {
+        "name": "gray-900",
+        "pantone": "447 C",
+        "hex": "#293033"
+      },
+      {
+        "name": "gray-700",
+        "pantone": "425 C",
+        "hex": "#545A60"
+      },
+      {
+        "name": "gray-500",
+        "pantone": "7544 C",
+        "hex": "#8D939E"
+      },
+      {
+        "name": "gray-300",
+        "pantone": "537 C",
+        "hex": "#B6C0CC"
+      },
+      {
+        "name": "gray-200",
+        "pantone": "642 C",
+        "hex": "#CFD8DD"
+      },
+      {
+        "name": "gray-100",
+        "pantone": "656 C",
+        "hex": "#E2E8ED"
+      }
+    ]
+  },
+  "semantic": {
+    "brand-primary": {
+      "hex": "#0095A9",
+      "from": "green-500",
+      "use": "primary buttons, links, active states"
+    },
+    "brand-primary-dark": {
+      "hex": "#00557C",
+      "from": "green-900",
+      "use": "hover/pressed primary, headers"
+    },
+    "brand-accent": {
+      "hex": "#E55E32",
+      "from": "orange-500",
+      "use": "highlights, badges, calls to action"
+    },
+    "tagline-blue": {
+      "hex": "#143885",
+      "from": "logo tagline",
+      "use": "only for the 'so gasho!' tagline; not a UI colour"
+    },
+    "text": {
+      "hex": "#293033",
+      "from": "gray-900",
+      "use": "body text"
+    },
+    "text-muted": {
+      "hex": "#545A60",
+      "from": "gray-700",
+      "use": "secondary text, labels"
+    },
+    "border": {
+      "hex": "#CFD8DD",
+      "from": "gray-200",
+      "use": "dividers, table rules, input borders"
+    },
+    "surface": {
+      "hex": "#E2E8ED",
+      "from": "gray-100",
+      "use": "page background, table header fill"
+    },
+    "surface-white": {
+      "hex": "#FFFFFF",
+      "from": "white",
+      "use": "cards, primary logo background"
+    },
+    "reverse-black": {
+      "hex": "#000000",
+      "from": "black",
+      "use": "only permitted dark background for the reverse logo"
+    },
+    "success": {
+      "hex": "#03B7B8",
+      "from": "green-300",
+      "use": "in stock, completed"
+    },
+    "warning": {
+      "hex": "#F3A843",
+      "from": "orange-300",
+      "use": "low stock"
+    },
+    "danger": {
+      "hex": "#D83331",
+      "from": "orange-700",
+      "use": "out of stock, destructive actions"
+    },
+    "info": {
+      "hex": "#5051A0",
+      "from": "blue-500",
+      "use": "informational states"
+    }
+  }
+}

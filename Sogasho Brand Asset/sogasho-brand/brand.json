@@ -1,0 +1,30 @@
+{
+  "brand": "Sogasho",
+  "shortName": "SO!",
+  "tagline": { "somali": "so gasho!", "font": "Signika Bold", "case": "lowercase", "colorOnWhite": "#143885", "colorOnBlack": "#FFFFFF" },
+  "source": "SO! Brand Style Guide 2013 v1.1",
+  "logo": {
+    "mark": "logo/svg/so-mark.svg",
+    "primary": "logo/svg/so-logo-primary.svg",
+    "primaryOnWhite": "logo/svg/so-logo-primary-on-white.svg",
+    "primaryClearspace": "logo/svg/so-logo-primary-clearspace.svg",
+    "reverse": "logo/svg/so-logo-reverse.svg",
+    "reverseOnBlack": "logo/svg/so-logo-reverse-on-black.svg",
+    "png": { "primary": "logo/png/primary/", "reverse": "logo/png/reverse/", "mark": "logo/png/mark/", "sizes": [64, 128, 256, 512, 1024] },
+    "icons": { "dir": "logo/icons/", "sizes": [16, 32, 48, 64, 128, 180, 192, 256, 512] },
+    "allowedBackgrounds": ["#FFFFFF", "#000000"],
+    "minHeightPx": 30,
+    "minHeightMm": 10,
+    "clearspace": "1.5x, x = exclamation-dot height = 0.24 × mark height",
+    "aspectRatio": { "mark": 2.353, "lockup": 1.599 },
+    "forbidden": ["stretch", "rotate", "recolour", "add/remove elements", "change mark/tagline relationship", "other background colours"]
+  },
+  "colors": { "css": "colors/colors.css", "json": "colors/colors.json", "scss": "colors/_colors.scss", "tailwind": "colors/tailwind.colors.js" },
+  "typography": {
+    "family": "Signika",
+    "css": "fonts/fonts.css",
+    "weights": { "light": 300, "regular": 400, "semibold": 600, "bold": 700 },
+    "rules": { "headings": "Semibold, lowercase, ≥14pt", "bodyPrint": "Light 9/10/12pt", "bodyScreen": "Regular" }
+  },
+  "pattern": ["pattern/so-triangle-pattern.jpg", "pattern/so-triangle-pattern-full.jpg"]
+}
