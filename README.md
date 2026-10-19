@@ -27,4 +27,4 @@ The same checks run on GitHub Actions for every push and pull request.
 
 ## Status
 
-Phase 1 (foundation and branded app shell) — built, awaiting review. See [`docs/03-implementation/PHASE_LOG.md`](docs/03-implementation/PHASE_LOG.md).
+Phase 1 (foundation and branded app shell) — accepted 19 Oct 2026. Next: Phase 2 (database foundation). See [`docs/03-implementation/PHASE_LOG.md`](docs/03-implementation/PHASE_LOG.md).

@@ -33,9 +33,9 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 
 | Item | Source | Phase | Evidence | Status |
 |---|---|---|---|---|
-| Brand: colours only from brand kit, Signika only, lowercase titles, logo rules | BRD §11 Branding, SDD §22 | 1 | `tests/unit/brand.test.ts`; `/design-system` page | Built |
-| Accessibility: WCAG 2.1 AA contrast for text and UI components | BRD §11 Usability, SDD §22.2 | 1 (then every phase) | `tests/unit/brand.test.ts` contrast checks | Built |
-| Localization: EAT time zone, USD, DD/MM/YYYY, translation-ready text | D-24 | 1 | `tests/unit/format.test.ts`; `messages/en.json` | Built |
-| Installable PWA (manifest, icons, shell-only service worker) | D-25 | 1 | `/manifest.webmanifest`; `public/sw.js` | Built |
-| CI: lint, type-check, tests, build on every push | Roadmap Phase 1 | 1 | `.github/workflows/ci.yml` | Built |
+| Brand: colours only from brand kit, Signika only, lowercase titles, logo rules | BRD §11 Branding, SDD §22 | 1 | `tests/unit/brand.test.ts`; `/design-system` page | Accepted |
+| Accessibility: WCAG 2.1 AA contrast for text and UI components | BRD §11 Usability, SDD §22.2 | 1 (then every phase) | `tests/unit/brand.test.ts` contrast checks | Accepted |
+| Localization: EAT time zone, USD, DD/MM/YYYY, translation-ready text | D-24 | 1 | `tests/unit/format.test.ts`; `messages/en.json` | Accepted |
+| Installable PWA (manifest, icons, shell-only service worker) | D-25 | 1 | `/manifest.webmanifest`; `public/sw.js` | Accepted |
+| CI: lint, type-check, tests, build on every push | Roadmap Phase 1 | 1 | `.github/workflows/ci.yml` | Accepted |
 | Staging deployment | Roadmap Phase 1 | 1 → deferred | — | Deferred (T-02) |

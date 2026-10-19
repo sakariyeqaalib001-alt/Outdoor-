@@ -22,7 +22,7 @@ One entry per phase. Record only what was actually done and actually run.
 
 ## Phase 1 — Foundation, brand/design system, CI
 
-**Date:** 19 Oct 2026 · **Status:** Built — awaiting owner review. Staging deploy item deferred (T-02).
+**Date:** 19 Oct 2026 · **Status:** ✅ Accepted by the owner on 19 Oct 2026 (after sidebar review). Staging deploy item deferred (T-02).
 
 **Scope delivered**
 - Next.js 16.4.2 (App Router, Turbopack, Cache Components), React 19.3, TypeScript strict, Tailwind CSS 4, ESLint; npm scripts `dev`, `build`, `lint`, `typecheck`, `test`, `check`, `icons`.
