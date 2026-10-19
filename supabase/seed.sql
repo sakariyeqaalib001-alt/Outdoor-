@@ -1,0 +1,2 @@
+-- Development seed data only (never real customer data). Loaded by `supabase db reset` locally/CI.
+-- Phase 2 has no seed data; Phase 5 adds clearly labelled demo master data.

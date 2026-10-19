@@ -6,7 +6,8 @@ export default defineConfig({
     alias: { "@": path.resolve(import.meta.dirname, "src") },
   },
   test: {
-    include: ["tests/unit/**/*.test.ts"],
+    include: ["tests/unit/**/*.test.ts", "tests/db/**/*.test.ts"],
     environment: "node",
+    testTimeout: 30_000,
   },
 });
