@@ -189,3 +189,66 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 **Next prompt (not executed):**
 > Proceed with Phase 4 only: users, roles, permissions and teams. Follow BRD/SDD v1.4 and CLAUDE.md, inspect first, implement only Phase 4, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 4 — Users, roles, permissions and teams
+
+**Date:** 20 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/users.md`).
+
+**Scope delivered (BRD §4, §6.2 FR-USER-01…10, FR-AUTH-06; SDD §7; D-22, D-29)**
+- Migration `20261020150000_access.sql`:
+  - `roles` (7 roles of BRD §4), `permissions` (39 keys), `role_permissions` (matrix with scope own/team/city/all, seeded from SDD §7.2), `user_roles` (several roles per user), `teams`, `team_members` (one team per person).
+  - `cities` (4) and `branches` (16, BRD §6.2.1) — read-only until Phase 5 (T-21); `user_profiles.city_id`, `branch_id`.
+  - Real `app.has_permission`, `app.permission_scope`, `app.in_scope(permission, owner)` (replace the Phase 2 stubs); `user_profiles` readable by owner or within `users.read` scope.
+  - Functions (each checks permission in the database): `my_access`, `has_permission`, `admin_update_user`, `admin_set_user_active`, `admin_require_password_change`, `admin_save_team`, `admin_set_role_permission`; one-time `app.bootstrap_super_admin` (SQL Editor only).
+  - Safeguards: no self-deactivation, no removing your own Super Admin role, at least one active Super Admin, Super Admin matrix row locked, Team Leader of a team must hold the Team Leader role, branch must belong to the chosen city.
+  - Change history on all new tables; admin actions logged in `activity_log` (`users.update`, `users.deactivate/reactivate`, `users.password_reset`, `teams.create/update`, `roles.permission_set`).
+- Server actions `src/server/users/actions.ts`: create user (temporary password shown once), edit, deactivate/reactivate (database first, then Supabase Auth ban/unban), reset password, save team, set matrix cell (T-23).
+- Screens: **Users** (search, status filter, add/edit dialog, actions menu), **Teams**, **Roles & permissions** (editable matrix); "no access" page for users without permission; brand check page restricted to `settings.manage`.
+- Sidebar now permission-driven (`visibleNavigation`); every menu permission key is checked against the database seed by a test.
+
+**Not in scope:** branch/district maintenance screens and customer-type dropdowns (FR-USER-04, -09 maintenance, -10 → Phase 5).
+
+**BRD check (FR-USER-01…10, FR-AUTH-06)**
+
+| Requirement | Result |
+|---|---|
+| FR-USER-01 create and maintain accounts | ✅ Users screen (create, edit, reset password) |
+| FR-USER-02 roles, permissions, module access | ✅ roles per user, editable matrix, permission-driven menu |
+| FR-USER-03 activate / disable | ✅ deactivate / reactivate |
+| FR-USER-04 customer types and dropdowns | ➡ Phase 5 (settings) |
+| FR-USER-05 enforced on server and database | ✅ every action re-checked in the database; RLS on every table; direct writes denied (tests) |
+| FR-USER-06 changes logged | ✅ activity_log + automatic change_log |
+| FR-USER-07 teams; agent → city, branch, Team Leader | ✅ Teams screen; user city/branch/team |
+| FR-USER-08 employment type, start date, end date | ✅ end date set on deactivation, cleared on reactivation |
+| FR-USER-09 16 branches seeded; maintain branches | ✅ seeded (T-21); maintenance ➡ Phase 5 |
+| FR-USER-10 districts per city | ➡ Phase 5 |
+| FR-AUTH-06 deactivated users blocked, sessions invalidated | ✅ RLS gate denies immediately; Supabase Auth ban blocks sign-in and refresh |
+
+**Commands run (20 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run lint`, `npm run typecheck` | Pass |
+| `npm run test` | Pass — 195 tests (36 new role-boundary database tests; menu-permission tests) |
+| `npm run build` | Pass — `/users`, `/users/teams`, `/users/roles` added |
+
+Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on GitHub (after upload).
+
+**Acceptance gate (UAT-14, UAT-16 for users)**
+
+| Criterion | Result |
+|---|---|
+| Allowed/denied tests for every role on user/team actions, via UI and direct API | ✅ database tests for all 7 roles (direct calls); UI hides actions without permission; ⏳ owner UI test |
+| Deactivated user loses access immediately | ✅ database test (RLS gate + session status); ⏳ owner test with the test agent |
+| Permission matrix editable by Super Admin only | ✅ database tests (other roles refused even by direct call; Super Admin row locked) |
+
+**Manual steps for the owner** — `docs/06-operations/users.md`: paste `supabase/sql-editor/20261020150000_access.sql`; run `select app.bootstrap_super_admin('<your email>')`; run the tests in section 4.
+
+**Risks / open items**
+- An existing session of a deactivated user keeps its token until expiry (≤ 1 hour) but every query is denied immediately by RLS; sign-in and refresh are blocked by the Supabase ban.
+- Default matrix gives Auditor/Management read access to all users and sales (D-22); review on the Roles screen.
+
+**Next prompt (not executed):**
+> Proceed with Phase 5 only: master data and settings. Follow BRD/SDD v1.4 and CLAUDE.md, inspect first, implement only Phase 5, run `npm run check`, update the logs, report the gate and stop.

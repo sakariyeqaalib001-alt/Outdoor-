@@ -6,8 +6,8 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 
 | Requirement group | SDD section | Roadmap phase | UAT | Status |
 |---|---|---|---|---|
-| FR-AUTH-01…09 | 6 | 3 (deactivation: 4) | 01, 02, 14, 33 | Accepted (Phase 3) — UAT-01, 02, 33 passed; deactivation screen and UAT-14 in Phase 4 |
-| FR-USER-01…10 | 7, 9 | 4 (branches, districts: 5) | 14, 16 | Not started |
+| FR-AUTH-01…09 | 6 | 3 (deactivation: 4) | 01, 02, 14, 33 | Accepted (Phase 3) — UAT-01, 02, 33 passed; FR-AUTH-06 deactivation built in Phase 4 (UAT-14 pending owner test) |
+| FR-USER-01…10 | 7, 9 | 4 (branches, districts: 5) | 14, 16 | Built (Phase 4) — FR-USER-04, branch maintenance and FR-USER-10 in Phase 5 |
 | FR-CONF-01, 03, 05 | 9 | 5 | 18 | Not started |
 | FR-CONF-02, 04, 06, 07 | 14 | 14 (band settings: 5) | 26, 38 | Not started |
 | FR-SALE-01…06, 08…21 | 10, 22.4 | 7 (FR-SALE-21 lock: 16) | 03–05, 08, 09, 19–22, 30, 32, 37, 42–46 | Not started |
