@@ -6,7 +6,7 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 
 | Requirement group | SDD section | Roadmap phase | UAT | Status |
 |---|---|---|---|---|
-| FR-AUTH-01…09 | 6 | 3 (deactivation: 4) | 01, 02, 14, 33 | Not started |
+| FR-AUTH-01…09 | 6 | 3 (deactivation: 4) | 01, 02, 14, 33 | Built — except FR-AUTH-05 real SMS (blocked on Telesom API guide); deactivation screen Phase 4 |
 | FR-USER-01…10 | 7, 9 | 4 (branches, districts: 5) | 14, 16 | Not started |
 | FR-CONF-01, 03, 05 | 9 | 5 | 18 | Not started |
 | FR-CONF-02, 04, 06, 07 | 14 | 14 (band settings: 5) | 26, 38 | Not started |
@@ -26,7 +26,7 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | FR-REP-01…05 | 14 | 10 (dashboard), 15 | 18, 28 | Not started |
 | FR-KOB-01…05 | 17.2 | 18 | 15 | Not started |
 | FR-NOT-01, 03, 05 | 18 | 9 (alerts), 8 (approvals) | 03 | Not started |
-| FR-NOT-02, 04 | 17.1 | 3 | 01, 33 | Not started |
+| FR-NOT-02, 04 | 17.1 | 3 | 01, 33 | Built — FR-NOT-04 done; FR-NOT-02 SMS via test provider until Telesom API guide |
 | FR-MIG-01…05 | — | Retired (D-21) | — | Retired |
 
 ## Non-functional and foundation items

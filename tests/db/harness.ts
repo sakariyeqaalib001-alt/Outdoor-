@@ -18,6 +18,12 @@ create role service_role nologin noinherit bypassrls;
 create schema auth;
 grant usage on schema auth to anon, authenticated, service_role;
 
+create table auth.users (
+  id uuid primary key,
+  email text,
+  raw_user_meta_data jsonb default '{}'::jsonb
+);
+
 create function auth.jwt() returns jsonb language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb
 $$;
@@ -64,9 +70,10 @@ export async function as<T>(
   db: PGlite,
   role: Role,
   userId: string | null,
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
+  sessionId: string = DEFAULT_SESSION
 ): Promise<T> {
-  const claims = JSON.stringify(userId ? { sub: userId, role } : { role });
+  const claims = JSON.stringify(userId ? { sub: userId, role, session_id: sessionId } : { role });
   await db.query("select set_config('request.jwt.claims', $1, false)", [claims]);
   await db.exec(`set role ${role}`);
   try {
@@ -89,3 +96,35 @@ export async function errorOf(promise: Promise<unknown>): Promise<string | null>
 
 export const USER_A = "00000000-0000-4000-8000-00000000000a";
 export const USER_B = "00000000-0000-4000-8000-00000000000b";
+export const DEFAULT_SESSION = "00000000-0000-4000-9000-000000000001";
+
+/**
+ * Create an Auth user (the profile is created by the on_auth_user_created trigger) and set its state.
+ * Defaults give a fully usable permanent user: active, password already changed.
+ */
+export async function createUser(
+  db: PGlite,
+  opts: {
+    id: string;
+    type?: "temporary" | "permanent";
+    email?: string;
+    phone?: string;
+    fullName?: string;
+    active?: boolean;
+    mustChangePassword?: boolean;
+  }
+): Promise<void> {
+  const type = opts.type ?? "permanent";
+  const email = opts.email ?? (type === "permanent" ? `user-${opts.id.slice(-4)}@example.test` : `agent-${opts.id.slice(-4)}@phone.example.test`);
+  const meta = {
+    full_name: opts.fullName ?? `Test ${type}`,
+    employment_type: type,
+    ...(type === "temporary" ? { phone_e164: opts.phone ?? `+25263${opts.id.slice(-7).replace(/\D/g, "0").padStart(7, "0")}` } : {}),
+  };
+  await db.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [opts.id, email, meta]);
+  await db.query("update public.user_profiles set is_active = $2, must_change_password = $3 where id = $1", [
+    opts.id,
+    opts.active ?? true,
+    opts.mustChangePassword ?? false,
+  ]);
+}

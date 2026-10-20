@@ -1,11 +1,12 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { as, createTestDatabase, errorOf, migrationFiles, USER_A } from "./harness";
+import { as, createTestDatabase, createUser, errorOf, migrationFiles, USER_A } from "./harness";
 
 let db: PGlite;
 
 beforeAll(async () => {
   db = await createTestDatabase();
+  await createUser(db, { id: USER_A });
 }, 60_000);
 
 const appendOnly = ["activity_log", "audit_events"] as const;

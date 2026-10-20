@@ -38,6 +38,7 @@ export function BrandLogo({
         width={Math.round(h * file.ratio)}
         priority={priority}
         unoptimized
+        style={{ height: h, width: Math.round(h * file.ratio), maxWidth: "none" }}
       />
     </span>
   );

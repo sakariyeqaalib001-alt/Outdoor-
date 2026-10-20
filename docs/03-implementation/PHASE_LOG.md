@@ -130,3 +130,56 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 **Next prompt (not executed):**
 > Proceed with Phase 3 only: authentication with Telesom OTP. Follow BRD/SDD v1.4 and CLAUDE.md, inspect first, implement only Phase 3, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 3 — Authentication and OTP
+
+**Date:** 20 Oct 2026 · **Status:** Built — **BLOCKED for real SMS: awaiting Telesom's API guide (R-6)**. Everything else is built and tested locally; owner sign-in test on "Outdoor" pending (steps below).
+
+**Scope delivered (BRD §6.1, FR-AUTH-01…09, FR-NOT-02/04)**
+- Migration `20261020090000_auth.sql`:
+  - `user_profiles` (temporary/permanent, phone E.164 or email, active, must-change-password, start/end date), created automatically from each Supabase Auth user; read own row only; change history on.
+  - Sign-in lockout `auth_lockouts` (identifier stored as SHA-256 only): 5 failures in 15 min → locked 15 min; cleared only by the user's own successful sign-in.
+  - SMS OTP `otp_challenges` (hash only; 5 min; single use; 5 tries; 3 sends / 15 min) and `otp_verified_sessions` (bound to the JWT session).
+  - `app.is_active_user()` now enforces: active profile, password changed, OTP for agents (T-18) — every RLS policy inherits it.
+  - API functions: `auth_lockout_until`, `auth_record_failure`, `auth_record_success`, `my_session_status`, `mark_password_changed`, `verify_otp` (users) and `issue_otp_challenge`, `record_otp_delivery` (server only, T-17).
+  - Security events in `activity_log`: `auth.sign_in`, `auth.sign_in_failed`, `auth.locked`, `auth.password_changed`, `auth.otp_issued/sent/send_failed/verified/failed/expired/rate_limited` — no passwords, codes or identifiers.
+- App: Supabase server and admin clients; `src/proxy.ts` (session refresh, protected routes, step routing); server actions sign in / verify OTP / resend / change password / sign out; screens `/login`, `/verify`, `/change-password` (brand styled, 44 px touch targets); signed-in name and Sign out in the sidebar.
+- Identity: email for staff; phone (any local format) for agents, mapped to an internal Supabase address (T-16). Password rules T-19.
+- SMS adapter: `test` (development only — code printed in the `npm run dev` terminal, refused in production) and `telesom` (refuses to send until the API format is supplied).
+- Script `npm run user:create` (bootstrap Super Admin / test accounts; temporary password printed only in the owner's terminal).
+- Supabase local config: public sign-up off, minimum password 8, letters + digits. Guide: `docs/06-operations/auth.md`. Decisions T-15…T-19.
+
+**Not in scope / not done:** roles and Super Admin permissions, deactivation screen and auth-user ban (Phase 4); real Telesom delivery (blocked).
+
+**Commands run (20 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run lint` | Pass |
+| `npm run typecheck` | Pass |
+| `npm run test` | Pass — 146 tests (30 new database auth tests, 26 new unit tests) |
+| `npm run build` | Pass — `/login`, `/verify`, `/change-password` added; proxy active |
+| Browser (no Supabase settings) | Protected pages redirect to `/login`, which explains the missing settings |
+| Browser (dummy Supabase settings) | Protected page → 307 to `/login`; login form renders; wrong credentials → generic "Phone/email or password is incorrect."; mobile 375 px: 44 px fields/button, no horizontal scroll; server log shows no password or phone |
+
+**Acceptance gate (UAT-01, 02, 33)**
+
+| Criterion | Result |
+|---|---|
+| Both sign-in flows work on staging | ⏳ owner test on "Outdoor" (`docs/06-operations/auth.md` steps 1–5) |
+| OTP delivered by Telesom to a real phone | ⛔ BLOCKED — Telesom API guide not yet provided (R-6); test SMS provider used meanwhile |
+| Wrong credentials fail generically; lockout and OTP limits enforced | ✅ database tests + browser check |
+| Unauthenticated access to protected routes denied | ✅ proxy redirect + RLS gate |
+| First-login change enforced | ✅ database tests (`change_password` status blocks RLS until changed) |
+| No passwords, OTPs or tokens in logs | ✅ activity_log tests; server log checked; test SMS provider refused in production |
+
+**Manual steps for the owner** — `docs/06-operations/auth.md`: (1) paste `supabase/sql-editor/20261020090000_auth.sql`; (2) Supabase Auth settings (sign-ups off, password 8 + letters/digits); (3) create `.env.local`; (4) `npm run user:create` for yourself and a test agent; (5) run the sign-in tests. Request Telesom's SMS API guide.
+
+**Risks / open items**
+- Anyone can trigger a 15-minute lockout of a known phone/email by typing wrong passwords (inherent to lockout; logged as `auth.locked`).
+- Internal agent addresses use the domain `phone.outdoor.sogasho.com`; no email is ever sent to them (accounts are created confirmed; password reset by email is not offered).
+
+**Next prompt (not executed):**
+> Proceed with Phase 4 only: users, roles, permissions and teams. Follow BRD/SDD v1.4 and CLAUDE.md, inspect first, implement only Phase 4, run `npm run check`, update the logs, report the gate and stop.

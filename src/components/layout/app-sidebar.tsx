@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleUserRound } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +20,7 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 import { navigation, isAvailable } from "@/lib/navigation";
 import { t } from "@/lib/i18n";
 
-export function AppSidebar() {
+export function AppSidebar({ footer }: { footer: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
@@ -82,19 +81,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip={t("user.notSignedIn")}>
-              <CircleUserRound className="!size-8 text-muted-foreground" />
-              <span className="flex flex-col leading-tight">
-                <span className="font-semibold">{t("user.notSignedIn")}</span>
-                <span className="text-xs text-muted-foreground">{t("user.signInPhase")}</span>
-              </span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">{footer}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
