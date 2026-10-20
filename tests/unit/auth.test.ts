@@ -4,6 +4,7 @@ import { checkNewPassword } from "@/lib/auth/password-policy";
 import { maskPhone, normalizePhone } from "@/lib/phone";
 import { getSmsProvider, otpMessage, SmsNotConfiguredError } from "@/server/sms/provider";
 import * as script from "../../scripts/create-user.mjs";
+import { temporaryPassword } from "@/lib/auth/temp-password";
 
 describe("phone normalization (D-03)", () => {
   it.each([
@@ -71,9 +72,9 @@ describe("password policy (T-19)", () => {
     expect(checkNewPassword(password, confirm)).toBe(expected);
   });
 
-  it("generated temporary passwords always satisfy it", () => {
+  it("generated temporary passwords always satisfy it (script and Users screen)", () => {
     for (let i = 0; i < 200; i++) {
-      const p = script.temporaryPassword();
+      const p = i % 2 ? script.temporaryPassword() : temporaryPassword();
       expect(p).toHaveLength(12);
       expect(checkNewPassword(p, p)).toBeNull();
     }

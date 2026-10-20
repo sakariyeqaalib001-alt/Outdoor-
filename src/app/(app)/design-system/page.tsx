@@ -14,6 +14,10 @@ import {
 } from "@/components/ui/card";
 import { contrastRatio, palette, statusColors, type StatusKey } from "@/lib/brand";
 import { formatBusinessDate } from "@/lib/dates";
+import { Suspense } from "react";
+import { AccessDenied } from "@/components/access-denied";
+import { Skeleton } from "@/components/ui/skeleton";
+import { can, getAccess } from "@/server/auth/access";
 import { t } from "@/lib/i18n";
 import { formatUSD } from "@/lib/money";
 
@@ -40,12 +44,19 @@ function textOn(hex: string) {
   return contrastRatio(palette.white, hex) >= 4.5 ? palette.white : palette.gray900;
 }
 
+async function BrandCheckGuard({ children }: { children: React.ReactNode }) {
+  const access = await getAccess();
+  return can(access, "settings.manage") ? <>{children}</> : <AccessDenied />;
+}
+
 export default function DesignSystemPage() {
   const sampleDate = new Date("2026-10-19T09:00:00Z"); // fixed sample value; real dates come from the server
   return (
     <>
       <AppHeader title={t("designSystem.title")} />
       <div className="flex flex-col gap-6 p-4 md:p-6">
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+        <BrandCheckGuard>
         <p className="max-w-3xl text-muted-foreground">{t("designSystem.intro")}</p>
 
         <Card>
@@ -153,6 +164,8 @@ export default function DesignSystemPage() {
             </CardContent>
           </Card>
         </div>
+        </BrandCheckGuard>
+        </Suspense>
       </div>
     </>
   );
