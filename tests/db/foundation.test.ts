@@ -44,17 +44,17 @@ describe("row level security", () => {
   });
 });
 
-describe("RLS helper stubs (Phase 4 replaces them)", () => {
-  it("has_permission denies everything", async () => {
+describe("RLS helpers deny by default (user with no role)", () => {
+  it("has_permission denies a user without roles", async () => {
     const { rows } = await as(db, "authenticated", USER_A, () =>
       db.query<{ ok: boolean }>("select app.has_permission('audit.read') as ok")
     );
     expect(rows[0].ok).toBe(false);
   });
 
-  it("in_scope denies everything", async () => {
+  it("in_scope denies a user without roles", async () => {
     const { rows } = await as(db, "authenticated", USER_A, () =>
-      db.query<{ ok: boolean }>("select app.in_scope($1::uuid) as ok", [USER_A])
+      db.query<{ ok: boolean }>("select app.in_scope('sales.read', $1::uuid) as ok", [USER_A])
     );
     expect(rows[0].ok).toBe(false);
   });
