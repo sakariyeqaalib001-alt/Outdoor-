@@ -135,7 +135,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 ## Phase 3 — Authentication and OTP
 
-**Date:** 20 Oct 2026 · **Status:** Built and **owner-tested on "Outdoor" with a real Telesom SMS** (20 Oct 2026) — awaiting acceptance.
+**Date:** 20 Oct 2026 · **Status:** ✅ Accepted by the owner on 20 Oct 2026 — owner-tested on "Outdoor" with a real Telesom SMS; CI green (incl. real-Supabase pgTAP).
 
 **Scope delivered (BRD §6.1, FR-AUTH-01…09, FR-NOT-02/04)**
 - Migration `20261020090000_auth.sql`:

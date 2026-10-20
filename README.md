@@ -27,4 +27,4 @@ The same checks run on GitHub Actions for every push and pull request.
 
 ## Status
 
-Phases 1 and 2 accepted 19 Oct 2026. Phase 3 (sign-in with Telesom OTP) — built, awaiting owner test. Sign-in setup: [`docs/06-operations/auth.md`](docs/06-operations/auth.md). Database workflow: [`docs/06-operations/database.md`](docs/06-operations/database.md). See [`docs/03-implementation/PHASE_LOG.md`](docs/03-implementation/PHASE_LOG.md).
+Phases 1–2 accepted 19 Oct 2026; Phase 3 (sign-in with Telesom OTP) accepted 20 Oct 2026. Next: Phase 4 (users, roles, permissions and teams). Sign-in setup: [`docs/06-operations/auth.md`](docs/06-operations/auth.md). Database workflow: [`docs/06-operations/database.md`](docs/06-operations/database.md). See [`docs/03-implementation/PHASE_LOG.md`](docs/03-implementation/PHASE_LOG.md).

@@ -94,7 +94,7 @@ export const navigation: NavGroup[] = [
 ];
 
 /** Highest roadmap phase that has been built and accepted. Update at each phase gate. */
-export const COMPLETED_PHASE = 2;
+export const COMPLETED_PHASE = 3;
 
 export function isAvailable(item: NavItem): boolean {
   return item.phase === undefined || item.phase <= COMPLETED_PHASE;
