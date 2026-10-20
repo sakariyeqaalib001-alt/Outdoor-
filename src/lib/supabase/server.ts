@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { getSupabasePublicEnv } from "./env";
 
 /**
@@ -8,6 +9,8 @@ import { getSupabasePublicEnv } from "./env";
  * (publishable key + the user's session cookie), so Row Level Security applies to every query.
  */
 export async function createSupabaseServerClient() {
+  // Per-request data: tell Next.js before the Supabase client reads the clock (Cache Components rule).
+  await connection();
   const env = getSupabasePublicEnv();
   if (!env) return null;
   const cookieStore = await cookies();

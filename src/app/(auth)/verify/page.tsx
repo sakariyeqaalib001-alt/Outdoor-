@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { t } from "@/lib/i18n";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSessionInfo } from "@/server/auth/session";
+import { SmsNotice } from "./sms-notice";
 import { VerifyForm } from "./verify-form";
 
 export const metadata: Metadata = { title: t("auth.verify") };
@@ -24,6 +25,9 @@ export default function VerifyPage() {
       <h1 className="text-center text-2xl">{t("auth.verifyTitle")}</h1>
       <Suspense fallback={<Skeleton className="mx-auto mt-2 mb-6 h-10 w-full" />}>
         <VerifyIntro />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SmsNotice />
       </Suspense>
       <VerifyForm />
       <div className="mt-4 flex justify-center border-t pt-4">

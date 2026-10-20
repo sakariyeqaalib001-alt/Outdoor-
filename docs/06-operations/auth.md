@@ -61,7 +61,7 @@ Each prints a **temporary password** in your terminal. Give it to the person pri
 
 ## 6. Real SMS through Telesom
 
-The Telesom sender follows the "Telesom SMS Gateway Integration Guide" used by the Sogasho website (POST to `https://sms.mytelesom.com/index.php/Gway/sendsms/`, MD5 `key`). To switch from the test sender to real SMS, add to `.env.local` yourself (never in chat or code):
+The Telesom sender uses the gateway format confirmed with a live test on 20 Oct 2026 (T-20: POST to `https://sms.mytelesom.com/index.php/Gway/sendsms/`, MD5 `key` over the plain message text). To switch from the test sender to real SMS, add to `.env.local` yourself (never in chat or code):
 
 ```
 SMS_PROVIDER=telesom
@@ -71,4 +71,4 @@ TELESOM_API_KEY=…
 TELESOM_SENDER=SOGASHO
 ```
 
-`TELESOM_API_URL` is optional (defaults to the address above). Restart `npm run dev`, sign in as the test agent with **your own phone number** and check the SMS arrives within a minute. If it does not, the `npm run dev` window shows `[sms:telesom] OTP delivery failed: …` with Telesom's reason (never the code or credentials) — send me that line.
+`TELESOM_API_URL` is optional (defaults to the address above). Restart `npm run dev`, sign in as the test agent with **your own phone number** and check the SMS arrives within a minute. If it does not, the code screen says "We could not send the SMS" (press **Send a new code** to retry), and the `npm run dev` window shows `[sms:telesom] OTP delivery failed: …` with Telesom's reason (never the code or credentials) — send me that line. On Windows PowerShell use `npm.cmd` instead of `npm` if "running scripts is disabled" appears.

@@ -30,7 +30,8 @@ async function continueAfterAuth(supabase: NonNullable<Awaited<ReturnType<typeof
     const ids = await getSessionId(supabase);
     if (!ids) return { error: message("auth.genericError") };
     const sent = await sendOtp(ids.userId, ids.sessionId);
-    if (sent !== "sent" && sent !== "rate_limited") return { error: message(OTP_SEND_MESSAGES[sent]) };
+    // Always continue to the code screen; if the SMS failed, it explains why and offers "Send a new code".
+    if (sent !== "sent") redirect(`/verify?sms=${sent}`);
   }
   redirect(ROUTE_FOR_STATUS[info.status]);
 }

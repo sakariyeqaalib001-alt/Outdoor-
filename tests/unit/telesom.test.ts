@@ -41,15 +41,29 @@ describe("Telesom gateway request (guide: gist zakaria-ibr/a3e18fe5…)", () => 
     expect(telesomDate(new Date("2026-05-20T08:00:00Z"))).toBe("20/05/2026");
   });
 
-  it("builds the body and key exactly as the guide specifies", () => {
+  it("builds the body and key in the format confirmed with the live gateway (T-20)", () => {
     const r = buildTelesomRequest(config, "+252634123456", "Your code is 123456.", NOW);
     expect(r.to).toBe("252634123456");
-    expect(r.msg).toBe("Your%20code%20is%20123456.");
-    expect(r.key).toBe(md5Upper("test_user|test_pass|252634123456|Your%20code%20is%20123456.|SOGASHO|01/11/2026|test_secret_key"));
+    expect(r.msg).toBe("Your code is 123456."); // plain text, normal spaces
+    expect(r.key).toBe(md5Upper("test_user|test_pass|252634123456|Your code is 123456.|SOGASHO|01/11/2026|test_secret_key"));
     expect(r.key).toMatch(/^[0-9A-F]{32}$/);
-    expect(r.body).toBe(
-      `username=test_user&password=test_pass&to=252634123456&msg=Your%20code%20is%20123456.&from=SOGASHO&date=01/11/2026&key=${r.key}`
-    );
+    // Standard form encoding: Telesom decodes it back to exactly the text the key was computed on.
+    const decoded = new URLSearchParams(r.body);
+    expect(Object.fromEntries(decoded)).toEqual({
+      username: "test_user",
+      password: "test_pass",
+      to: "252634123456",
+      msg: "Your code is 123456.",
+      from: "SOGASHO",
+      date: "01/11/2026",
+      key: r.key,
+    });
+    expect([...decoded.keys()]).toEqual(["username", "password", "to", "msg", "from", "date", "key"]);
+  });
+
+  it("carries special characters in credentials safely", () => {
+    const r = buildTelesomRequest({ ...config, password: "p&ss=w+rd%" }, "+252634123456", "Hi", NOW);
+    expect(new URLSearchParams(r.body).get("password")).toBe("p&ss=w+rd%");
   });
 
   it("POSTs form data to the Telesom address and accepts a success reply", async () => {
@@ -61,8 +75,9 @@ describe("Telesom gateway request (guide: gist zakaria-ibr/a3e18fe5…)", () => 
     expect(url).toBe("https://sms.mytelesom.com/index.php/Gway/sendsms/");
     expect(init.method).toBe("POST");
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("application/x-www-form-urlencoded");
-    expect(String(init.body)).toContain("msg=Your%20Sogasho%20Outdoor%20code%20is%20654321.");
-    expect(String(init.body)).toContain("to=252634123456");
+    const sent = new URLSearchParams(String(init.body));
+    expect(sent.get("msg")).toBe("Your Sogasho Outdoor code is 654321. It expires in 5 minutes. Never share it.");
+    expect(sent.get("to")).toBe("252634123456");
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 

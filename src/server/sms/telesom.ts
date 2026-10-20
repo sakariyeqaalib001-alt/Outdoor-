@@ -4,11 +4,15 @@ import { otpMessage, SmsNotConfiguredError, type SmsProvider } from "./types";
 
 /**
  * Telesom SMS gateway (D-20), per the "Telesom SMS Gateway Integration Guide" supplied by Sogasho
- * (gist zakaria-ibr/a3e18fe5911671875c836c1d0ea53a72, as used by the Sogasho website):
+ * (gist zakaria-ibr/a3e18fe5911671875c836c1d0ea53a72), with the message encoding CONFIRMED against the
+ * live gateway on 20 Oct 2026 (T-20):
  *
  *   POST https://sms.mytelesom.com/index.php/Gway/sendsms/   (application/x-www-form-urlencoded)
- *   username, password, to (252XXXXXXXXX), msg (spaces → %20), from (sender ID), date (dd/MM/yyyy), key
- *   key = UPPERCASE( MD5( username|password|to|msg|from|date|<secret API key> ) )   — msg as encoded
+ *   username, password, to (252XXXXXXXXX), msg, from (sender ID), date (dd/MM/yyyy, EAT), key
+ *   key = UPPERCASE( MD5( username|password|to|msg|from|date|<secret API key> ) )
+ *   msg is the plain text (normal spaces) — in the key AND in the request. The request body is standard
+ *   form encoding, so Telesom receives exactly the text the key was computed on. (Pre-encoding spaces
+ *   as %20 makes Telesom answer "Wrong Hashkey".)
  *   reply: {"status":"success","msg":"…"} or {"status":"error","msg":"…"}
  *
  * Credentials come only from environment settings (SDD §17.1) and are never logged.
@@ -51,25 +55,24 @@ export function telesomDate(now: Date): string {
   return `${parts.day}/${parts.month}/${parts.year}`;
 }
 
-/** Build the exact form body the gateway expects (same as the Sogasho website integration). */
+/** Build the form body the gateway expects (format confirmed live, T-20). */
 export function buildTelesomRequest(config: TelesomConfig, phoneE164: string, text: string, now: Date) {
   const to = phoneE164.replace(/^\+/, "");
-  const msg = text.replace(/ /g, "%20");
+  const msg = text;
   const date = telesomDate(now);
   const key = createHash("md5")
     .update(`${config.username}|${config.password}|${to}|${msg}|${config.sender}|${date}|${config.apiKey}`)
     .digest("hex")
     .toUpperCase();
-  // Written out field by field, like the guide's example: msg keeps its %20, other values are sent as-is.
-  const body = [
-    `username=${config.username}`,
-    `password=${config.password}`,
-    `to=${to}`,
-    `msg=${msg}`,
-    `from=${config.sender}`,
-    `date=${date}`,
-    `key=${key}`,
-  ].join("&");
+  const body = new URLSearchParams({
+    username: config.username,
+    password: config.password,
+    to,
+    msg,
+    from: config.sender,
+    date,
+    key,
+  }).toString();
   return { to, msg, date, key, body };
 }
 
@@ -83,7 +86,6 @@ export function createTelesomProvider(
     async sendOtp(phoneE164, code) {
       const config = telesomConfigFromEnv(env);
       const text = otpMessage(code);
-      if (/[&=+%#]/.test(text)) throw new Error("OTP text contains characters the gateway format cannot carry.");
       const { body } = buildTelesomRequest(config, phoneE164, text, clock());
 
       let response: Response;
