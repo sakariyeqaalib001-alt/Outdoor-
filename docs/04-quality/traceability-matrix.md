@@ -1,6 +1,6 @@
 # Traceability matrix
 
-Requirement groups from BRD v1.4 Appendix C, with build and test status. Update at every phase gate.
+Requirement groups from BRD v1.5 Appendix C, with build and test status. Update at every phase gate.
 
 Status: **Not started** · **In progress** · **Built** (code done, tests pass) · **Accepted** (owner approved at gate) · **Retired**
 
@@ -10,7 +10,7 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | FR-USER-01…10 | 7, 9 | 4 (branches, districts: 5) | 14, 16 | Built (Phase 4) — FR-USER-04, branch maintenance and FR-USER-10 in Phase 5 |
 | FR-CONF-01, 03, 05 | 9 | 5 | 18 | Not started |
 | FR-CONF-02, 04, 06, 07 | 14 | 14 (band settings: 5) | 26, 38 | Not started |
-| FR-SALE-01…06, 08…21 | 10, 22.4 | 7 (FR-SALE-21 lock: 16) | 03–05, 08, 09, 19–22, 30, 32, 37, 42–46 | Not started |
+| FR-SALE-01…06, 08…22 | 10, 22.4 | 7 (FR-SALE-21 lock: 16) | 03–05, 08, 09, 19–22, 30, 32, 37, 42–46 | Not started |
 | FR-SALE-07 | 10.3 | 8 | 06, 36 | Not started |
 | FR-REF-01…08 | 10.5 | 12 | 07, 17, 23 | Not started |
 | FR-AUD-01…03 | 11 | 7 (event log), 9 | 03, 04 | Not started |

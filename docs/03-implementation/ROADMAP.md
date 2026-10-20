@@ -1,9 +1,9 @@
 # Sogasho Outdoor Field Sales & Audit System
-## Claude Code Implementation Roadmap v1.4 — Phase 0 to Phase 20
+## Claude Code Implementation Roadmap v1.5 — Phase 0 to Phase 20
 
 **Technology baseline:** Next.js (TypeScript, installable PWA) + Supabase
-**Business baseline:** `Sogasho_Outdoor_Field_Sales_Audit_System_BRD_v1.4.md`
-**Design baseline:** `Sogasho_Outdoor_Field_Sales_Audit_System_SDD_v1.4.md`
+**Business baseline:** `Sogasho_Outdoor_Field_Sales_Audit_System_BRD_v1.5.md`
+**Design baseline:** `Sogasho_Outdoor_Field_Sales_Audit_System_SDD_v1.5.md`
 **Operating cities:** Hargeisa (pilot), Burco, Berbera, Borama
 **Delivery method:** Sequential, one phase at a time, with explicit acceptance gates; staging deployed from Phase 1; pilot release after Phase 11; production release after Phase 20.
 
@@ -45,7 +45,7 @@ The auth/SMS spike (R-6) is throwaway code in a separate scratch folder, not the
 
 ## Non-negotiable implementation rules
 
-1. **Sources of truth:** BRD v1.4 = business requirements; SDD v1.4 = design; this Roadmap = sequence; `DECISIONS.md` = decisions made since. Read them before changing code.
+1. **Sources of truth:** BRD v1.5 = business requirements; SDD v1.5 = design; this Roadmap = sequence; `DECISIONS.md` = decisions made since. Read them before changing code.
 2. **One phase per prompt.** Implement only the requested phase.
 3. **Inspect before editing.** Repository, conventions, dependencies, env variable names, database state.
 4. **Preserve working code.** No broad rewrites, destructive migrations or unrelated refactors.
@@ -116,9 +116,9 @@ You are the lead engineer for the Sogasho Outdoor Field Sales, Performance Analy
 
 SOURCES OF TRUTH
 - Read completely:
-  - Sogasho_Outdoor_Field_Sales_Audit_System_BRD_v1.4.md (business requirements)
-  - Sogasho_Outdoor_Field_Sales_Audit_System_SDD_v1.4.md (system design)
-  - Sogasho_Outdoor_Field_Sales_Audit_System_Claude_Code_Roadmap_v1.4.md (this roadmap)
+  - Sogasho_Outdoor_Field_Sales_Audit_System_BRD_v1.5.md (business requirements)
+  - Sogasho_Outdoor_Field_Sales_Audit_System_SDD_v1.5.md (system design)
+  - Sogasho_Outdoor_Field_Sales_Audit_System_Claude_Code_Roadmap_v1.5.md (this roadmap)
 - If any is missing, search the repository. If still missing, STOP and tell me exactly what is missing.
 - Do not invent requirements. OPEN decisions are listed in BRD §15.3.
 
@@ -186,7 +186,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Brand: logo only on white/black; contrast checks pass for text tokens.
 - No secrets committed; no later phase started.
 
-**Next prompt:** "Proceed with Phase 2 only: database foundation. Follow BRD/SDD v1.4, inspect first, implement only Phase 2, run checks, deploy to staging, update logs, report the gate and stop."
+**Next prompt:** "Proceed with Phase 2 only: database foundation. Follow BRD/SDD v1.5, inspect first, implement only Phase 2, run checks, deploy to staging, update logs, report the gate and stop."
 
 ---
 
@@ -294,9 +294,9 @@ STOP after reporting. Wait for my explicit instruction.
 **Goal:** Track every equipment unit from receipt to customer (SDD §12).
 
 **Scope**
-- `stock_locations` (central, branch, one per agent), `stock_serials`, `stock_movements` (append-only), `stock_transfers`.
+- `stock_locations` (central, one per Team Leader/Supervisor, one per agent — D-31), `stock_serials`, `stock_movements` (append-only), `stock_transfers`.
 - Receive into Central (bulk scan/paste serials; duplicate serials rejected).
-- Transfer Central → Branch → Agent; agent/branch acknowledgement.
+- Transfer Central → Team Leader/Supervisor → Agent; receiver acknowledgement. Branches hold no Outdoor stock (D-31). Confirm with the owner whether Team Leaders may also issue to customers directly.
 - Returns with reason; adjustments requested by Stock Officer and approved by Super Admin.
 - Balance and reconciliation report (received, transferred, issued, returned, adjusted, closing) per item/location, with serial-level drill-down.
 - Agent "My custody" mobile view.
@@ -407,9 +407,9 @@ STOP after reporting. Wait for my explicit instruction.
 **Goal:** Go live in Hargeisa on a fresh system (SDD §19, §26.3). There is **no legacy data import** (D-21).
 
 **Scope**
-- Automated readiness checks (admin page + script): every active product has an active price; every Hargeisa agent has a team, branch and custody location; districts exist for Hargeisa; base salary and performance settings set; no test data in production.
+- Automated readiness checks (admin page + script): every active product has an active price; every Hargeisa agent has a city, a team and a custody location; districts exist for Hargeisa; base salary and performance settings set; no test data in production.
 - Production setup by Super Admin: prices, Hargeisa districts, teams, users (R-10).
-- Opening stock: Stock Officer enters the physical count as receipts with serials, then transfers to branches and agents; reconciliation report agrees with the count (R-11).
+- Opening stock: Stock Officer enters the physical count as receipts with serials, then transfers to Team Leaders and agents; reconciliation report agrees with the count (R-11).
 - Production environment, secrets, backups + restore drill, monitoring, incident runbook, support owner.
 - Agent training material (quick guide for sales form, custody, Index Number entry) and Team Leader guide (Retention approval, spotting returning customers registered as New).
 - Pilot UAT across Phases 3–10 workflows.
@@ -603,7 +603,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Accessibility review (axe + manual) of agent and admin journeys.
 - Data retention/archival job per D-28.
 - Production checklist: env variables, migrations reviewed, backup + restore drill, monitoring/alerts, incident runbook, support model, rollback guide.
-- Cutover plan for Burco, Berbera and Borama: user accounts, districts, teams, opening stock receipts for their branches, training (no legacy import, D-21).
+- Cutover plan for Burco, Berbera and Borama: user accounts, districts, teams, opening stock receipts for their teams, training (no legacy import, D-21).
 - Fix in-scope defects; log out-of-scope items for Release 2 (GPS/photo evidence, Somali translation, offline mode).
 
 **Acceptance gate**
@@ -624,7 +624,7 @@ STOP after reporting. Wait for my explicit instruction.
 Proceed with Phase [N] only: [PHASE TITLE].
 
 Before coding:
-1. Read CLAUDE.md, BRD v1.4, SDD v1.4, ROADMAP.md, PHASE_LOG.md, DECISIONS.md and the relevant code.
+1. Read CLAUDE.md, BRD v1.5, SDD v1.5, ROADMAP.md, PHASE_LOG.md, DECISIONS.md and the relevant code.
 2. Confirm the previous phase's gate passed; list dependencies.
 3. Check this phase's blocking inputs in DECISIONS.md. If missing, say so and build only with the
    provisional default where the SDD allows; the gate will be reported as BLOCKED.
@@ -667,4 +667,4 @@ STOP and wait for my explicit instruction.
 
 Closed on 19 Oct 2026: D-02 Index Number, D-04 prices via Settings, D-08 flat base salary, D-19 titles, D-21 no legacy data, D-29 branches/districts/teams (v1.2); D-10 PDCOM, D-20 Telesom, D-28 agent count 46 (v1.3). Not a decision but still needed before Phase 3: Telesom API credentials (R-6).
 
-*End of Roadmap v1.4*
+*End of Roadmap v1.5*

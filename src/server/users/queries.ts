@@ -19,7 +19,6 @@ export type UserRow = {
   start_date: string;
   end_date: string | null;
   city_id: string | null;
-  branch_id: string | null;
   roles: string[];
   team_id: string | null;
 };
@@ -49,7 +48,7 @@ export async function listUsers(): Promise<UserRow[]> {
   const { data } = await supabase
     .from("user_profiles")
     .select(
-      "id, full_name, employment_type, login_phone_e164, email, is_active, must_change_password, start_date, end_date, city_id, branch_id, user_roles(role_key), team_members(team_id)"
+      "id, full_name, employment_type, login_phone_e164, email, is_active, must_change_password, start_date, end_date, city_id, user_roles(role_key), team_members(team_id)"
     )
     .order("full_name");
   type Raw = Omit<UserRow, "roles" | "team_id"> & {

@@ -19,7 +19,7 @@ export type AdminResult = { ok?: true; error?: string; password?: string; messag
 
 const DB_ERRORS: Record<string, MessageKey> = {
   "not allowed": "users.errors.notAllowed",
-  BRANCH_NOT_IN_CITY: "users.errors.branchNotInCity",
+  TEAM_NOT_IN_CITY: "users.errors.teamNotInCity",
   ROLE_REQUIRED: "users.errors.roleRequired",
   UNKNOWN_ROLE: "users.errors.genericError",
   CANNOT_REMOVE_OWN_SUPER_ADMIN: "users.errors.ownSuperAdmin",
@@ -51,7 +51,6 @@ const optionalUuid = z.preprocess((v) => (v === "" || v === "none" ? null : v), 
 const userFields = {
   fullName: z.string().trim().min(2).max(120),
   cityId: uuid,
-  branchId: optionalUuid,
   teamId: optionalUuid,
   startDate: z.preprocess((v) => (v === "" ? null : v), z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()),
   roles: z.array(z.string().regex(/^[a-z_]+$/)).min(1),
@@ -61,7 +60,6 @@ function readUserForm(formData: FormData) {
   return {
     fullName: formData.get("fullName"),
     cityId: formData.get("cityId"),
-    branchId: formData.get("branchId"),
     teamId: formData.get("teamId"),
     startDate: formData.get("startDate"),
     roles: formData.getAll("roles"),
@@ -118,7 +116,6 @@ export async function createUser(_prev: AdminResult, formData: FormData): Promis
     p_user: created.user.id,
     p_full_name: input.fullName,
     p_city: input.cityId,
-    p_branch: input.branchId,
     p_start_date: input.startDate,
     p_roles: input.roles,
     p_team: input.teamId,
@@ -140,7 +137,6 @@ export async function updateUser(_prev: AdminResult, formData: FormData): Promis
     p_user: input.userId,
     p_full_name: input.fullName,
     p_city: input.cityId,
-    p_branch: input.branchId,
     p_start_date: input.startDate,
     p_roles: input.roles,
     p_team: input.teamId,

@@ -16,8 +16,6 @@ const SPARE = "20000000-0000-4000-8000-000000000009"; // plain user for edits
 
 let hargeisa: string;
 let burco: string;
-let hqBranch: string;
-let burcoBranch: string;
 let teamA: string;
 let teamB: string;
 
@@ -33,8 +31,6 @@ beforeAll(async () => {
   db = await createTestDatabase();
   hargeisa = (await db.query<{ id: string }>("select id from public.cities where name = 'Hargeisa'")).rows[0].id;
   burco = (await db.query<{ id: string }>("select id from public.cities where name = 'Burco'")).rows[0].id;
-  hqBranch = (await db.query<{ id: string }>("select id from public.branches where name = 'HQ'")).rows[0].id;
-  burcoBranch = (await db.query<{ id: string }>("select id from public.branches where name = 'Burco Deero'")).rows[0].id;
 
   for (const [id, type] of [
     [SA, "permanent"], [TL, "permanent"], [AG1, "temporary"], [AG2, "temporary"], [FIN, "permanent"],
@@ -148,20 +144,22 @@ describe("who can see which users (users.read scope)", () => {
 });
 
 describe("admin_update_user (users.manage)", () => {
-  const update = (caller: string, roles: string[], branch = hqBranch, city = hargeisa, team: string | null = teamA, user = SPARE) =>
+  const update = (caller: string, roles: string[], city = hargeisa, team: string | null = teamA, user = SPARE) =>
     asUser(caller, () =>
-      db.query("select public.admin_update_user($1, $2, $3, $4, $5, $6, $7)", [user, "Spare User", city, branch, "2026-10-01", roles, team])
+      db.query("select public.admin_update_user($1, $2, $3, $4, $5, $6)", [user, "Spare User", city, "2026-10-01", roles, team])
     );
 
-  it("lets Super Admin set name, city, branch, roles and team", async () => {
+  it("lets Super Admin set name, city, roles and team (no branch on users — D-31)", async () => {
     await update(SA, ["agent", "follow_up"]);
-    const p = await db.query<{ full_name: string; city_id: string; branch_id: string }>("select full_name, city_id, branch_id from public.user_profiles where id = $1", [SPARE]);
-    expect(p.rows[0]).toEqual({ full_name: "Spare User", city_id: hargeisa, branch_id: hqBranch });
+    const p = await db.query<{ full_name: string; city_id: string }>("select full_name, city_id from public.user_profiles where id = $1", [SPARE]);
+    expect(p.rows[0]).toEqual({ full_name: "Spare User", city_id: hargeisa });
+    const cols = await db.query("select 1 from information_schema.columns where table_name = 'user_profiles' and column_name = 'branch_id'");
+    expect(cols.rows).toHaveLength(0);
     const roles = await db.query<{ role_key: string }>("select role_key from public.user_roles where user_id = $1 order by role_key", [SPARE]);
     expect(roles.rows.map((r) => r.role_key)).toEqual(["agent", "follow_up"]);
     const team = await db.query<{ team_id: string }>("select team_id from public.team_members where user_id = $1", [SPARE]);
     expect(team.rows[0].team_id).toBe(teamA);
-    await update(SA, ["agent"], hqBranch, hargeisa, null);
+    await update(SA, ["agent"], hargeisa, null);
     expect((await db.query("select 1 from public.team_members where user_id = $1", [SPARE])).rows).toHaveLength(0);
   });
 
@@ -171,14 +169,14 @@ describe("admin_update_user (users.manage)", () => {
     }
   });
 
-  it("rejects a branch from another city, no roles, or unknown roles", async () => {
-    expect(await errorOf(update(SA, ["agent"], burcoBranch, hargeisa))).toMatch(/BRANCH_NOT_IN_CITY/);
+  it("rejects a team from another city, no roles, or unknown roles", async () => {
+    expect(await errorOf(update(SA, ["agent"], burco, teamA))).toMatch(/TEAM_NOT_IN_CITY/);
     expect(await errorOf(update(SA, []))).toMatch(/ROLE_REQUIRED/);
     expect(await errorOf(update(SA, ["boss"]))).toMatch(/UNKNOWN_ROLE/);
   });
 
   it("never removes your own Super Admin role or the last Super Admin", async () => {
-    expect(await errorOf(update(SA, ["agent"], hqBranch, hargeisa, null, SA))).toMatch(/CANNOT_REMOVE_OWN_SUPER_ADMIN/);
+    expect(await errorOf(update(SA, ["agent"], hargeisa, null, SA))).toMatch(/CANNOT_REMOVE_OWN_SUPER_ADMIN/);
   });
 
   it("logs the change and records the before/after history", async () => {
@@ -217,7 +215,7 @@ describe("admin_set_user_active (users.disable) — UAT-14", () => {
     await asUser(SA, () => db.query("select public.admin_set_role_permission('finance', 'users.manage', 'all')"));
     expect(await errorOf(asUser(FIN, () => db.query("select public.admin_set_user_active($1, false)", [SA])))).toMatch(/LAST_SUPER_ADMIN/);
     expect(
-      await errorOf(asUser(FIN, () => db.query("select public.admin_update_user($1, 'Boss', $2, $3, null, $4, null)", [SA, hargeisa, hqBranch, ["agent"]])))
+      await errorOf(asUser(FIN, () => db.query("select public.admin_update_user($1, 'Boss', $2, null, $3, null)", [SA, hargeisa, ["agent"]])))
     ).toMatch(/LAST_SUPER_ADMIN/);
     await asUser(SA, () => db.query("select public.admin_set_role_permission('finance', 'users.disable', null)"));
     await asUser(SA, () => db.query("select public.admin_set_role_permission('finance', 'users.manage', null)"));

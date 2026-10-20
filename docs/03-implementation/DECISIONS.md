@@ -18,7 +18,7 @@ The BRD (§15) remains the authoritative business register; this file mirrors it
 | D-08 | Temporary base salary: flat amount set by Super Admin (currently $100), no pro-rating | 6.9 | v1.2 |
 | D-09 | Revenue = amount collected; free-month handling (default $50, 1 unit) | 6.11 | v1.1 |
 | D-10 | Stock item spelling is PDCOM | 6.12 | v1.3 |
-| D-11 | Stock custody chain Central → Branch → Agent | 6.12 | v1.1 |
+| D-11 | Stock custody chain (chain replaced by D-31: Central → Team Leader → Agent) | 6.12 | v1.1 |
 | D-12 | Serial tracking for WiFi Router, PDCOM, CALIX | 6.12 | v1.1 |
 | D-13 | Audit case states Open → Under Review → Confirmed Issue / False Positive → Resolved | 7.2 | v1.1 |
 | D-14 | Retention approver = Team Leader (Super Admin fallback), no self-approval, stock at submission | 6.4 | v1.1 |
@@ -37,6 +37,7 @@ The BRD (§15) remains the authoritative business register; this file mirrors it
 | D-28 (part) | Volume: 46 agents (7 permanent, 39 temporary) for 2 years | 11 | v1.3 |
 | D-29 | 16 branches seeded; districts per city by Super Admin; Area free text; teams by Super Admin | 6.2, 6.4 | v1.2 |
 | D-30 | Sale month from server time (EAT); no backdating; after-midnight → new month; read-only past months; finalized months locked | 6.4, 8.1 | v1.4 |
+| D-31 | No home branch for agents; sale branch = money hand-in branch (per sale); stock Central → Team Leader → Agent | 6.2, 6.4, 6.12 | v1.5 |
 
 ## Business decisions — open (blocking)
 
@@ -72,3 +73,4 @@ The BRD (§15) remains the authoritative business register; this file mirrors it
 | T-21 | 20 Oct 2026 | **Cities and branches created in Phase 4** (seeded: 4 cities, 16 branches from BRD §6.2.1), read-only until Phase 5 adds the maintenance screens and districts | Every user is assigned a city and branch in Phase 4 (roadmap scope), so the lists must exist first |
 | T-22 | 20 Oct 2026 | **Permission model:** roles × permissions with a data scope (own < team < city < all); a user may hold several roles and the widest scope wins; `app.in_scope(permission, owner)` decides record access (team = owner is the caller or in a team the caller leads; city = same city). Matrix seeded from SDD §7.2 (+ `roles.manage`, Super Admin only; Super Admin row locked). Safeguards: nobody removes their own Super Admin role or deactivates themself; at least one active Super Admin always remains. First Super Admin granted once from the SQL Editor (`app.bootstrap_super_admin`) | SDD §7, D-22; keeps the system from locking itself out |
 | T-23 | 20 Oct 2026 | **User administration with the secret key (extends T-17):** the server checks the caller's permission (`has_permission`) and then uses the secret key only for Supabase Auth operations the database cannot perform — create the sign-in account, set a new temporary password, ban/unban sign-in. Profile, role, team and active-status changes run as the caller through SECURITY DEFINER functions that check the permission again. Temporary passwords are shown once on screen and never stored or logged | FR-USER-01…03, FR-AUTH-04/06; same password rules as T-19 |
+| D-31 *(business)* | 20 Oct 2026 | **Branches and the Outdoor Department** (owner): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen on each sale; Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). `user_profiles.branch_id` removed (migration `20261020190000_users_no_branch`); a user's team must be in the user's city. BRD/SDD v1.5 | Branches are money hand-in points, not agent homes |

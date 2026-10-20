@@ -1,8 +1,13 @@
 # Users, roles and teams (Phase 4)
 
-## 1. Apply the database change (SQL Editor)
+## 1. Apply the database changes (SQL Editor)
 
-Supabase → "Outdoor" → **SQL Editor** → **New query** → paste the whole of `supabase/sql-editor/20261020150000_access.sql` → **Run** → expect **"Applied 20261020150000_access successfully"**. If the RLS warning appears, choose **Run and enable RLS**.
+Supabase → "Outdoor" → **SQL Editor** → **New query** → paste the whole file → **Run**, one file at a time, in this order:
+
+1. `supabase/sql-editor/20261020150000_access.sql` → "Applied 20261020150000_access successfully"
+2. `supabase/sql-editor/20261020190000_users_no_branch.sql` → "Applied 20261020190000_users_no_branch successfully" (D-31: users have no branch)
+
+If the RLS warning appears, choose **Run and enable RLS**.
 
 ## 2. Make yourself the first Super Admin (one time)
 
@@ -18,7 +23,7 @@ Expected result: `Super Admin granted to sd.qalib@sogasho.com`. It works only on
 
 | Screen | What |
 |---|---|
-| **Users** | Add staff (email) or temporary agents (phone); edit name, city, branch, team, start date and roles; reset a password (a new temporary password is shown once); deactivate / reactivate |
+| **Users** | Add staff (email) or temporary agents (phone); edit name, city, team, start date and roles (no branch — agents belong to the Outdoor Department; the branch is chosen on each sale, D-31); reset a password (a new temporary password is shown once); deactivate / reactivate |
 | **Teams** | Create teams per city and choose the Team Leader (the person must have the "Team Leader / Supervisor" role) |
 | **Roles & permissions** | The permission matrix: for each role and action, who may do it — own records, team, city or all. Super Admin is locked to everything |
 
@@ -29,7 +34,7 @@ Roles: Super Admin · Team Leader / Supervisor · Sales Agent · Follow-up Team 
 | Test | Expected |
 |---|---|
 | Sign in as yourself after step 2 | Sidebar shows **Users**; Users screen lists both accounts |
-| Edit your test agent: role **Sales Agent**, city, branch | Saved; table updates |
+| Edit your test agent: role **Sales Agent**, city Hargeisa | Saved; table updates |
 | **Teams → Add team** (city Hargeisa) — then edit a staff user and give them **Team Leader**, then set them as the team's leader | Saved |
 | Edit the test agent and put them in that team | Team column shows it |
 | Sign in as the test agent | Sidebar shows only agent items (no Users, Settings, Audit, Approvals, Reports) |

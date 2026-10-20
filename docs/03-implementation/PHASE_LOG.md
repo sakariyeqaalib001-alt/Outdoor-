@@ -208,6 +208,8 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 - Screens: **Users** (search, status filter, add/edit dialog, actions menu), **Teams**, **Roles & permissions** (editable matrix); "no access" page for users without permission; brand check page restricted to `settings.manage`.
 - Sidebar now permission-driven (`visibleNavigation`); every menu permission key is checked against the database seed by a test.
 
+- **Owner correction D-31 (20 Oct 2026):** agents have no home branch (Outdoor Department); branch = money hand-in point chosen per sale; stock flows Central → Team Leader → Agent. Migration `20261020190000_users_no_branch.sql` removes `user_profiles.branch_id` and requires a user's team to be in their city. BRD/SDD/Roadmap updated to v1.5.
+
 **Not in scope:** branch/district maintenance screens and customer-type dropdowns (FR-USER-04, -09 maintenance, -10 → Phase 5).
 
 **BRD check (FR-USER-01…10, FR-AUTH-06)**
@@ -220,7 +222,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 | FR-USER-04 customer types and dropdowns | ➡ Phase 5 (settings) |
 | FR-USER-05 enforced on server and database | ✅ every action re-checked in the database; RLS on every table; direct writes denied (tests) |
 | FR-USER-06 changes logged | ✅ activity_log + automatic change_log |
-| FR-USER-07 teams; agent → city, branch, Team Leader | ✅ Teams screen; user city/branch/team |
+| FR-USER-07 teams; agent → city, Team Leader (no branch, D-31) | ✅ Teams screen; user city/team |
 | FR-USER-08 employment type, start date, end date | ✅ end date set on deactivation, cleared on reactivation |
 | FR-USER-09 16 branches seeded; maintain branches | ✅ seeded (T-21); maintenance ➡ Phase 5 |
 | FR-USER-10 districts per city | ➡ Phase 5 |
@@ -244,7 +246,7 @@ Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on Git
 | Deactivated user loses access immediately | ✅ database test (RLS gate + session status); ⏳ owner test with the test agent |
 | Permission matrix editable by Super Admin only | ✅ database tests (other roles refused even by direct call; Super Admin row locked) |
 
-**Manual steps for the owner** — `docs/06-operations/users.md`: paste `supabase/sql-editor/20261020150000_access.sql`; run `select app.bootstrap_super_admin('<your email>')`; run the tests in section 4.
+**Manual steps for the owner** — `docs/06-operations/users.md`: paste `supabase/sql-editor/20261020150000_access.sql` (done) and `20261020190000_users_no_branch.sql`; run `select app.bootstrap_super_admin('<your email>')`; run the tests in section 4.
 
 **Risks / open items**
 - An existing session of a deactivated user keeps its token until expiry (≤ 1 hour) but every query is denied immediately by RLS; sign-in and refresh are blocked by the Supabase ban.

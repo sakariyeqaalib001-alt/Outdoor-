@@ -41,9 +41,8 @@ export function UsersTable({
   const names = useMemo(() => {
     const role = Object.fromEntries(lookups.roles.map((r) => [r.key, r.name]));
     const city = Object.fromEntries(lookups.cities.map((c) => [c.id, c.name]));
-    const branch = Object.fromEntries(lookups.branches.map((b) => [b.id, b.name]));
     const team = Object.fromEntries(lookups.teams.map((tm) => [tm.id, tm.name]));
-    return { role, city, branch, team };
+    return { role, city, team };
   }, [lookups]);
 
   const shown = users.filter((u) => {
@@ -107,7 +106,7 @@ export function UsersTable({
               <TableHead>{t("users.signIn")}</TableHead>
               <TableHead>{t("users.roles")}</TableHead>
               <TableHead>{t("users.team")}</TableHead>
-              <TableHead>{t("users.city")} / {t("users.branch")}</TableHead>
+              <TableHead>{t("users.city")}</TableHead>
               <TableHead>{t("users.status")}</TableHead>
               {canManage || canDisable ? <TableHead className="w-12"><span className="sr-only">{t("users.actions")}</span></TableHead> : null}
             </TableRow>
@@ -138,7 +137,6 @@ export function UsersTable({
                   <TableCell>{u.team_id ? names.team[u.team_id] : <span className="text-muted-foreground">—</span>}</TableCell>
                   <TableCell>
                     {u.city_id ? names.city[u.city_id] : "—"}
-                    {u.branch_id ? <span className="text-muted-foreground"> · {names.branch[u.branch_id]}</span> : null}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col items-start gap-1">

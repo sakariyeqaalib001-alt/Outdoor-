@@ -8,15 +8,15 @@ Standing rules for Claude Code in this repository. Read this first in every sess
 
 | Document | Path | Role |
 |---|---|---|
-| BRD v1.4 | `docs/01-business/Sogasho_Outdoor_Field_Sales_Audit_System_BRD_v1.4.md` | Business requirements (the source of truth) |
-| SDD v1.4 | `docs/02-design/Sogasho_Outdoor_Field_Sales_Audit_System_SDD_v1.4.md` | System design |
-| Roadmap v1.4 | `docs/03-implementation/ROADMAP.md` | Implementation sequence, Phases 0–20 and acceptance gates |
+| BRD v1.5 | `docs/01-business/Sogasho_Outdoor_Field_Sales_Audit_System_BRD_v1.5.md` | Business requirements (the source of truth) |
+| SDD v1.5 | `docs/02-design/Sogasho_Outdoor_Field_Sales_Audit_System_SDD_v1.5.md` | System design |
+| Roadmap v1.5 | `docs/03-implementation/ROADMAP.md` | Implementation sequence, Phases 0–20 and acceptance gates |
 | Decisions | `docs/03-implementation/DECISIONS.md` | Business (D-xx) and technical (T-xx) decisions made since |
 | Phase log | `docs/03-implementation/PHASE_LOG.md` | What each phase delivered, commands run, results |
 | Traceability | `docs/04-quality/traceability-matrix.md` | Requirement → phase → UAT status |
 | Brand kit | `brand/` | Logos, Signika font, colours. The only source for visual design |
 
-The BRD and SDD mention the roadmap file by its original name (`..._Claude_Code_Roadmap_v1.4.md`); it lives at `docs/03-implementation/ROADMAP.md`. Older versions are in `docs/archive/`.
+The BRD and SDD mention the roadmap file by its original name (`..._Claude_Code_Roadmap_v1.5.md`); it lives at `docs/03-implementation/ROADMAP.md`. Older versions are in `docs/archive/`.
 
 ## Phase discipline
 

@@ -26,7 +26,6 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
   const [type, setType] = useState<"temporary" | "permanent">(user?.employment_type ?? "temporary");
   const [cityId, setCityId] = useState(user?.city_id ?? lookups.cities[0]?.id ?? "");
   const [name, setName] = useState(user?.full_name ?? "");
-  const branches = useMemo(() => lookups.branches.filter((b) => b.city_id === cityId), [lookups.branches, cityId]);
   const teams = useMemo(() => lookups.teams.filter((tm) => tm.city_id === cityId && tm.is_active), [lookups.teams, cityId]);
   const defaultRoles = user?.roles ?? ["agent"];
 
@@ -96,15 +95,6 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
                 <NativeSelect id="cityId" name="cityId" value={cityId} onChange={(e) => setCityId(e.target.value)} required>
                   {lookups.cities.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </NativeSelect>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="branchId">{t("users.branch")}</Label>
-                <NativeSelect id="branchId" name="branchId" defaultValue={user?.branch_id ?? ""} key={`branch-${cityId}`}>
-                  <option value="">{t("users.noBranch")}</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
                 </NativeSelect>
               </div>
