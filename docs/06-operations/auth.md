@@ -59,6 +59,16 @@ Each prints a **temporary password** in your terminal. Give it to the person pri
 | Sign out (bottom of the sidebar) | Back to the sign-in page; protected pages are blocked again |
 | Supabase → Table Editor → `activity_log` (as owner) | `auth.sign_in`, `auth.sign_in_failed`, `auth.locked`, `auth.password_changed`, `auth.otp_*` rows — no passwords, codes or phone numbers |
 
-## 6. Telesom SMS (blocked — needs Telesom's API guide)
+## 6. Real SMS through Telesom
 
-Real SMS needs Telesom's API guide (address, request format, parameters, success/error replies). When received, the `telesom` provider (`src/server/sms/telesom.ts`) is completed, then on the server: `SMS_PROVIDER=telesom` plus the `TELESOM_*` values (environment settings only).
+The Telesom sender follows the "Telesom SMS Gateway Integration Guide" used by the Sogasho website (POST to `https://sms.mytelesom.com/index.php/Gway/sendsms/`, MD5 `key`). To switch from the test sender to real SMS, add to `.env.local` yourself (never in chat or code):
+
+```
+SMS_PROVIDER=telesom
+TELESOM_USERNAME=…
+TELESOM_PASSWORD=…
+TELESOM_API_KEY=…
+TELESOM_SENDER=SOGASHO
+```
+
+`TELESOM_API_URL` is optional (defaults to the address above). Restart `npm run dev`, sign in as the test agent with **your own phone number** and check the SMS arrives within a minute. If it does not, the `npm run dev` window shows `[sms:telesom] OTP delivery failed: …` with Telesom's reason (never the code or credentials) — send me that line.

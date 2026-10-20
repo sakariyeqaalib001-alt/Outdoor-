@@ -135,7 +135,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 ## Phase 3 — Authentication and OTP
 
-**Date:** 20 Oct 2026 · **Status:** Built — **BLOCKED for real SMS: awaiting Telesom's API guide (R-6)**. Everything else is built and tested locally; owner sign-in test on "Outdoor" pending (steps below).
+**Date:** 20 Oct 2026 · **Status:** Built — Telesom sender implemented from the owner's gateway guide (T-20) and tested against a simulated gateway; awaiting the owner's sign-in test on "Outdoor" and first real SMS (steps below).
 
 **Scope delivered (BRD §6.1, FR-AUTH-01…09, FR-NOT-02/04)**
 - Migration `20261020090000_auth.sql`:
@@ -147,7 +147,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
   - Security events in `activity_log`: `auth.sign_in`, `auth.sign_in_failed`, `auth.locked`, `auth.password_changed`, `auth.otp_issued/sent/send_failed/verified/failed/expired/rate_limited` — no passwords, codes or identifiers.
 - App: Supabase server and admin clients; `src/proxy.ts` (session refresh, protected routes, step routing); server actions sign in / verify OTP / resend / change password / sign out; screens `/login`, `/verify`, `/change-password` (brand styled, 44 px touch targets); signed-in name and Sign out in the sidebar.
 - Identity: email for staff; phone (any local format) for agents, mapped to an internal Supabase address (T-16). Password rules T-19.
-- SMS adapter: `test` (development only — code printed in the `npm run dev` terminal, refused in production) and `telesom` (refuses to send until the API format is supplied).
+- SMS adapter: `test` (development only — code printed in the `npm run dev` terminal, refused in production) and `telesom` (gateway format per T-20: POST form, MD5 key, EAT date, 10 s timeout, no retry; safe failure note in the server log).
 - Script `npm run user:create` (bootstrap Super Admin / test accounts; temporary password printed only in the owner's terminal).
 - Supabase local config: public sign-up off, minimum password 8, letters + digits. Guide: `docs/06-operations/auth.md`. Decisions T-15…T-19.
 
@@ -169,13 +169,13 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 | Criterion | Result |
 |---|---|
 | Both sign-in flows work on staging | ⏳ owner test on "Outdoor" (`docs/06-operations/auth.md` steps 1–5) |
-| OTP delivered by Telesom to a real phone | ⛔ BLOCKED — Telesom API guide not yet provided (R-6); test SMS provider used meanwhile |
+| OTP delivered by Telesom to a real phone | ⏳ sender built and tested against a simulated gateway (`tests/unit/telesom.test.ts`); owner to confirm with a real SMS |
 | Wrong credentials fail generically; lockout and OTP limits enforced | ✅ database tests + browser check |
 | Unauthenticated access to protected routes denied | ✅ proxy redirect + RLS gate |
 | First-login change enforced | ✅ database tests (`change_password` status blocks RLS until changed) |
 | No passwords, OTPs or tokens in logs | ✅ activity_log tests; server log checked; test SMS provider refused in production |
 
-**Manual steps for the owner** — `docs/06-operations/auth.md`: (1) paste `supabase/sql-editor/20261020090000_auth.sql`; (2) Supabase Auth settings (sign-ups off, password 8 + letters/digits); (3) create `.env.local`; (4) `npm run user:create` for yourself and a test agent; (5) run the sign-in tests. Request Telesom's SMS API guide.
+**Manual steps for the owner** — `docs/06-operations/auth.md`: (1) paste `supabase/sql-editor/20261020090000_auth.sql`; (2) Supabase Auth settings (sign-ups off, password 8 + letters/digits); (3) create `.env.local`; (4) `npm run user:create` for yourself and a test agent; (5) run the sign-in tests. For real SMS: add the Telesom values to `.env.local` (auth.md step 6) and sign in as a test agent with your own phone.
 
 **Risks / open items**
 - Anyone can trigger a 15-minute lockout of a known phone/email by typing wrong passwords (inherent to lockout; logged as `auth.locked`).

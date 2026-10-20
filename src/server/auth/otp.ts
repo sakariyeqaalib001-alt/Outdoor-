@@ -42,6 +42,8 @@ export async function sendOtp(userId: string, sessionId: string): Promise<SendOt
     return "sent";
   } catch (error) {
     await admin.rpc("record_otp_delivery", { p_challenge_id: data.challenge_id, p_sent: false });
+    // Safe diagnostic: provider + reason only (never the code, phone number or credentials).
+    console.error(`[sms:${provider.name}] OTP delivery failed: ${error instanceof Error ? error.message : "unknown error"}`);
     return error instanceof SmsNotConfiguredError ? "not_configured" : "failed";
   }
 }

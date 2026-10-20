@@ -95,7 +95,7 @@ describe("SMS provider selection (SDD §17.1)", () => {
     expect(getSmsProvider({ NODE_ENV: "production" } as NodeJS.ProcessEnv).name).toBe("telesom");
   });
 
-  it("Telesom refuses to send until its API details are configured (blocked on R-6)", async () => {
+  it("Telesom refuses to send without its credentials", async () => {
     const provider = getSmsProvider({ NODE_ENV: "production", SMS_PROVIDER: "telesom" } as NodeJS.ProcessEnv);
     await expect(provider.sendOtp("+252634123456", "123456")).rejects.toThrow(SmsNotConfiguredError);
   });
