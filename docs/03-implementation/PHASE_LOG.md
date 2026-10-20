@@ -135,7 +135,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 ## Phase 3 — Authentication and OTP
 
-**Date:** 20 Oct 2026 · **Status:** Built — Telesom sender implemented from the owner's gateway guide (T-20) and tested against a simulated gateway; awaiting the owner's sign-in test on "Outdoor" and first real SMS (steps below).
+**Date:** 20 Oct 2026 · **Status:** Built and **owner-tested on "Outdoor" with a real Telesom SMS** (20 Oct 2026) — awaiting acceptance.
 
 **Scope delivered (BRD §6.1, FR-AUTH-01…09, FR-NOT-02/04)**
 - Migration `20261020090000_auth.sql`:
@@ -168,14 +168,20 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 | Criterion | Result |
 |---|---|
-| Both sign-in flows work on staging | ⏳ owner test on "Outdoor" (`docs/06-operations/auth.md` steps 1–5) |
-| OTP delivered by Telesom to a real phone | ⏳ sender built and tested against a simulated gateway (`tests/unit/telesom.test.ts`); owner to confirm with a real SMS |
+| Both sign-in flows work on staging | ✅ owner test on "Outdoor", 20 Oct 2026: staff email sign-in → forced password change → dashboard; agent phone sign-in → password change → SMS code → dashboard |
+| OTP delivered by Telesom to a real phone | ✅ delivered to the owner's phone, 20 Oct 2026. First attempt returned "Wrong Hashkey"; message encoding corrected and confirmed live (T-20) |
 | Wrong credentials fail generically; lockout and OTP limits enforced | ✅ database tests + browser check |
 | Unauthenticated access to protected routes denied | ✅ proxy redirect + RLS gate |
 | First-login change enforced | ✅ database tests (`change_password` status blocks RLS until changed) |
 | No passwords, OTPs or tokens in logs | ✅ activity_log tests; server log checked; test SMS provider refused in production |
 
 **Manual steps for the owner** — `docs/06-operations/auth.md`: (1) paste `supabase/sql-editor/20261020090000_auth.sql`; (2) Supabase Auth settings (sign-ups off, password 8 + letters/digits); (3) create `.env.local`; (4) `npm run user:create` for yourself and a test agent; (5) run the sign-in tests. For real SMS: add the Telesom values to `.env.local` (auth.md step 6) and sign in as a test agent with your own phone.
+
+**Issues found during owner testing (fixed)**
+- Telesom "Wrong Hashkey": the guide's %20 encoding was wrong for this gateway → plain-text message in the key (T-20).
+- Next.js dev warning "unstable value Date.now()" in the sidebar user card → `connection()` before the Supabase client.
+- After a failed SMS the user stayed on the password page → now continues to the code screen with the reason and "Send a new code".
+- PowerShell blocks `npm` scripts on the owner's PC → use `npm.cmd` (documented in auth.md).
 
 **Risks / open items**
 - Anyone can trigger a 15-minute lockout of a known phone/email by typing wrong passwords (inherent to lockout; logged as `auth.locked`).
