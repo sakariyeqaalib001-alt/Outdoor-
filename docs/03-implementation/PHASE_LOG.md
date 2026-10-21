@@ -194,7 +194,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 
 ## Phase 4 — Users, roles, permissions and teams
 
-**Date:** 20 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/users.md`).
+**Date:** 20–21 Oct 2026 · **Status:** ✅ Accepted by the owner on 21 Oct 2026 — owner-tested on "Outdoor" (users, teams and Team Leaders, deactivate/reactivate, D-31 no branch, D-32 SMS code for staff with a real Telesom SMS); CI green (incl. real-Supabase pgTAP).
 
 **Scope delivered (BRD §4, §6.2 FR-USER-01…10, FR-AUTH-06; SDD §7; D-22, D-29)**
 - Migration `20261020150000_access.sql`:
