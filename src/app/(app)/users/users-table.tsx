@@ -125,7 +125,12 @@ export function UsersTable({
                       {t(u.employment_type === "temporary" ? "user.temporary" : "user.permanent")} · {formatBusinessDate(new Date(`${u.start_date}T12:00:00Z`))}
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-sm">{u.employment_type === "temporary" ? u.login_phone_e164 : u.email}</TableCell>
+                  <TableCell className="font-mono text-sm">
+                    <div>{u.employment_type === "temporary" ? u.login_phone_e164 : u.email}</div>
+                    {u.employment_type === "permanent" ? (
+                      <div className="text-xs text-muted-foreground">{u.login_phone_e164 ?? t("users.noMobile")}</div>
+                    ) : null}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {u.roles.length === 0 ? <span className="text-muted-foreground">—</span> : null}

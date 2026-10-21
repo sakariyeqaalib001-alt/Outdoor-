@@ -208,6 +208,7 @@ Not run locally: `supabase db start` / `supabase test db` (needs Docker) — the
 - Screens: **Users** (search, status filter, add/edit dialog, actions menu), **Teams**, **Roles & permissions** (editable matrix); "no access" page for users without permission; brand check page restricted to `settings.manage`.
 - Sidebar now permission-driven (`visibleNavigation`); every menu permission key is checked against the database seed by a test.
 
+- **Owner decision D-32 (21 Oct 2026):** every user — agents and staff — gets the SMS code at sign-in. Migration `20261021090000_otp_for_everyone.sql`: OTP required for everyone in `app.is_active_user()` / `my_session_status()`; mobile number for every user (unique per employment type); `admin_set_user_phone` (Users screen, users.manage) and SQL-Editor-only `app.set_user_phone` for the first Super Admin. Users screen: Mobile number field on create and edit (a temporary agent's sign-in follows a changed number). Team dialog explains that only Team Leader-role users can lead a team.
 - **Owner correction D-31 (20 Oct 2026):** agents have no home branch (Outdoor Department); branch = money hand-in point chosen per sale; stock flows Central → Team Leader → Agent. Migration `20261020190000_users_no_branch.sql` removes `user_profiles.branch_id` and requires a user's team to be in their city. BRD/SDD/Roadmap updated to v1.5.
 
 **Not in scope:** branch/district maintenance screens and customer-type dropdowns (FR-USER-04, -09 maintenance, -10 → Phase 5).

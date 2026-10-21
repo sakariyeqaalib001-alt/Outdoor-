@@ -28,6 +28,9 @@ select has_table('public', 'user_profiles', 'user_profiles exists');
 select is((select employment_type from public.user_profiles where id = '00000000-0000-4000-8000-00000000000a'), 'permanent', 'profile created automatically from the Auth user');
 select is((select must_change_password from public.user_profiles where id = '00000000-0000-4000-8000-00000000000a'), true, 'new users must change their password');
 update public.user_profiles set must_change_password = false where id = '00000000-0000-4000-8000-00000000000a';
+-- D-32: every user passes the SMS code for their session.
+insert into public.otp_verified_sessions (session_id, user_id)
+values ('00000000-0000-4000-9000-000000000001', '00000000-0000-4000-8000-00000000000a');
 
 -- Signed-in user: may append through the writer functions only.
 set local role authenticated;

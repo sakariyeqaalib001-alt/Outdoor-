@@ -81,13 +81,23 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
                 <Input id="email" name="email" type="email" required autoComplete="off" className="h-11 md:h-9" />
               </div>
             ) : null}
-            {!editing && type === "temporary" ? (
-              <div className="space-y-2">
-                <Label htmlFor="phone">{t("users.phone")}</Label>
-                <Input id="phone" name="phone" inputMode="tel" required autoComplete="off" className="h-11 md:h-9" aria-describedby="phone-hint" />
-                <p id="phone-hint" className="text-xs text-muted-foreground">{t("users.phoneHint")}</p>
-              </div>
-            ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="phone">{t("users.phone")}</Label>
+              <Input
+                id="phone"
+                name="phone"
+                inputMode="tel"
+                required
+                autoComplete="off"
+                defaultValue={user?.login_phone_e164 ?? ""}
+                className="h-11 md:h-9"
+                aria-describedby="phone-hint"
+              />
+              <p id="phone-hint" className="text-xs text-muted-foreground">
+                {t("users.phoneHint")}
+                {type === "temporary" ? ` ${t("users.phoneHintAgent")}` : null}
+              </p>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">

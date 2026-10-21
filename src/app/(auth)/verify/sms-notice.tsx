@@ -7,6 +7,7 @@ import { t, type MessageKey } from "@/lib/i18n";
 const MESSAGES: Record<string, MessageKey> = {
   failed: "auth.smsFailed",
   not_configured: "auth.smsNotConfigured",
+  no_phone: "auth.smsNoPhone",
   rate_limited: "auth.otpRateLimited",
 };
 

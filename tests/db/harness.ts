@@ -73,7 +73,7 @@ export async function as<T>(
   fn: () => Promise<T>,
   sessionId: string = DEFAULT_SESSION
 ): Promise<T> {
-  const claims = JSON.stringify(userId ? { sub: userId, role, session_id: sessionId } : { role });
+  const claims = JSON.stringify(userId ? { sub: userId, role, session_id: sessionOf(userId, sessionId) } : { role });
   await db.query("select set_config('request.jwt.claims', $1, false)", [claims]);
   await db.exec(`set role ${role}`);
   try {
@@ -99,8 +99,17 @@ export const USER_B = "00000000-0000-4000-8000-00000000000b";
 export const DEFAULT_SESSION = "00000000-0000-4000-9000-000000000001";
 
 /**
+ * Real sign-in sessions belong to one user, so DEFAULT_SESSION stands for "this user's own default
+ * session" (a distinct id per user); any other session id is used as given.
+ */
+export function sessionOf(userId: string, sessionId: string = DEFAULT_SESSION): string {
+  return sessionId === DEFAULT_SESSION ? `9${userId.slice(1)}` : sessionId;
+}
+
+/**
  * Create an Auth user (the profile is created by the on_auth_user_created trigger) and set its state.
- * Defaults give a fully usable permanent user: active, password already changed.
+ * Defaults give a fully usable permanent user: active, password already changed, mobile number on file
+ * and SMS code passed for DEFAULT_SESSION. Temporary agents default to "code not yet passed".
  */
 export async function createUser(
   db: PGlite,
@@ -108,18 +117,20 @@ export async function createUser(
     id: string;
     type?: "temporary" | "permanent";
     email?: string;
-    phone?: string;
+    phone?: string | null; // null = no mobile number on file
     fullName?: string;
     active?: boolean;
     mustChangePassword?: boolean;
+    otpVerified?: boolean; // passed the SMS code for DEFAULT_SESSION (D-32)
   }
 ): Promise<void> {
   const type = opts.type ?? "permanent";
   const email = opts.email ?? (type === "permanent" ? `user-${opts.id.slice(-4)}@example.test` : `agent-${opts.id.slice(-4)}@phone.example.test`);
+  const phone = opts.phone === undefined ? `+252${type === "temporary" ? "63" : "65"}${opts.id.slice(-7).replace(/\D/g, "0").padStart(7, "0")}` : opts.phone;
   const meta = {
     full_name: opts.fullName ?? `Test ${type}`,
     employment_type: type,
-    ...(type === "temporary" ? { phone_e164: opts.phone ?? `+25263${opts.id.slice(-7).replace(/\D/g, "0").padStart(7, "0")}` } : {}),
+    ...(phone ? { phone_e164: phone } : {}),
   };
   await db.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [opts.id, email, meta]);
   await db.query("update public.user_profiles set is_active = $2, must_change_password = $3 where id = $1", [
@@ -127,4 +138,7 @@ export async function createUser(
     opts.active ?? true,
     opts.mustChangePassword ?? false,
   ]);
+  if (opts.otpVerified ?? type === "permanent") {
+    await db.query("insert into public.otp_verified_sessions (session_id, user_id) values ($1, $2)", [sessionOf(opts.id), opts.id]);
+  }
 }

@@ -2,7 +2,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSmsProvider, SmsNotConfiguredError } from "@/server/sms/provider";
 
-export type SendOtpResult = "sent" | "rate_limited" | "not_configured" | "failed";
+export type SendOtpResult = "sent" | "rate_limited" | "not_configured" | "no_phone" | "failed";
 
 /**
  * Issue a new OTP for this sign-in session and deliver it by SMS (T-15, T-17).
@@ -25,7 +25,8 @@ export async function sendOtp(userId: string, sessionId: string): Promise<SendOt
     .select("login_phone_e164")
     .eq("id", userId)
     .single();
-  if (!profile?.login_phone_e164) return "failed";
+  if (!profile) return "failed";
+  if (!profile.login_phone_e164) return "no_phone"; // D-32: Super Admin must add a mobile number first
 
   const { data, error } = await admin
     .rpc("issue_otp_challenge", { p_user_id: userId, p_session_id: sessionId })

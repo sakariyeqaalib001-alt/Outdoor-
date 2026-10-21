@@ -1,6 +1,6 @@
 // Create a sign-in account (Phase 3 bootstrap; Phase 4 adds the Users screen). Run on YOUR computer:
 //
-//   npm run user:create -- --type permanent --email you@sogasho.com --name "Your Name"
+//   npm run user:create -- --type permanent --email you@sogasho.com --phone 0634123456 --name "Your Name"
 //   npm run user:create -- --type temporary --phone 0634123456 --name "Test Agent"
 //
 // Needs NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY in .env.local (never commit them).
@@ -65,16 +65,17 @@ async function main() {
   if (!url || !secret) fail("Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY to .env.local first.");
   if (!values.name || values.name.trim().length < 2) fail('Give the full name: --name "First Last"');
 
+  // D-32: everyone needs a mobile number — the sign-in SMS code goes there.
+  const phone = values.phone ? normalizePhone(values.phone) : null;
+  if (!phone) fail("Give a valid Somaliland mobile number: --phone 0634123456 (the sign-in SMS code goes there)");
+
   let email;
-  const metadata = { full_name: values.name.trim(), employment_type: values.type };
+  const metadata = { full_name: values.name.trim(), employment_type: values.type, phone_e164: phone };
   if (values.type === "permanent") {
     email = values.email?.trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail("Permanent users need a valid --email");
   } else if (values.type === "temporary") {
-    const phone = values.phone ? normalizePhone(values.phone) : null;
-    if (!phone) fail("Temporary agents need a valid Somaliland --phone, e.g. 0634123456");
     email = agentAuthEmail(phone);
-    metadata.phone_e164 = phone;
   } else {
     fail("Use --type permanent or --type temporary");
   }

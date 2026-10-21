@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20 Oct 2026 | D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20–21 Oct 2026 | D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -205,7 +205,7 @@ Create folders only when the owning phase needs them.
 
 | User type | Sign-in | Account creation |
 |---|---|---|
-| Permanent | Email + password | Super Admin creates via server admin API; temporary password generated; `must_change_password = true` |
+| Permanent | Email + password, then SMS OTP to the profile's mobile number (D-32) | Super Admin creates via server admin API with a mobile number; temporary password generated; `must_change_password = true` |
 | Temporary agent | Phone (E.164) + password, then SMS OTP | Super Admin creates via admin API with phone marked confirmed; temporary password generated; `must_change_password = true` |
 
 ## 6.2 OTP design (spike required before Phase 3)
@@ -749,7 +749,7 @@ Timeouts, bounded retries only for idempotent calls, safe error summaries, visib
 | Stock transfer awaiting acknowledgement | Receiving agent | In-app |
 | Retention rejected — return required | Agent | In-app |
 | Integration failure | Super Admin | In-app + email |
-| OTP | Temporary agent | SMS |
+| OTP | Every user at sign-in (D-32) | SMS |
 
 Notifications are rows in `notifications`; email sending is retried by a job; failures logged.
 

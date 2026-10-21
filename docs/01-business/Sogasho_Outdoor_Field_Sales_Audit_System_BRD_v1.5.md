@@ -33,7 +33,7 @@ Prepared for **Sogasho ISP**
 | 1.2 | 19 Oct 2026 | Applied business inputs (`inputs.pdf`, 19 Oct 2026) and four confirmations. Closed D-02 (Index = 8-digit customer account number), D-04 (products and prices maintained by Super Admin in Settings), D-08 (flat base salary set by Super Admin, no pro-rating), D-19 (Best Agent / Hall of Fame / Champion streak titles), D-21 (no legacy data; system starts fresh) and D-29 (16 branches listed; districts per city maintained by Super Admin; Area free text; teams set by Super Admin). Added monthly performance bands (target 20, baseline 15). Legacy import requirements (FR-MIG) retired. Still open: D-10, D-20, D-27, D-28. |
 | 1.3 | 19 Oct 2026 | Applied final inputs: D-10 closed (stock item spelled **PDCOM**); D-20 closed (OTP provider **Telesom**); D-28 agent count closed (**46 agents: 7 permanent, 39 temporary**, expected for the next 2 years). Still open: D-27 (KoboToolbox forms) and the data-retention part of D-28. Telesom credentials are kept in server environment settings for the pilot; no in-app SMS configuration page in v1 (§3.2). |
 | 1.4 | 19 Oct 2026 | Added sales-month control (Approved D-30, Option A): the sale date and month are set by the server clock in EAT; agents cannot pick, backdate or future-date a month; the device clock is ignored; a sale submitted after midnight belongs to the new month with no month-move correction; My Sales uses a month selector (current month default, past months read-only) instead of per-month tabs; months lock when payroll is finalized. New FR-SALE-17…21, BR-22, UAT-42…46. |
-| 1.5 | 20 Oct 2026 | Owner clarification (D-31): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen per sale (new FR-SALE-22); Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). FR-USER-07, FR-STK-08, FR-STK-10, §5, §10.1 and glossary updated. |
+| 1.5 | 20–21 Oct 2026 | Owner decision (D-32, 21 Oct): **every user** — temporary agents, permanent agents and staff — receives an SMS code at sign-in; staff still sign in with email + password, and every user record holds a mobile number (FR-AUTH-02, 03, 05, FR-NOT-02, FR-USER-08). Owner clarification (D-31): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen per sale (new FR-SALE-22); Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). FR-USER-07, FR-STK-08, FR-STK-10, §5, §10.1 and glossary updated. |
 
 ## Approval
 
@@ -83,7 +83,7 @@ Phase numbers refer to the Roadmap v1.5 (Phases 0–20).
 
 Sogasho requires a centralized Outdoor Field Sales, Performance Analytics and Audit Control System for temporary and permanent field agents operating in Hargeisa, Burco, Berbera and Borama. The system is a Next.js web application, installable on agents' phones as a Progressive Web App (PWA), backed by Supabase.
 
-The system makes every customer registration traceable from agent submission through approval, stock issue (including equipment serial number), follow-up, audit investigation and payroll eligibility. Each real customer has one customer record identified by a unique normalized phone number and a unique Index Number; a customer may have many sales over time. A New registration that reuses an existing phone or Index is blocked, logged as a duplicate attempt and reported to Super Admin. Retention registrations require Team Leader/Supervisor approval. Refunds require Super Admin approval. Temporary agents sign in with phone number, password and SMS one-time password (OTP); permanent users sign in with email and password.
+The system makes every customer registration traceable from agent submission through approval, stock issue (including equipment serial number), follow-up, audit investigation and payroll eligibility. Each real customer has one customer record identified by a unique normalized phone number and a unique Index Number; a customer may have many sales over time. A New registration that reuses an existing phone or Index is blocked, logged as a duplicate attempt and reported to Super Admin. Retention registrations require Team Leader/Supervisor approval. Refunds require Super Admin approval. Temporary agents sign in with phone number, password and SMS one-time password (OTP); permanent users sign in with email, password and SMS OTP (D-32).
 
 One shared definition of an **eligible sale** (§8.2) drives targets, approved dashboard figures, payroll and rankings, so every screen counts sales the same way. Payroll is calculated from eligible sales: temporary agents receive a flat base salary set by Super Admin (currently $100); all agents earn $5 for each eligible unit above 15 in the month. Each agent's month is rated against a target of 20 eligible units and a baseline of 15; below 15 is underperforming.
 
@@ -130,7 +130,7 @@ Baselines must be measured during the pilot. Target values are set by Management
 
 ## 3.1 In scope
 
-- Login for temporary agents (phone + password + SMS OTP) and permanent users (email + password); forced first-login password change for system-generated passwords.
+- Login for temporary agents (phone + password + SMS OTP) and permanent users (email + password + SMS OTP, D-32); forced first-login password change for system-generated passwords.
 - User creation, activation/deactivation, roles, permissions, team structure (Team Leader → agents), dashboard/module access and configurable dropdowns.
 - Product catalog and price list with effective dates, set by Super Admin.
 - Agent target and KPI assignment.
@@ -163,7 +163,7 @@ Baselines must be measured during the pilot. Target values are set by Management
 |---|---|---|
 | Super Admin | Manage users, team structure, products/prices, permissions, targets; approve refunds; fallback Retention approver; receive fraud alerts; manage audit cases; approve leave. | Full administrative access; every privileged action logged. |
 | Temporary Sales Agent | Sign in with phone, password and OTP; register sales; hold stock custody; request leave; view own performance and payroll line. | Own records only. |
-| Permanent Sales Agent | Sign in with email and password; register sales; hold stock custody; request leave; view own performance and payroll line. | Own records only. |
+| Permanent Sales Agent | Sign in with email, password and OTP; register sales; hold stock custody; request leave; view own performance and payroll line. | Own records only. |
 | Team Leader / Supervisor | Approve/reject Retention for own team; submit refunds; view team performance; override agent city. | Own team's records. Cannot approve own submissions. |
 | Follow-up Team | Work the follow-up due list; record Active / Expire / Not Reached. | Due-list fields only (§6.7). |
 | Stock Officer | Record receipts, hand stock to Outdoor Team Leaders/Supervisors, returns and adjustments (with approval). | Stock module; no customer phone/Index except serial linkage. |
@@ -189,7 +189,7 @@ Permissions are enforced server-side and by database Row Level Security (RLS); h
 1. Super Admin configures cities, branches, districts, products, prices, customer types, stock items, base salary, performance bands, users, teams, permissions and targets.
 2. The system starts with no legacy data (D-21). Before go-live, the Stock Officer records all opening stock (with serials) as receipts.
 3. Stock Officer records stock received into Central Store and hands it to Outdoor Team Leaders/Supervisors, who hand it to their agents; each receiver acknowledges receipt. Branches hold no Outdoor stock (D-31).
-4. Agent signs in (temporary: phone + password + OTP; permanent: email + password). First login forces a password change.
+4. Agent signs in (temporary: phone + password + OTP; permanent: email + password + OTP, D-32). First login forces a password change.
 5. Agent registers a sale. The system validates required fields, catalog price, customer identity, same-month rule and equipment serials from the agent's custody.
 6. New sales that pass validation are **Approved** automatically. Retention sales are **Pending** until the agent's Team Leader (or Super Admin) decides.
 7. Equipment issue is recorded in the same transaction as the sale, deducting the serial(s) from the agent's custody.
@@ -206,9 +206,9 @@ Permissions are enforced server-side and by database Row Level Security (RLS); h
 |---|---|
 | FR-AUTH-01 | The system shall support temporary and permanent agent account types. |
 | FR-AUTH-02 | Temporary agents shall sign in using phone number and password, followed by an SMS OTP. (Source; Approved D-20) |
-| FR-AUTH-03 | Permanent agents and staff shall sign in using email and password. |
+| FR-AUTH-03 | Permanent agents and staff shall sign in using email and password, followed by an SMS OTP to the mobile number on their user record. (Approved D-32) |
 | FR-AUTH-04 | When Super Admin creates a user, the system shall generate a temporary password and require a password change at first login. Temporary-agent phone numbers are marked verified at creation by Super Admin. (Approved D-20) |
-| FR-AUTH-05 | The system shall send the temporary-agent sign-in OTP by SMS through **Telesom** (Approved D-20). Telesom API credentials and sender name are supplied by IT before Phase 3; delivery to temporary agents' phone numbers is confirmed in the pre-build SMS test (Roadmap R-6). |
+| FR-AUTH-05 | The system shall send the sign-in OTP for every user by SMS through **Telesom** (Approved D-20, D-32). Telesom API credentials and sender name are supplied by IT before Phase 3; delivery to temporary agents' phone numbers is confirmed in the pre-build SMS test (Roadmap R-6). |
 | FR-AUTH-06 | The system shall prevent deactivated users from signing in and invalidate their active sessions. |
 | FR-AUTH-07 | The system shall record successful and failed logins, password changes and OTP outcomes as security events. (Recommended control) |
 | FR-AUTH-08 | After 5 consecutive failed sign-in attempts the account is locked for 15 minutes. OTP is valid for 5 minutes; at most 3 OTP resends per 15 minutes. (Approved D-20) |
@@ -225,7 +225,7 @@ Permissions are enforced server-side and by database Row Level Security (RLS); h
 | FR-USER-05 | Permissions shall be enforced on the server and database layer, not only by hiding interface elements. (Recommended control) |
 | FR-USER-06 | Changes to roles, permissions, team assignment and status shall be recorded in the activity log. (Recommended control) |
 | FR-USER-07 | Super Admin shall create teams in Settings and assign each agent to a city and a team (Team Leader); each Team Leader supervises a defined set of agents. Outdoor agents belong to the Outdoor Department and have no home branch. (Approved D-29, D-31) |
-| FR-USER-08 | Each user record shall hold employment type (temporary/permanent), start date and, when deactivated, end date. |
+| FR-USER-08 | Each user record shall hold employment type (temporary/permanent), mobile number (for the sign-in OTP; temporary agents also sign in with it; unique within each employment type), start date and, when deactivated, end date. (D-32) |
 | FR-USER-09 | The system is seeded with the branch list in §6.2.1. Super Admin can add, rename or deactivate branches in Settings. (Approved D-29) |
 | FR-USER-10 | Super Admin maintains the list of districts for each city in Settings. Areas are not a managed list (see FR-SALE-02). (Approved D-29) |
 
@@ -419,7 +419,7 @@ Total: 16 branches. "New Hargeisa" corrects the spelling "New Hargiesa" in the i
 | ID | Requirement |
 |---|---|
 | FR-NOT-01 | Super Admin receives in-app and email notification for duplicate attempts and new audit cases. (Approved D-23) |
-| FR-NOT-02 | OTP for temporary-agent sign-in is sent by SMS. |
+| FR-NOT-02 | The sign-in OTP for every user is sent by SMS. (D-32) |
 | FR-NOT-03 | Approvers receive in-app notifications for Retention approvals and refunds awaiting decision. (Approved D-23) |
 | FR-NOT-04 | OTP codes expire, are rate-limited and are never stored or logged in plaintext. |
 | FR-NOT-05 | SMS is used only for OTP; no customer data is sent by SMS. (Approved D-23) |
@@ -626,7 +626,7 @@ Every figure states whether it counts **submitted** or **eligible** sales.
 | Integration | Purpose | Requirements |
 |---|---|---|
 | Supabase | Database, authentication, private file storage | Versioned schema, RLS, separate dev/staging/production projects, backups. |
-| SMS / OTP provider | Temporary-agent OTP | **Telesom** SMS service (D-20), connected through the Supabase Send-SMS hook or the server SMS adapter. Needs API credentials, sender name, delivery reports and confirmation of delivery to every network the temporary agents use. |
+| SMS / OTP provider | Sign-in OTP for every user (D-32) | **Telesom** SMS service (D-20), connected through the Supabase Send-SMS hook or the server SMS adapter. Needs API credentials, sender name, delivery reports and confirmation of delivery to every network the temporary agents use. |
 | Email | Super Admin alerts | Transactional email service; no customer phone/Index in email body (link to the app). |
 | KoboToolbox | Survey and market insight | One-way, hourly + manual; error queue; **form IDs OPEN (D-27).** |
 | File storage | Leave attachments | Private bucket; PDF/JPG/PNG; max 5 MB; signed short-lived links. |
@@ -636,7 +636,7 @@ Every figure states whether it counts **submitted** or **eligible** sales.
 | ID | Scenario | Expected result | Phase |
 |---|---|---|---|
 | UAT-01 | Temporary agent signs in with phone, generated password and OTP. | Login succeeds; forced password change at first login. | 3 |
-| UAT-02 | Permanent user signs in with email and password. | Login succeeds. | 3 |
+| UAT-02 | Permanent user signs in with email, password and OTP (D-32). | Login succeeds only after the SMS code. | 3, 4 |
 | UAT-03 | New sale with an already-registered phone (any format). | Blocked; clear error; durable audit event; Super Admin notified. | 7, 9 |
 | UAT-04 | New sale with duplicate Index Number. | Blocked; event references the matching customer. | 7, 9 |
 | UAT-05 | Retention submitted. | Pending; excluded from eligible metrics and payroll. | 7 |
@@ -742,6 +742,7 @@ Closed in v1.2 from business inputs (`inputs.pdf`, 19 Oct 2026) and confirmation
 | D-19 | Best Agent = #1 of the month; Hall of Fame = Best Agent 3 consecutive months; Champion = Best Agent 4 consecutive months | 6.13, 8.1 |
 | D-21 | No legacy data; system starts as brand new | 3.2, 6.17 |
 | D-29 | 16 branches supplied (§6.2.1); districts per city maintained by Super Admin; Area free text; teams created by Super Admin | 6.2, 6.4 |
+| D-32 | Every user (agents and staff) receives an SMS OTP at sign-in; every user record holds a mobile number — owner, 21 Oct 2026 | 6.1, 6.3, 6.16 |
 | D-31 | Agents have no home branch (Outdoor Department); Branch on a sale = where its money is handed in, chosen per sale; Outdoor stock flows Central Store → Team Leader/Supervisor → Agent (branches hold none) — owner, 20 Oct 2026 | 6.2, 6.4, 6.12 |
 | — | Monthly performance bands: target 20, baseline 15, below 15 underperforming (configurable) | 6.3, 8.1 |
 

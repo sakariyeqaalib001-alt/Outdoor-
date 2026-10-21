@@ -16,6 +16,7 @@ const message = (key: MessageKey) => t(key);
 const OTP_SEND_MESSAGES: Record<Exclude<SendOtpResult, "sent">, MessageKey> = {
   rate_limited: "auth.otpRateLimited",
   not_configured: "auth.smsNotConfigured",
+  no_phone: "auth.smsNoPhone",
   failed: "auth.smsFailed",
 };
 

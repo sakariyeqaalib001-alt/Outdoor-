@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { as, createTestDatabase, createUser, DEFAULT_SESSION, errorOf } from "./harness";
+import { as, createTestDatabase, createUser, DEFAULT_SESSION, errorOf, sessionOf } from "./harness";
 
 let db: PGlite;
 
@@ -23,7 +23,7 @@ async function grantRole(user: string, role: string) {
   await db.query("insert into public.user_roles (user_id, role_key) values ($1, $2)", [user, role]);
 }
 async function verifyOtp(user: string) {
-  await db.query("insert into public.otp_verified_sessions (session_id, user_id) values ($1, $2)", [DEFAULT_SESSION, user]);
+  await db.query("insert into public.otp_verified_sessions (session_id, user_id) values ($1, $2)", [sessionOf(user), user]);
 }
 const asUser = <T>(user: string, fn: () => Promise<T>) => as(db, "authenticated", user, fn);
 

@@ -48,12 +48,13 @@ function TeamDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="leaderId">{t("users.teamLeader")}</Label>
-            <NativeSelect id="leaderId" name="leaderId" defaultValue={team?.team_leader_id ?? ""}>
+            <NativeSelect id="leaderId" name="leaderId" defaultValue={team?.team_leader_id ?? ""} aria-describedby="leaderHint">
               <option value="">{t("users.noLeader")}</option>
               {leaders.map((u) => (
                 <option key={u.id} value={u.id}>{u.full_name}</option>
               ))}
             </NativeSelect>
+            <p id="leaderHint" className="text-sm text-muted-foreground">{t("users.leaderHint")}</p>
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="active" value="true" defaultChecked={team?.is_active ?? true} className="size-4 accent-[#047B95]" />

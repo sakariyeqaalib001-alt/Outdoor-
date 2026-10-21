@@ -37,7 +37,7 @@ Restart `npm run dev` after creating or changing `.env.local`.
 ## 4. Create accounts (your terminal)
 
 ```bash
-npm run user:create -- --type permanent --email you@sogasho.com --name "Your Name"
+npm run user:create -- --type permanent --email you@sogasho.com --phone 0634123456 --name "Your Name"
 ```
 
 ```bash
@@ -51,7 +51,7 @@ Each prints a **temporary password** in your terminal. Give it to the person pri
 | Test | Expected |
 |---|---|
 | Open http://localhost:3000 while signed out | Sent to the sign-in page |
-| Staff: email + temporary password | Asked to choose a new password, then the dashboard |
+| Staff: email + temporary password | Asked to choose a new password, then **enter your code** sent by SMS to the staff member's mobile number (D-32), then the dashboard |
 | Agent: phone (any format: `0634123456`, `063 412 3456`, `+252634123456`) + temporary password | New password, then **enter your code** — the 6-digit code is printed in the `npm run dev` terminal as `[DEV SMS — not sent]` |
 | Wrong code | "That code is not correct" — after 5 wrong codes, a new code is needed |
 | "Send a new code" more than 3 times in 15 minutes | "Too many codes requested" |

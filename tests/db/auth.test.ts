@@ -1,6 +1,6 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
-import { as, createTestDatabase, createUser, DEFAULT_SESSION, errorOf } from "./harness";
+import { as, createTestDatabase, createUser, DEFAULT_SESSION, errorOf, sessionOf } from "./harness";
 
 let db: PGlite;
 
@@ -9,6 +9,8 @@ const TEMP = "10000000-0000-4000-8000-000000000002";
 const NEW_USER = "10000000-0000-4000-8000-000000000003";
 const INACTIVE = "10000000-0000-4000-8000-000000000004";
 const TEMP_2 = "10000000-0000-4000-8000-000000000005";
+const NO_PHONE = "10000000-0000-4000-8000-000000000008";
+const ADMIN = "10000000-0000-4000-8000-000000000009";
 const OTHER_SESSION = "00000000-0000-4000-9000-000000000099";
 
 beforeAll(async () => {
@@ -18,6 +20,9 @@ beforeAll(async () => {
   await createUser(db, { id: NEW_USER, type: "permanent", email: "new@example.test", mustChangePassword: true });
   await createUser(db, { id: INACTIVE, type: "permanent", email: "gone@example.test", active: false });
   await createUser(db, { id: TEMP_2, type: "temporary", phone: "+252634000002" });
+  await createUser(db, { id: NO_PHONE, type: "permanent", email: "nophone@example.test", phone: null, otpVerified: false });
+  await createUser(db, { id: ADMIN, type: "permanent", email: "admin@example.test", phone: "+252654000009" });
+  await db.query("insert into public.user_roles (user_id, role_key) values ($1, 'super_admin')", [ADMIN]);
 }, 60_000);
 
 async function status(userId: string, session = DEFAULT_SESSION): Promise<string> {
@@ -46,7 +51,7 @@ async function issueOtp(userId: string, session = DEFAULT_SESSION): Promise<{ ch
   const { rows } = await as(db, "service_role", null, () =>
     db.query<{ challenge_id: string; code: string }>("select * from public.issue_otp_challenge($1, $2)", [
       userId,
-      session,
+      sessionOf(userId, session),
     ])
   );
   return rows[0];
@@ -123,6 +128,13 @@ describe("session status and the RLS gate (app.is_active_user)", () => {
     expect(await isActive(TEMP)).toBe(false);
   });
 
+  it("requires the SMS code from staff too, per sign-in session (D-32)", async () => {
+    expect(await status(PERMANENT, OTHER_SESSION)).toBe("otp_required");
+    expect(await isActive(PERMANENT, OTHER_SESSION)).toBe(false);
+    expect(await status(NO_PHONE)).toBe("otp_required");
+    expect(await isActive(NO_PHONE)).toBe(false);
+  });
+
   it("reports no_profile for an unknown user", async () => {
     expect(await status("10000000-0000-4000-8000-0000000000ee")).toBe("no_profile");
   });
@@ -153,14 +165,14 @@ describe("SMS one-time password (FR-AUTH-02, FR-AUTH-08, FR-NOT-04)", () => {
   it("cannot be issued by a signed-in user (they would see their own code)", async () => {
     for (const role of ["authenticated", "anon"] as const) {
       const message = await errorOf(
-        as(db, role, TEMP, () => db.query("select * from public.issue_otp_challenge($1, $2)", [TEMP, DEFAULT_SESSION]))
+        as(db, role, TEMP, () => db.query("select * from public.issue_otp_challenge($1, $2)", [TEMP, sessionOf(TEMP)]))
       );
       expect(message, role).toMatch(/permission denied/);
     }
   });
 
-  it("is refused for permanent and inactive users", async () => {
-    expect(await errorOf(issueOtp(PERMANENT))).toMatch(/OTP_NOT_ALLOWED/);
+  it("is refused for inactive users and users without a mobile number", async () => {
+    expect(await errorOf(issueOtp(NO_PHONE))).toMatch(/NO_PHONE/);
     expect(await errorOf(issueOtp(INACTIVE))).toMatch(/OTP_NOT_ALLOWED/);
   });
 
@@ -323,5 +335,74 @@ describe("internal tables stay private", () => {
         /permission denied/
       );
     }
+  });
+});
+
+describe("SMS code for staff (D-32)", () => {
+  it("is issued to a staff member's mobile number and unlocks only that session", async () => {
+    const session = "00000000-0000-4000-9000-000000000010";
+    const { code } = await issueOtp(PERMANENT, session);
+    expect(await status(PERMANENT, session)).toBe("otp_required");
+    expect(await verify(PERMANENT, code, session)).toBe("ok");
+    expect(await status(PERMANENT, session)).toBe("ok");
+    expect(await isActive(PERMANENT, session)).toBe(true);
+  });
+
+  it("is not needed by staff when Super Admin turns OTP off", async () => {
+    await db.query("insert into public.app_settings (key, value) values ('otp_enabled', 'false')");
+    expect(await status(PERMANENT, OTHER_SESSION)).toBe("ok");
+    await db.query("delete from public.app_settings where key = 'otp_enabled'");
+  });
+});
+
+describe("mobile numbers (D-32)", () => {
+  const setPhone = (caller: string, user: string, phone: string) =>
+    as(db, "authenticated", caller, () => db.query<{ old: string | null }>("select public.admin_set_user_phone($1, $2) as old", [user, phone]));
+  const phoneOf = async (user: string) =>
+    (await db.query<{ p: string | null }>("select login_phone_e164 as p from public.user_profiles where id = $1", [user])).rows[0].p;
+
+  it("can be set only with users.manage", async () => {
+    expect(await errorOf(setPhone(PERMANENT, NO_PHONE, "0654000020"))).toMatch(/not allowed/);
+    expect(await errorOf(as(db, "anon", null, () => db.query("select public.admin_set_user_phone($1, '0654000020')", [NO_PHONE])))).toMatch(
+      /permission denied/
+    );
+    expect(await phoneOf(NO_PHONE)).toBeNull();
+  });
+
+  it("is normalized, saved and logged without the number", async () => {
+    const { rows } = await setPhone(ADMIN, NO_PHONE, "065 400 0020");
+    expect(rows[0].old).toBeNull();
+    expect(await phoneOf(NO_PHONE)).toBe("+252654000020");
+    const log = await db.query<{ details: unknown }>(
+      "select details from public.activity_log where action = 'users.phone_changed' and entity_id = $1",
+      [NO_PHONE]
+    );
+    expect(log.rows.length).toBe(1);
+    expect(JSON.stringify(log.rows)).not.toMatch(/654000020/);
+  });
+
+  it("is refused when invalid or already used by another account of the same type", async () => {
+    expect(await errorOf(setPhone(ADMIN, NO_PHONE, "12"))).toMatch(/PHONE_REQUIRED/);
+    expect(await errorOf(setPhone(ADMIN, NO_PHONE, "+252654000009"))).toMatch(/PHONE_TAKEN/);
+    expect(await errorOf(setPhone(ADMIN, TEMP_2, "+252634000001"))).toMatch(/PHONE_TAKEN/);
+    expect(await errorOf(db.query("update public.user_profiles set login_phone_e164 = '+252634000001' where id = $1", [TEMP_2]))).toMatch(
+      /duplicate key/
+    );
+  });
+
+  it("may be shared by one staff account and one agent account (same person)", async () => {
+    await setPhone(ADMIN, NO_PHONE, "+252634000001");
+    expect(await phoneOf(NO_PHONE)).toBe("+252634000001");
+  });
+
+  it("can be added by email from the SQL Editor only (first Super Admin)", async () => {
+    expect(await errorOf(as(db, "authenticated", ADMIN, () => db.query("select app.set_user_phone('admin@example.test', '0654000030')")))).toMatch(
+      /permission denied/
+    );
+    const { rows } = await db.query<{ r: string }>("select app.set_user_phone('Admin@Example.test', '0654000030') as r");
+    expect(rows[0].r).toMatch(/Mobile number saved/);
+    expect(await phoneOf(ADMIN)).toBe("+252654000030");
+    expect(await errorOf(db.query("select app.set_user_phone('admin@example.test', 'abc')"))).toMatch(/Not a valid/);
+    expect(await errorOf(db.query("select app.set_user_phone('nobody@example.test', '0654000031')"))).toMatch(/No permanent user/);
   });
 });

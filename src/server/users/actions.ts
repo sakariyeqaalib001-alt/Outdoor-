@@ -27,6 +27,8 @@ const DB_ERRORS: Record<string, MessageKey> = {
   CANNOT_DEACTIVATE_SELF: "users.errors.deactivateSelf",
   LEADER_NEEDS_TEAM_LEADER_ROLE: "users.errors.leaderRole",
   SUPER_ADMIN_LOCKED: "users.errors.superAdminLocked",
+  PHONE_REQUIRED: "users.errors.phoneRequired",
+  PHONE_TAKEN: "users.errors.phoneTaken",
   USER_NOT_FOUND: "users.errors.genericError",
   TEAM_NOT_FOUND: "users.errors.genericError",
 };
@@ -86,17 +88,26 @@ export async function createUser(_prev: AdminResult, formData: FormData): Promis
   if (!parsed.success) return { error: t("users.errors.checkFields") };
   const input = parsed.data;
 
+  // D-32: everyone has a mobile number — the sign-in SMS code goes there.
+  const phone = input.phone ? normalizePhone(input.phone) : null;
+  if (!phone) return { error: t("users.errors.phoneRequired") };
+  const metadata: Record<string, string> = { full_name: input.fullName, employment_type: input.employmentType, phone_e164: phone };
   let authEmail: string;
-  const metadata: Record<string, string> = { full_name: input.fullName, employment_type: input.employmentType };
   if (input.employmentType === "permanent") {
     if (!input.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) return { error: t("users.errors.emailRequired") };
     authEmail = input.email;
   } else {
-    const phone = input.phone ? normalizePhone(input.phone) : null;
-    if (!phone) return { error: t("users.errors.phoneRequired") };
     authEmail = agentAuthEmail(phone);
-    metadata.phone_e164 = phone;
   }
+
+  // Mobile numbers are unique per account type (the database enforces it; this gives a clear message).
+  const { data: sameNumber } = await caller.supabase
+    .from("user_profiles")
+    .select("id")
+    .eq("employment_type", input.employmentType)
+    .eq("login_phone_e164", phone)
+    .limit(1);
+  if (sameNumber?.length) return { error: t("users.errors.phoneTaken") };
 
   const admin = createSupabaseAdminClient();
   if (!admin) return { error: t("auth.notConfigured") };
@@ -125,14 +136,20 @@ export async function createUser(_prev: AdminResult, formData: FormData): Promis
   return { ok: true, password, message: t("users.created") };
 }
 
-const updateSchema = z.object({ userId: uuid, ...userFields });
+const updateSchema = z.object({ userId: uuid, ...userFields, phone: z.string().trim().min(1) });
 
 export async function updateUser(_prev: AdminResult, formData: FormData): Promise<AdminResult> {
   const caller = await callerWith("users.manage");
   if ("error" in caller) return { error: caller.error };
-  const parsed = updateSchema.safeParse({ ...readUserForm(formData), userId: formData.get("userId") });
+  const parsed = updateSchema.safeParse({ ...readUserForm(formData), userId: formData.get("userId"), phone: formData.get("phone") });
   if (!parsed.success) return { error: t("users.errors.checkFields") };
   const input = parsed.data;
+  const phone = normalizePhone(input.phone);
+  if (!phone) return { error: t("users.errors.phoneRequired") };
+
+  const phoneError = await saveMobileNumber(caller.supabase, input.userId, phone);
+  if (phoneError) return { error: phoneError };
+
   const { error } = await caller.supabase.rpc("admin_update_user", {
     p_user: input.userId,
     p_full_name: input.fullName,
@@ -144,6 +161,33 @@ export async function updateUser(_prev: AdminResult, formData: FormData): Promis
   if (error) return { error: dbError(error.message) };
   revalidatePath("/users");
   return { ok: true, message: t("users.saved") };
+}
+
+/**
+ * D-32: save the mobile number (database checks permission, format and uniqueness). A temporary agent
+ * signs in with it, so their Supabase Auth sign-in address follows; if that fails, the number is put back.
+ */
+async function saveMobileNumber(
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>,
+  userId: string,
+  phone: string
+): Promise<string | null> {
+  const { data: previous, error } = await supabase.rpc("admin_set_user_phone", { p_user: userId, p_phone: phone });
+  if (error) return dbError(error.message);
+  if (previous === phone) return null;
+
+  const { data: profile } = await supabase.from("user_profiles").select("employment_type").eq("id", userId).single();
+  if (profile?.employment_type !== "temporary") return null;
+
+  const admin = createSupabaseAdminClient();
+  const { error: authError } = admin
+    ? await admin.auth.admin.updateUserById(userId, { email: agentAuthEmail(phone), email_confirm: true })
+    : { error: new Error("not configured") };
+  if (authError) {
+    if (previous) await supabase.rpc("admin_set_user_phone", { p_user: userId, p_phone: previous });
+    return t("users.errors.genericError");
+  }
+  return null;
 }
 
 export async function setUserActive(userId: string, active: boolean): Promise<AdminResult> {
