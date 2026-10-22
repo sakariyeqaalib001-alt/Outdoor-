@@ -198,15 +198,15 @@ describe.each(appendOnly)("%s is append-only", (table) => {
 describe("app_settings", () => {
   it("can be read by signed-in users", async () => {
     await db.query(
-      "insert into public.app_settings (key, value, description) values ('week_start_day', '\"saturday\"', 'test')"
+      "insert into public.app_settings (key, value, description) values ('test_read', '1', 'test')"
     );
     const { rows } = await as(db, "authenticated", USER_A, () =>
-      db.query("select key from public.app_settings where key = 'week_start_day'")
+      db.query("select key from public.app_settings where key = 'test_read'")
     );
     expect(rows).toHaveLength(1);
   });
 
-  it("cannot be changed by signed-in users yet (Phase 5 adds settings.manage)", async () => {
+  it("cannot be changed directly by signed-in users (only through admin_set_setting)", async () => {
     for (const statement of [
       "insert into public.app_settings (key, value) values ('x_y', '1')",
       "update public.app_settings set value = '1'",

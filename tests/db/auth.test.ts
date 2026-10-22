@@ -256,9 +256,9 @@ describe("SMS one-time password (FR-AUTH-02, FR-AUTH-08, FR-NOT-04)", () => {
   });
 
   it("is not needed when Super Admin turns OTP off", async () => {
-    await db.query("insert into public.app_settings (key, value) values ('otp_enabled', 'false')");
+    await db.query("update public.app_settings set value = 'false' where key = 'otp_enabled'");
     expect(await status(TEMP_2)).toBe("ok");
-    await db.query("delete from public.app_settings where key = 'otp_enabled'");
+    await db.query("update public.app_settings set value = 'true' where key = 'otp_enabled'");
     expect(await status(TEMP_2)).toBe("otp_required");
   });
 });
@@ -349,9 +349,9 @@ describe("SMS code for staff (D-32)", () => {
   });
 
   it("is not needed by staff when Super Admin turns OTP off", async () => {
-    await db.query("insert into public.app_settings (key, value) values ('otp_enabled', 'false')");
+    await db.query("update public.app_settings set value = 'false' where key = 'otp_enabled'");
     expect(await status(PERMANENT, OTHER_SESSION)).toBe("ok");
-    await db.query("delete from public.app_settings where key = 'otp_enabled'");
+    await db.query("update public.app_settings set value = 'true' where key = 'otp_enabled'");
   });
 });
 

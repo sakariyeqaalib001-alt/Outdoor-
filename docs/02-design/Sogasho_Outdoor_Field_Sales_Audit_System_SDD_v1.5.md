@@ -407,7 +407,8 @@ Create each table in the phase that owns it, with its RLS policies and tests.
 - Stock items seeded: WiFi Router, PDCOM, CALIX (all serialized). Spelling "PDCOM" confirmed (D-10).
 - Deactivated values remain readable on history and are rejected for new records.
 - All changes recorded in `activity_log`.
-- Phone prefixes (`allowed_phone_prefixes`) configurable; default covers Somaliland mobile ranges confirmed by Sales Operations.
+- Phone prefixes (`allowed_phone_prefixes`) configurable; initial value 063 and 065 (D-33). Business week starts Saturday (`week_start_day`, D-33); weekend Friday (D-18).
+- As built in Phase 5 (migration `20261022090000_master_data`): writes only through SECURITY DEFINER functions (`admin_set_setting` with per-key validation and baseline < target, `admin_save_branch`, `admin_save_district`, `admin_rename_customer_type`, `admin_save_product`, `admin_save_price`, `admin_save_stock_item`, `admin_save_holiday`, `admin_delete_holiday`); price overlap refused by a trigger (same product and city); `public.price_for(product, city, date)` returns the city price, else the all-cities price.
 
 # 10. Sales and customer lifecycle
 

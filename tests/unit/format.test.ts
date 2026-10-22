@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   BUSINESS_TIME_ZONE,
   businessMonth,
+  businessToday,
   formatBusinessDate,
+  formatDateOnly,
   formatBusinessDateTime,
   formatMonthLabel,
 } from "@/lib/dates";
@@ -25,6 +27,12 @@ describe("business dates (EAT, UTC+3)", () => {
   it("formats DD/MM/YYYY in business time", () => {
     expect(formatBusinessDate(new Date("2026-10-31T21:10:00Z"))).toBe("01/11/2026");
     expect(formatBusinessDateTime(new Date("2026-10-31T21:10:00Z"))).toBe("01/11/2026 00:10");
+  });
+
+  it("formats calendar dates and gives today's date in EAT", () => {
+    expect(formatDateOnly("2026-05-18")).toBe("18/05/2026");
+    expect(businessToday(new Date("2026-10-31T21:10:00Z"))).toBe("2026-11-01");
+    expect(businessToday(new Date("2026-10-31T20:50:00Z"))).toBe("2026-10-31");
   });
 
   it("labels months", () => {

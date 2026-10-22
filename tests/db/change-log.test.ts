@@ -48,13 +48,13 @@ describe("change_log content", () => {
   it("records insert, update and delete with before/after values and the acting user", async () => {
     await as(db, "service_role", USER_A, async () => {
       await db.query(
-        "insert into public.app_settings (key, value, description) values ('payroll_cutoff_day', '3', 'Cutoff')"
+        "insert into public.app_settings (key, value, description) values ('test_cutoff_day', '3', 'Cutoff')"
       );
-      await db.query("update public.app_settings set value = '4' where key = 'payroll_cutoff_day'");
-      await db.query("delete from public.app_settings where key = 'payroll_cutoff_day'");
+      await db.query("update public.app_settings set value = '4' where key = 'test_cutoff_day'");
+      await db.query("delete from public.app_settings where key = 'test_cutoff_day'");
     });
 
-    const [insert, update, remove] = await entriesFor("payroll_cutoff_day");
+    const [insert, update, remove] = await entriesFor("test_cutoff_day");
 
     expect(insert).toMatchObject({
       operation: "INSERT",
@@ -63,7 +63,7 @@ describe("change_log content", () => {
       actor_role: "service_role",
       old_data: null,
     });
-    expect(insert.new_data).toMatchObject({ key: "payroll_cutoff_day", value: 3 });
+    expect(insert.new_data).toMatchObject({ key: "test_cutoff_day", value: 3 });
 
     expect(update.operation).toBe("UPDATE");
     expect(update.old_data).toMatchObject({ value: 3 });

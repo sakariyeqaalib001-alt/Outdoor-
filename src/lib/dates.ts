@@ -45,3 +45,15 @@ export function formatMonthLabel(monthKey: string): string {
     timeZone: "UTC",
   }).format(new Date(Date.UTC(year, month - 1, 1)));
 }
+
+/** "2026-10-22" (a calendar date, no time) → "22/10/2026". */
+export function formatDateOnly(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+/** Today's calendar date in business time, "YYYY-MM-DD". */
+export function businessToday(now: Date = new Date()): string {
+  const p = parts(now);
+  return `${p.year}-${p.month}-${p.day}`;
+}

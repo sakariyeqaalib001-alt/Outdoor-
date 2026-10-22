@@ -255,3 +255,62 @@ Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on Git
 
 **Next prompt (not executed):**
 > Proceed with Phase 5 only: master data and settings. Follow BRD/SDD v1.4 and CLAUDE.md, inspect first, implement only Phase 5, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 5 — Master data and settings
+
+**Date:** 22 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/settings.md`).
+
+**Scope delivered (BRD §6.2 FR-USER-04, 09, 10; §6.3 FR-CONF-01, 03, 05, 07 settings; SDD §8.3, §9; D-04, D-08, D-10, D-18, D-29, D-33)**
+- Migration `20261022090000_master_data.sql`:
+  - New tables: `districts` (per city, unique name per city, no seed), `customer_types` (`new`, `retention`; fixed codes, editable names), `products` (FTTA, FTTH, FTTB, LTE seeded), `product_prices` (USD, optional city, effective from/to; overlap for the same product and city refused by a trigger), `stock_items` (WIFI_ROUTER, PDCOM, CALIX; serialized), `public_holidays`.
+  - `app_settings` values seeded: cutoff day 3, incentive threshold 15, rate 5, temporary base salary 100, target 20, baseline 15, free-month 50, prefixes 063/065 and week start Saturday (D-33), weekend Friday (D-18), OTP on (D-32).
+  - Writes only through functions that check `settings.manage` (lists, settings) or `prices.manage` (products, prices), validate and log: `admin_set_setting` (known keys only, per-key checks, baseline < target), `admin_save_branch`, `admin_save_district`, `admin_rename_customer_type`, `admin_save_product` (code fixed after creation), `admin_save_price`, `admin_save_stock_item`, `admin_save_holiday`, `admin_delete_holiday`.
+  - `public.price_for(product, city, date)`: the city's own price, else the all-cities price, else none (used by sales in Phase 7 for the price snapshot, FR-CONF-03).
+  - RLS: every active user reads the lists (forms need them); no direct insert/update/delete for any API role; change history on every new table.
+- Screens: **Settings** (General, Branches, Districts, Lists, Public holidays) and **Products** (products + price list with Current / Upcoming / Ended, "No current price" warning). Shared tab bar `src/components/page-tabs.tsx` (Users tabs use it too). Menu items Settings and Products now active (`COMPLETED_PHASE = 5`).
+- Owner input **D-33**: customer mobile prefixes 063 and 065; week starts Saturday.
+
+**Not in scope:** applying the prefixes and the price snapshot to sales (Phase 7); targets per agent (Phase 14); other dropdown lists (refund reasons, stock return reasons, leave types) arrive with their modules.
+
+**BRD check**
+
+| Requirement | Result |
+|---|---|
+| FR-USER-04 customer types and dropdown options | ✅ customer types renamable (codes fixed); module dropdowns arrive with their phases |
+| FR-USER-09 branches seeded; add/rename/deactivate | ✅ Settings → Branches |
+| FR-USER-10 districts per city; Area not a list | ✅ Settings → Districts; no areas table |
+| FR-CONF-01 products and price list (FTTA, FTTH, FTTB, LTE) | ✅ Products screen |
+| FR-CONF-03 price stored on each sale | ✅ `price_for` ready; snapshot stored by sales ➡ Phase 7 |
+| FR-CONF-05 prices entered by Super Admin, effective dates, optional city; none loaded | ✅ no prices seeded; overlap refused |
+| FR-CONF-07 target 20 / baseline 15 set by Super Admin | ✅ Settings → General (baseline must stay below target); bands shown ➡ Phases 10/14 |
+| FR-LEAVE-07 weekend days and holidays configurable | ✅ settings + Public holidays (used in Phase 17) |
+| FR-SALE-04 allowed prefixes configurable | ✅ setting (063, 065); enforced on sales ➡ Phase 7 |
+| SDD §9 deactivated values readable on history, rejected for new records | ✅ active flags; new prices refused for inactive products; sales/stock refuse inactive values ➡ Phases 6–7 |
+
+**Commands run (22 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 258 tests (new: 51 master-data database tests, 4 settings-form and date tests); build adds `/settings`, `/settings/branches`, `/settings/districts`, `/settings/lists`, `/settings/holidays`, `/products` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261022090000_master_data.sql` |
+
+Not yet run: the owner's test of the new screens on "Outdoor" (the browser pane cannot sign in — the SMS code goes to the owner's phone); CI on GitHub (after upload).
+
+**Acceptance gate**
+
+| Criterion | Result |
+|---|---|
+| Admin can maintain all lists; others denied | ✅ database tests: Super Admin allowed; agent, Finance, deactivated Super Admin and anonymous refused for every function; direct table writes refused even for Super Admin; ⏳ owner UI test |
+| Price lookup returns the correct effective price for a date/city | ✅ database tests (boundaries, city override, open-ended, gaps, overlaps) |
+| Branch seed matches BRD §6.2.1; districts and prices enterable on staging | ✅ test compares the seed with the BRD table; ⏳ owner enters districts and prices on "Outdoor" |
+
+**Manual steps for the owner** — `docs/06-operations/settings.md`: paste `supabase/sql-editor/20261022090000_master_data.sql`; run the tests in section 3.
+
+**Risks / open items**
+- Prices and districts must be entered by the business before go-live (D-04, D-29); Phase 11 readiness checks them.
+- Turning **SMS code at sign-in** off disables the code for everyone; it is for emergencies only (e.g. SMS outage).
+
+**Next prompt (not executed):**
+> Proceed with Phase 6 only: stock ledger, custody and serials. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 6, run `npm run check`, update the logs, report the gate and stop.
