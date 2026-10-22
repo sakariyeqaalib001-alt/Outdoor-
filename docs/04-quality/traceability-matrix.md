@@ -20,7 +20,7 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | FR-PAY-01…15 | 15 | 16 | 10, 11, 23, 31, 40, 41 | Not started |
 | FR-SW-01…06 | 10.4 | 8 | 12, 34 | Not started |
 | FR-FREE-01…04 | 10.2 | 7 | 19 | Not started |
-| FR-STK-01, 02, 04…10 | 12 | 6 | 08, 09, 22 | Built (Phase 6) — quantities, team stock with acceptance (D-35); owner test pending |
+| FR-STK-01, 02, 04…10 | 12 | 6 | 08, 09, 22 | Accepted (Phase 6) — quantities, stock issued to Outdoor Supervisors with acceptance (D-35) |
 | FR-STK-03 | 12 | 7 | 08, 35 | In progress — `app.issue_stock` built and tested (Phase 6); wired to sales in Phase 7 |
 | FR-PERF-01…04 | 14.4 | 19 | 27, 39 | Not started |
 | FR-REP-01…05 | 14 | 10 (dashboard), 15 | 18, 28 | Not started |

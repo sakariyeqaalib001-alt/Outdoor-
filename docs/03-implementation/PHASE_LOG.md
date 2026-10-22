@@ -320,7 +320,7 @@ Not yet run: the owner's test of the new screens on "Outdoor" (the browser pane 
 
 ## Phase 6 — Stock ledger and team custody
 
-**Date:** 22 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/stock.md`).
+**Date:** 22 Oct 2026 · **Status:** ✅ Accepted by the owner on 22 Oct 2026 — owner-tested on "Outdoor" (receive, issue to an Outdoor Supervisor, accept, report); test stock cleared with `supabase/maintenance/reset_stock_test_data.sql`; CI green (incl. real-Supabase pgTAP).
 
 **Owner decisions before building (D-35, 22 Oct 2026):** no serial numbers anywhere — stock is counted by quantity; the Stock Officer sends quantities to each team; the team's Team Leader / Supervisor accepts (Super Admin may accept for them); each sale by the team deducts the items the agent picks from the team's accepted stock; returns are recorded by the Stock Officer only. This replaces D-12 (serial tracking) and the agent-custody level of D-31. BRD/SDD/Roadmap/CLAUDE.md updated (FR-SALE-08, FR-STK-03, 06, 08, 09, 10, FR-REF-08, FR-SW-02, UAT-08, 22, 35; SDD §12 rewritten).
 
