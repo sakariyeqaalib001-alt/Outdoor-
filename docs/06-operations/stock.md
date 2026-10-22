@@ -45,3 +45,7 @@ You need: a **Stock Officer** user (Users → edit a user → tick **Stock Offic
 | As another Super Admin (or ask the Stock Officer to request it) → **Approve** | Central routers go down by 2 |
 | Report & history | The report adds up (closing = opening + in − out); history lists every step with who did it |
 | Sign in as the test agent | Stock shows only their team, no Receive/Issue/Return buttons |
+
+## 4. Clearing test stock before go-live (one time)
+
+`supabase/maintenance/reset_stock_test_data.sql` deletes every stock movement, issue and adjustment, so all balances are 0 again. Items, locations, teams and settings stay. Run it in the SQL Editor only while all stock so far is test data. It refuses once any sale exists, and the reset itself is recorded in `activity_log` and `change_log`. Then the Stock Officer enters the real opening stock with **Receive stock**.

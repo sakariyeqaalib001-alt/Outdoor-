@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import { as, createTestDatabase, createUser, errorOf } from "./harness";
@@ -270,5 +272,28 @@ describe("Outdoor Supervisor lookup (stock_supervisors)", () => {
     expect((await call(AG, "select team_id from public.stock_supervisors()")).rows).toEqual([{ team_id: teamA }]);
     expect((await call(LONE, "select * from public.stock_supervisors()")).rows).toHaveLength(0);
     expect(await errorOf(as(db, "anon", null, () => db.query("select * from public.stock_supervisors()")))).toMatch(/permission denied/);
+  });
+});
+
+describe("one-time test-data reset (supabase/maintenance/reset_stock_test_data.sql)", () => {
+  const script = readFileSync(path.resolve(import.meta.dirname, "../../supabase/maintenance/reset_stock_test_data.sql"), "utf8");
+
+  it("clears every movement, issue and adjustment, keeps locations, re-locks the ledger and logs the reset", async () => {
+    const fresh = await createTestDatabase();
+    await fresh.query("insert into public.stock_movements (movement_type, item_id, quantity, to_location_id) select 'receipt', i.id, 3, l.id from public.stock_items i, public.stock_locations l where l.kind = 'central'");
+    await fresh.exec(script);
+    expect((await fresh.query("select 1 from public.stock_movements")).rows).toHaveLength(0);
+    expect((await fresh.query("select 1 from public.stock_locations")).rows.length).toBeGreaterThan(0);
+    expect((await fresh.query("select 1 from public.activity_log where action = 'stock.test_data_reset'")).rows).toHaveLength(1);
+    await fresh.query("insert into public.stock_movements (movement_type, item_id, quantity, to_location_id) select 'receipt', i.id, 1, l.id from public.stock_items i, public.stock_locations l where l.kind = 'central' limit 1");
+    expect(await errorOf(fresh.query("delete from public.stock_movements"))).not.toBeNull(); // locked again
+    await fresh.close();
+  });
+
+  it("refuses once any sale exists", async () => {
+    const fresh = await createTestDatabase();
+    await fresh.exec("create table public.sales (id int); insert into public.sales values (1);");
+    expect(await errorOf(fresh.exec(script))).toMatch(/Sales exist/);
+    await fresh.close();
   });
 });
