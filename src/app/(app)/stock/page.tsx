@@ -47,7 +47,7 @@ async function Overview() {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("stock.sentAt")}</TableHead>
-                  <TableHead>{t("stock.team")}</TableHead>
+                  <TableHead>{t("stock.supervisor")}</TableHead>
                   <TableHead>{t("stock.items")}</TableHead>
                   <TableHead className="w-28"><span className="sr-only">{t("stock.accept")}</span></TableHead>
                 </TableRow>

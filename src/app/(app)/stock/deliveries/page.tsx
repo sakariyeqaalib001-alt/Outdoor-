@@ -29,7 +29,7 @@ function NoteField() {
 
 async function Deliveries() {
   const supabase = await createSupabaseServerClient();
-  const [{ items, locations, teams }, transfers, access, ids] = await Promise.all([
+  const [{ items, locations, supervisors }, transfers, access, ids] = await Promise.all([
     getStockContext(),
     listTransfers(),
     getAccess(),
@@ -64,12 +64,13 @@ async function Deliveries() {
               trigger={<Button className="h-11 md:h-9"><Send aria-hidden="true" />{t("stock.send")}</Button>}
             >
               <div className="space-y-1">
-                <Label htmlFor="teamId">{t("stock.team")}</Label>
+                <Label htmlFor="teamId">{t("stock.supervisor")}</Label>
                 <NativeSelect id="teamId" name="teamId" required>
-                  {teams.map((tm) => (
+                  {supervisors.map((tm) => (
                     <option key={tm.id} value={tm.id}>{tm.name}</option>
                   ))}
                 </NativeSelect>
+                {supervisors.length === 0 ? <p className="text-xs text-muted-foreground">{t("stock.noSupervisor")}</p> : null}
               </div>
               <QuantityFields items={items} />
               <NoteField />
@@ -84,7 +85,7 @@ async function Deliveries() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("stock.sentAt")}</TableHead>
-                <TableHead>{t("stock.team")}</TableHead>
+                <TableHead>{t("stock.supervisor")}</TableHead>
                 <TableHead>{t("stock.items")}</TableHead>
                 <TableHead>{t("stock.status")}</TableHead>
                 <TableHead>{t("stock.note")}</TableHead>

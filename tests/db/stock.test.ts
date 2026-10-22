@@ -258,3 +258,17 @@ describe("visibility and the stock report (FR-STK-04)", () => {
     expect(await errorOf(as(db, "anon", null, () => db.query("select * from public.stock_movements")))).toMatch(/permission denied/);
   });
 });
+
+describe("Outdoor Supervisor lookup (stock_supervisors)", () => {
+  it("names each team's Supervisor for stock users, and nothing for others", async () => {
+    await db.query("update public.user_profiles set full_name = 'Supervisor A' where id = $1", [TL]);
+    const rows = (await call(SO, "select team_id, supervisor_id, supervisor_name from public.stock_supervisors()")).rows as {
+      team_id: string; supervisor_id: string; supervisor_name: string;
+    }[];
+    expect(rows.find((r) => r.team_id === teamA)).toEqual({ team_id: teamA, supervisor_id: TL, supervisor_name: "Supervisor A" });
+    expect(rows).toHaveLength(2);
+    expect((await call(AG, "select team_id from public.stock_supervisors()")).rows).toEqual([{ team_id: teamA }]);
+    expect((await call(LONE, "select * from public.stock_supervisors()")).rows).toHaveLength(0);
+    expect(await errorOf(as(db, "anon", null, () => db.query("select * from public.stock_supervisors()")))).toMatch(/permission denied/);
+  });
+});

@@ -59,28 +59,41 @@ async function client() {
   return supabase;
 }
 
-/** Items, locations (with display names) and active teams. */
-export async function getStockContext(): Promise<{ items: StockItem[]; locations: StockLocation[]; teams: TeamChoice[] }> {
+type SupervisorRow = { team_id: string; team_name: string; location_id: string; supervisor_id: string | null; supervisor_name: string | null };
+
+/** "Ahmed Ali (Group A)", or "Group A (no Outdoor Supervisor)" when the team has none. */
+function supervisorLabel(s: SupervisorRow): string {
+  return s.supervisor_name ? `${s.supervisor_name} (${s.team_name})` : `${s.team_name} (${t("stock.noSupervisorShort")})`;
+}
+
+/**
+ * Items, locations with display names, and the Outdoor Supervisors stock can be issued to (owner, 22 Oct 2026:
+ * stock goes to the Supervisor, i.e. the Team Leader of a team). Names come from public.stock_supervisors,
+ * because the Stock Officer may not read the user list.
+ */
+export async function getStockContext(): Promise<{ items: StockItem[]; locations: StockLocation[]; teams: TeamChoice[]; supervisors: TeamChoice[] }> {
   const supabase = await client();
-  const [items, locations, teams] = await Promise.all([
+  const [items, locations, supervisors] = await Promise.all([
     supabase.from("stock_items").select("id, code, display_name").eq("is_active", true).order("sort_order"),
     supabase.from("stock_locations").select("id, kind, team_id"),
-    supabase.from("teams").select("id, name, team_leader_id, is_active").order("name"),
+    supabase.rpc("stock_supervisors"),
   ]);
-  const teamRows = (teams.data ?? []) as { id: string; name: string; team_leader_id: string | null; is_active: boolean }[];
-  const teamById = Object.fromEntries(teamRows.map((tm) => [tm.id, tm]));
+  const rows = (supervisors.data ?? []) as SupervisorRow[];
+  const byTeam = Object.fromEntries(rows.map((s) => [s.team_id, s]));
   const order = { central: 0, faulty: 1, team: 2 } as const;
   const locs = ((locations.data ?? []) as { id: string; kind: StockLocation["kind"]; team_id: string | null }[])
+    .filter((l) => l.kind !== "team" || byTeam[l.team_id ?? ""])
     .map((l) => ({
       ...l,
-      label: l.kind === "central" ? t("stock.central") : l.kind === "faulty" ? t("stock.faulty") : teamById[l.team_id ?? ""]?.name ?? "—",
-      leader_id: l.team_id ? teamById[l.team_id]?.team_leader_id ?? null : null,
+      label: l.kind === "central" ? t("stock.central") : l.kind === "faulty" ? t("stock.faulty") : supervisorLabel(byTeam[l.team_id ?? ""]),
+      leader_id: l.team_id ? byTeam[l.team_id]?.supervisor_id ?? null : null,
     }))
     .sort((a, b) => order[a.kind] - order[b.kind] || a.label.localeCompare(b.label));
   return {
     items: (items.data ?? []) as StockItem[],
     locations: locs,
-    teams: teamRows.filter((tm) => tm.is_active).map(({ id, name }) => ({ id, name })),
+    teams: rows.map((s) => ({ id: s.team_id, name: supervisorLabel(s) })),
+    supervisors: rows.filter((s) => s.supervisor_id).map((s) => ({ id: s.team_id, name: supervisorLabel(s) })),
   };
 }
 

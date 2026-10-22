@@ -330,7 +330,8 @@ Not yet run: the owner's test of the new screens on "Outdoor" (the browser pane 
   - Functions: `stock_receive`, `stock_send`, `stock_accept` (receiving Team Leader or Super Admin), `stock_cancel` (before acceptance, reason), `stock_return` (Stock Officer; to Central or the faulty store; reason codes), `stock_request_adjustment` / `stock_decide_adjustment` (no self-approval), `stock_report(from, to)`; internal `app.issue_stock(seller, lines, ref)` for sales in Phase 7 (not callable through the API).
   - Balances computed from the ledger only; every decrease locks (location, item) and refuses to go below zero; multi-item operations are all-or-nothing.
   - RLS: Stock Officer, Finance, Auditor, Super Admin see all locations; Team Leaders and agents see only their team (`app.can_read_location`); no direct writes for any API role; change history on every new table.
-- Screens (**Stock**): Overview (balances, in transit, deliveries to accept), Deliveries (receive, send, accept, cancel), Returns & adjustments, Report & history. Menu item enabled (`COMPLETED_PHASE = 6`).
+- Screens (**Stock**): Overview (balances, in transit, stock to accept), Issue & receive (receive, issue stock to an Outdoor Supervisor, accept, cancel), Returns & adjustments, Report & history. Menu item enabled (`COMPLETED_PHASE = 6`).
+- Owner feedback (22 Oct 2026): stock is issued to the **Outdoor Supervisor** by name ("Issue stock", not "Send to team"); the Supervisor or Super Admin accepts. Migration `20261022170000_stock_supervisors.sql` adds `stock_supervisors()` so the Stock Officer sees Supervisor names without reading the user list (agents see only their own team's Supervisor).
 
 **BRD check (FR-STK-01…10)**
 
@@ -365,7 +366,7 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 | No negative balances; invalid or unauthorized actions rejected | ✅ database tests for every function and role (Stock Officer, Team Leader of the right/wrong team, agent, Finance, Super Admin, anonymous) |
 | Movement history immutable and inspectable | ✅ updates/deletes refused for everyone; History tab |
 
-**Manual steps for the owner** — `docs/06-operations/stock.md`: paste `supabase/sql-editor/20261022150000_stock.sql`; give a user the Stock Officer role; run the tests in section 3.
+**Manual steps for the owner** — `docs/06-operations/stock.md`: paste `supabase/sql-editor/20261022150000_stock.sql`, then `20261022170000_stock_supervisors.sql`; give a user the Stock Officer role; run the tests in section 3.
 
 **Risks / open items**
 - Without serials, a specific unit cannot be traced to a customer; accountability is per team and item (owner decision D-35).
