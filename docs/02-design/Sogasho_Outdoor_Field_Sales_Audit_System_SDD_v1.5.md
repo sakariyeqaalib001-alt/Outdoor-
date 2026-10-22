@@ -346,7 +346,8 @@ erDiagram
 | `cities`, `branches`, `districts` | active flag, unique names within parent city; branches seeded (§9); districts entered by Super Admin. No `areas` table — Area is free text on customers/sales | 5 |
 | `customer_types` | `new`, `retention` (seeded, not editable codes) | 5 |
 | `products` | code unique (`FTTA`,`FTTH`,`FTTB`,`LTE`), active | 5 |
-| `product_prices` | product_id, city_id null=all, monthly_price, effective_from, effective_to; exclusion constraint prevents overlapping ranges for same product/city | 5 |
+| `plans` | product_id, name (unique per product), download_mbps, upload_mbps, data_allowance, active (D-34; 18 plans loaded) | 5 |
+| `plan_prices` | plan_id, recharge_amount, installation_fee, effective_from, effective_to; same in all cities; overlapping ranges for the same plan refused (D-34; replaces `product_prices`) | 5 |
 | `app_settings` | key/value: payroll_cutoff_day (3), incentive_threshold (15), incentive_rate (5), temp_base_salary (100, flat, edited by Super Admin), performance_target_units (20), performance_baseline_units (15), free_month_amount (50), allowed_phone_prefixes, week_start_day, weekend_days, otp_enabled | 5 |
 | `public_holidays` | date, name | 5 |
 | `stock_items` | code unique (`WIFI_ROUTER`,`PDCOM`,`CALIX`), display_name, is_serialized | 5 |
@@ -356,7 +357,7 @@ erDiagram
 | `stock_transfers` | from/to location, status (`sent`,`acknowledged`,`cancelled`), serial list | 6 |
 | `customers` | full_name, phone_e164, phone_display, index_number (check `^[0-9]{8}$`), district_id, area_text, city_id, branch_id | 7 |
 | `customer_identifiers` | (`type` in `phone`,`index`), value, customer_id, is_current; **unique(type, value)** — covers current and historical values (reservation, D-01) | 7 |
-| `sales` | customer_id, agent_id, product_id, price_id, unit_price, months_paid, amount_collected, free_month bool, customer_type, city_id, branch_id (money hand-in branch, chosen per sale — D-31), district_id, area_text, status, submitted_at (database `now()` only — never from the client, D-30), approved_at, sale_month (generated from submitted_at in EAT), client_request_id **unique** (idempotency) | 7 |
+| `sales` | customer_id, agent_id, product_id, plan_id, plan_price_id, unit_price (recharge snapshot), installation_fee (snapshot), months_paid, amount_collected, free_month bool, customer_type, city_id, branch_id (money hand-in branch, chosen per sale — D-31), district_id, area_text, status, submitted_at (database `now()` only — never from the client, D-30), approved_at, sale_month (generated from submitted_at in EAT), client_request_id **unique** (idempotency) | 7 |
 | — | partial unique index `(customer_id, sale_month)` where status in (`approved`,`pending_approval`) → one active sale per customer per month (D-01) | 7 |
 | `sale_items` | sale_id, stock_item_id, serial_id | 7 |
 | `sale_approvals` | sale_id, decision, reason, decided_by, decided_at (append-only) | 8 |
@@ -401,14 +402,14 @@ Create each table in the phase that owns it, with its RLS policies and tests.
 - Branches seeded from `data/master/branches.csv` (D-29, BRD §6.2.1): Hargeisa — HQ, JJ Yar, Idaacadda, MSG, Boqol Jire, Xero-Awr, Guuled, Adna, Isha Borama, Star, New Hargeisa; Burco — Burco Deero, Burco Plaza; Borama — Shacabka, Suuqa; Berbera — Xarunta Dhexe. Super Admin can add, rename and deactivate.
 - Districts: entered per city by Super Admin in Settings (no seed). Area: free text on the sales form, trimmed, max 100 characters; no managed list.
 - Teams: created by Super Admin in Settings (Phase 4).
-- Products seeded: FTTA, FTTH, FTTB, LTE. **Prices are entered by Super Admin** in Settings (D-04); none are seeded. Pilot readiness (Phase 11) checks that every active product has an active price.
+- Products seeded: FTTA, FTTH, FTTB, LTE, each with **plans** (D-34). The owner's 18 plans and their recharge / installation prices are loaded (BRD §6.3.1), effective 22 Oct 2026; Super Admin maintains them on the Products screen. Pilot readiness (Phase 11) checks that every active plan has a current price.
 - Performance settings: target 20 and baseline 15 eligible units per month, editable by Super Admin.
 - Base salary for temporary agents: one flat amount (currently $100), editable by Super Admin (D-08).
 - Stock items seeded: WiFi Router, PDCOM, CALIX (all serialized). Spelling "PDCOM" confirmed (D-10).
 - Deactivated values remain readable on history and are rejected for new records.
 - All changes recorded in `activity_log`.
 - Phone prefixes (`allowed_phone_prefixes`) configurable; initial value 063 and 065 (D-33). Business week starts Saturday (`week_start_day`, D-33); weekend Friday (D-18).
-- As built in Phase 5 (migration `20261022090000_master_data`): writes only through SECURITY DEFINER functions (`admin_set_setting` with per-key validation and baseline < target, `admin_save_branch`, `admin_save_district`, `admin_rename_customer_type`, `admin_save_product`, `admin_save_price`, `admin_save_stock_item`, `admin_save_holiday`, `admin_delete_holiday`); price overlap refused by a trigger (same product and city); `public.price_for(product, city, date)` returns the city price, else the all-cities price.
+- As built in Phase 5 (migration `20261022090000_master_data`): writes only through SECURITY DEFINER functions (`admin_set_setting` with per-key validation and baseline < target, `admin_save_branch`, `admin_save_district`, `admin_rename_customer_type`, `admin_save_product`, `admin_save_plan`, `admin_save_plan_price` (D-34, migration `20261022120000_plans`), `admin_save_stock_item`, `admin_save_holiday`, `admin_delete_holiday`); price overlap refused by a trigger (same plan); `public.plan_price(plan, date)` returns the recharge and installation fee in force.
 
 # 10. Sales and customer lifecycle
 
@@ -453,7 +454,7 @@ flowchart TD
     K --> L
 ```
 
-- Price: server selects the active `product_prices` row for product + city at submission; client-sent price is ignored. `amount_collected = unit_price × months_paid`.
+- Price: server selects the `plan_prices` row in force for the chosen plan at submission (`public.plan_price`, D-34); client-sent price is ignored. `amount_collected = unit_price × months_paid`.
 - Free-month option: `free_month = true` when the agent selects "Pay 2 months, get 1 free"; `amount_collected` must equal `app_settings.free_month_amount` (default $50); counts as 1 unit.
 - `agent_id` always from the session.
 - **Sale date and month (D-30):** the form has no date field. `submitted_at` is set by the database (`default now()`, column not writable by application roles); `sale_month = app.business_month(submitted_at)`. Any date in the request payload is ignored. The device clock is never used. Option A: no feature exists to move a sale to another month.

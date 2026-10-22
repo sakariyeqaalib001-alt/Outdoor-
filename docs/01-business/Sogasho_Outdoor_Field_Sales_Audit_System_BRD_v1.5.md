@@ -33,7 +33,7 @@ Prepared for **Sogasho ISP**
 | 1.2 | 19 Oct 2026 | Applied business inputs (`inputs.pdf`, 19 Oct 2026) and four confirmations. Closed D-02 (Index = 8-digit customer account number), D-04 (products and prices maintained by Super Admin in Settings), D-08 (flat base salary set by Super Admin, no pro-rating), D-19 (Best Agent / Hall of Fame / Champion streak titles), D-21 (no legacy data; system starts fresh) and D-29 (16 branches listed; districts per city maintained by Super Admin; Area free text; teams set by Super Admin). Added monthly performance bands (target 20, baseline 15). Legacy import requirements (FR-MIG) retired. Still open: D-10, D-20, D-27, D-28. |
 | 1.3 | 19 Oct 2026 | Applied final inputs: D-10 closed (stock item spelled **PDCOM**); D-20 closed (OTP provider **Telesom**); D-28 agent count closed (**46 agents: 7 permanent, 39 temporary**, expected for the next 2 years). Still open: D-27 (KoboToolbox forms) and the data-retention part of D-28. Telesom credentials are kept in server environment settings for the pilot; no in-app SMS configuration page in v1 (§3.2). |
 | 1.4 | 19 Oct 2026 | Added sales-month control (Approved D-30, Option A): the sale date and month are set by the server clock in EAT; agents cannot pick, backdate or future-date a month; the device clock is ignored; a sale submitted after midnight belongs to the new month with no month-move correction; My Sales uses a month selector (current month default, past months read-only) instead of per-month tabs; months lock when payroll is finalized. New FR-SALE-17…21, BR-22, UAT-42…46. |
-| 1.5 | 20–22 Oct 2026 | Owner input (D-33, 22 Oct): customer mobile prefixes 063 and 065; week starts Saturday (FR-SALE-04). Owner decision (D-32, 21 Oct): **every user** — temporary agents, permanent agents and staff — receives an SMS code at sign-in; staff still sign in with email + password, and every user record holds a mobile number (FR-AUTH-02, 03, 05, FR-NOT-02, FR-USER-08). Owner clarification (D-31): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen per sale (new FR-SALE-22); Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). FR-USER-07, FR-STK-08, FR-STK-10, §5, §10.1 and glossary updated. |
+| 1.5 | 20–22 Oct 2026 | Owner input (D-34, 22 Oct): each product has **plans** (e.g. FTTH → SO-Home) with monthly recharge, installation fee, speeds and data; the price belongs to the plan, same in all cities; the owner's 18 plans are loaded (FR-CONF-01, 05, FR-SALE-14, BR-16, §6.3.1). Owner input (D-33, 22 Oct): customer mobile prefixes 063 and 065; week starts Saturday (FR-SALE-04). Owner decision (D-32, 21 Oct): **every user** — temporary agents, permanent agents and staff — receives an SMS code at sign-in; staff still sign in with email + password, and every user record holds a mobile number (FR-AUTH-02, 03, 05, FR-NOT-02, FR-USER-08). Owner clarification (D-31): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen per sale (new FR-SALE-22); Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). FR-USER-07, FR-STK-08, FR-STK-10, §5, §10.1 and glossary updated. |
 
 ## Approval
 
@@ -244,13 +244,40 @@ Total: 16 branches. "New Hargeisa" corrects the spelling "New Hargiesa" in the i
 
 | ID | Requirement |
 |---|---|
-| FR-CONF-01 | Super Admin shall create and maintain products and a price list. Products: **FTTA, FTTH, FTTB, LTE**. (Approved D-04) |
+| FR-CONF-01 | Super Admin shall create and maintain products, their **plans** and a price list. Products: **FTTA, FTTH, FTTB, LTE**. Each plan has a name, monthly recharge (USD), installation fee (USD), download and upload speed and data allowance. (Approved D-04, D-34) |
 | FR-CONF-02 | Super Admin shall assign targets and KPIs to each sales agent. |
 | FR-CONF-03 | The applicable price shall be stored on each sale (price snapshot) so later price changes do not rewrite history. |
 | FR-CONF-04 | Target assignments shall include agent (or team/city), period, KPI definition, target value and effective dates. |
-| FR-CONF-05 | Super Admin creates and maintains products and prices in Settings; no price list is loaded by the developers. Prices have effective-from/effective-to dates and may differ by city if configured. Prices must be entered before pilot go-live. (Approved D-04) |
+| FR-CONF-05 | Super Admin maintains products, plans and plan prices on the Products screen. Plan prices (recharge and installation fee) have effective-from/effective-to dates and are the same in all cities. The plans and prices of §6.3.1 are loaded at set-up; later changes are made by Super Admin. (Approved D-04, D-34) |
 | FR-CONF-06 | Target progress shall be calculated from eligible sales (§8.2) only. (Approved D-06) |
 | FR-CONF-07 | **Monthly performance bands** per agent, based on eligible units in the month: **Target met** ≥ 20; **Baseline** 15–19; **Underperforming** < 15. Target (20) and baseline (15) are set by Super Admin in Settings. Bands are shown on the agent's own view, the Team Leader view, the dashboard and the agent performance report. (Approved, input 19 Oct 2026) |
+
+### 6.3.1 Plans and prices (owner's price sheets, 22 Oct 2026, D-34)
+
+Installation fee $0 and data Unlimited for every plan. Speeds are download / upload in Mbps.
+
+| Product | Plan | Recharge (USD/month) | Speed |
+|---|---|---|---|
+| FTTA | SO-Premium | 150 | 50 / 50 |
+| FTTA | SO-Seven Premium | 100 | 40 / 35 |
+| FTTA | SO-Family | 60 | 30 / 30 |
+| FTTA | SO-Lite | 35 | 16 / 16 |
+| FTTA | SO-Ultra | 25 | 9 / 9 |
+| FTTA | SO-Basic | 20 | 6 / 6 |
+| FTTH | SO-Prime | 60 | 40 / 40 |
+| FTTH | SO-Basic | 35 | 35 / 35 |
+| FTTH | SO-Home | 25 | 25 / 25 |
+| FTTH | SO-Home Basic | 20 | 6 / 6 |
+| FTTB | FTTB-210 | 210 | 60 / 60 |
+| FTTB | FTTB-140 | 140 | 40 / 40 |
+| FTTB | FTTB-70 | 70 | 30 / 30 |
+| FTTB | FTTB-40 | 40 | 20 / 20 |
+| FTTB | FTTB-25 | 25 | 15 / 15 |
+| LTE | SO!-Premium | 40 | 20 / 20 |
+| LTE | SO!-Family | 25 | 15 / 15 |
+| LTE | SO!-Lite | 15 | 8 / 8 |
+
+Names tidied with the owner (capital letters, stray spaces); the second LTE "SO!-Family" ($15) is **SO!-Lite**.
 
 ## 6.4 Sales Registration
 
@@ -269,7 +296,7 @@ Total: 16 branches. "New Hargeisa" corrects the spelling "New Hargiesa" in the i
 | FR-SALE-11 | **New sale:** if the phone or Index already exists on any customer, submission is blocked, a duplicate-attempt event is logged and Super Admin is notified. (Approved D-01) |
 | FR-SALE-12 | **Retention sale:** if the customer exists, the sale links to that customer; if not found, the agent creates the customer record and the sale proceeds to approval. If phone matches one customer and Index matches a different customer, or names materially differ, submission is blocked and logged as a duplicate attempt. (Approved D-01) |
 | FR-SALE-13 | A customer may not have two non-reversed sales in the same calendar month (business timezone). (Approved D-01) |
-| FR-SALE-14 | Price is selected from the active price list for the product (and city); agents cannot type a price. One sale = one unit. (Approved D-04) |
+| FR-SALE-14 | The agent selects the product and **plan**; the recharge and installation fee come from the plan's price in force on the sale date; agents cannot type a price. One sale = one unit. (Approved D-04, D-34) |
 | FR-SALE-15 | The sales form shall autosave a draft on the device and submission shall be idempotent, so retrying on a poor connection never creates a second sale or a second stock deduction. (Approved D-25) |
 | FR-SALE-16 | Changing a customer's phone or Index after registration is a Super Admin action requiring a reason; the old value is kept in history and remains reserved. (Approved D-01) |
 | FR-SALE-17 | The sales form has **no date or month field**. The sale date and time are recorded by the server at submission, in business time (EAT), and determine the sale month. The agent's device clock is never used. (Approved D-30) |
@@ -492,7 +519,7 @@ A duplicate attempt is blocked immediately and logged; it is not treated as prov
 | BR-13 | Free-month: qualifying amount configurable (default $50); revenue = amount collected; counts as 1 unit. (D-09) |
 | BR-14 | Only eligible sales (§8.2) count toward targets, approved dashboard figures, payroll and rankings. (D-06) |
 | BR-15 | One non-reversed sale per customer per calendar month. (D-01) |
-| BR-16 | 1 sale = 1 unit; price from catalog only. (D-04) |
+| BR-16 | 1 sale = 1 unit; product, plan and price from the catalog only. (D-04, D-34) |
 | BR-17 | Revenue = amount collected at registration (price snapshot × months paid). (D-09) |
 | BR-18 | All periods use business timezone EAT (UTC+3). (D-24) |
 | BR-19 | Monthly performance band from eligible units: ≥ 20 Target met; 15–19 Baseline; < 15 Underperforming. Target and baseline configurable by Super Admin. |
@@ -696,7 +723,7 @@ Every figure states whether it counts **submitted** or **eligible** sales.
 | Assumption | Operations in Hargeisa, Burco, Berbera and Borama; pilot in Hargeisa. | Additional cities via configuration. |
 | Assumption | Next.js + Supabase remain the approved stack. | Hosting provider selected in Phase 0. |
 | Dependency | Telesom SMS API account, credentials and sender name (D-20). | IT / Telesom. |
-| Dependency | Super Admin enters prices, districts and teams in Settings before pilot (D-04, D-29). | Super Admin / Commercial. |
+| Dependency | Plans and prices loaded (D-34); Super Admin enters districts and teams in Settings before pilot (D-29). | Super Admin / Commercial. |
 | Dependency | Data retention periods (D-28). | Management / Legal / Finance. |
 
 # 15. Delivery Plan and Decision Register
@@ -742,6 +769,7 @@ Closed in v1.2 from business inputs (`inputs.pdf`, 19 Oct 2026) and confirmation
 | D-19 | Best Agent = #1 of the month; Hall of Fame = Best Agent 3 consecutive months; Champion = Best Agent 4 consecutive months | 6.13, 8.1 |
 | D-21 | No legacy data; system starts as brand new | 3.2, 6.17 |
 | D-29 | 16 branches supplied (§6.2.1); districts per city maintained by Super Admin; Area free text; teams created by Super Admin | 6.2, 6.4 |
+| D-34 | Products have plans; price (recharge + installation) per plan, same in all cities; owner's 18 plans loaded — owner, 22 Oct 2026 | 6.3, 6.4 |
 | D-33 | Customer mobile prefixes 063 and 065 (editable); business week starts Saturday — owner, 22 Oct 2026 | 6.4, 6.8 |
 | D-32 | Every user (agents and staff) receives an SMS OTP at sign-in; every user record holds a mobile number — owner, 21 Oct 2026 | 6.1, 6.3, 6.16 |
 | D-31 | Agents have no home branch (Outdoor Department); Branch on a sale = where its money is handed in, chosen per sale; Outdoor stock flows Central Store → Team Leader/Supervisor → Agent (branches hold none) — owner, 20 Oct 2026 | 6.2, 6.4, 6.12 |

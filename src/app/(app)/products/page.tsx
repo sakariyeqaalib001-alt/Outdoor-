@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { businessToday } from "@/lib/dates";
 import { t } from "@/lib/i18n";
 import { can, getAccess } from "@/server/auth/access";
-import { listCities, listProducts } from "@/server/settings/queries";
+import { listProducts } from "@/server/settings/queries";
 import { ProductsView } from "./products-view";
 
 export const metadata: Metadata = { title: t("nav.products") };
@@ -14,12 +14,12 @@ export const metadata: Metadata = { title: t("nav.products") };
 async function ProductsContent() {
   const access = await getAccess();
   if (!can(access, ["prices.manage", "settings.manage"])) return <AccessDenied />;
-  const [{ products, prices }, cities] = await Promise.all([listProducts(), listCities()]);
+  const { products, plans, prices } = await listProducts();
   return (
     <ProductsView
       products={products}
+      plans={plans}
       prices={prices}
-      cities={cities}
       today={businessToday()}
       canManage={can(access, "prices.manage")}
     />

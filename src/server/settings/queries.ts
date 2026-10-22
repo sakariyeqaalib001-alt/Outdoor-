@@ -10,11 +10,20 @@ export type StockItemRow = { id: string; code: string; display_name: string; is_
 export type HolidayRow = { id: string; holiday_date: string; name: string };
 export type SettingRow = { key: string; value: unknown; description: string };
 export type ProductRow = { id: string; code: string; name: string; is_active: boolean };
-export type PriceRow = {
+export type PlanRow = {
   id: string;
   product_id: string;
-  city_id: string | null;
-  monthly_price: number;
+  name: string;
+  download_mbps: number;
+  upload_mbps: number;
+  data_allowance: string;
+  is_active: boolean;
+};
+export type PlanPriceRow = {
+  id: string;
+  plan_id: string;
+  recharge_amount: number;
+  installation_fee: number;
   effective_from: string;
   effective_to: string | null;
 };
@@ -54,14 +63,19 @@ export async function listSettings(): Promise<SettingRow[]> {
   return (data ?? []) as SettingRow[];
 }
 
-export async function listProducts(): Promise<{ products: ProductRow[]; prices: PriceRow[] }> {
+export async function listProducts(): Promise<{ products: ProductRow[]; plans: PlanRow[]; prices: PlanPriceRow[] }> {
   const supabase = await client();
-  const [products, prices] = await Promise.all([
+  const [products, plans, prices] = await Promise.all([
     supabase.from("products").select("id, code, name, is_active").order("sort_order"),
+    supabase.from("plans").select("id, product_id, name, download_mbps, upload_mbps, data_allowance, is_active").order("sort_order"),
     supabase
-      .from("product_prices")
-      .select("id, product_id, city_id, monthly_price, effective_from, effective_to")
+      .from("plan_prices")
+      .select("id, plan_id, recharge_amount, installation_fee, effective_from, effective_to")
       .order("effective_from", { ascending: false }),
   ]);
-  return { products: (products.data ?? []) as ProductRow[], prices: (prices.data ?? []) as PriceRow[] };
+  return {
+    products: (products.data ?? []) as ProductRow[],
+    plans: (plans.data ?? []) as PlanRow[],
+    prices: (prices.data ?? []) as PlanPriceRow[],
+  };
 }

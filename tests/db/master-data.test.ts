@@ -14,6 +14,7 @@ const OFF = "50000000-0000-4000-8000-000000000004"; // deactivated Super Admin
 let hargeisa: string;
 let burco: string;
 let ftth: string;
+let plan: string; // FTTH → SO-Home
 
 const asUser = <T>(user: string, fn: () => Promise<T>) => as(db, "authenticated", user, fn);
 const call = (user: string, sql: string, params: unknown[] = []) => asUser(user, () => db.query(sql, params));
@@ -32,7 +33,16 @@ beforeAll(async () => {
   hargeisa = (await db.query<{ id: string }>("select id from public.cities where name = 'Hargeisa'")).rows[0].id;
   burco = (await db.query<{ id: string }>("select id from public.cities where name = 'Burco'")).rows[0].id;
   ftth = (await db.query<{ id: string }>("select id from public.products where code = 'FTTH'")).rows[0].id;
+  plan = await planId("FTTH", "SO-Home");
 }, 60_000);
+
+async function planId(product: string, name: string): Promise<string> {
+  const { rows } = await db.query<{ id: string }>(
+    "select pl.id from public.plans pl join public.products p on p.id = pl.product_id where p.code = $1 and pl.name = $2",
+    [product, name]
+  );
+  return rows[0].id;
+}
 
 describe("seeded master data (SDD §9)", () => {
   it("has the 16 branches of BRD §6.2.1 in the right cities", async () => {
@@ -50,10 +60,38 @@ describe("seeded master data (SDD §9)", () => {
     expect(rows.map((r) => r.k).sort()).toEqual(expected.sort());
   });
 
-  it("has products FTTA, FTTH, FTTB, LTE and no prices (D-04)", async () => {
+  it("has products FTTA, FTTH, FTTB, LTE with the owner's 18 plans and prices (D-34)", async () => {
     const products = await db.query<{ code: string }>("select code from public.products order by sort_order");
     expect(products.rows.map((r) => r.code)).toEqual(["FTTA", "FTTH", "FTTB", "LTE"]);
-    expect((await db.query("select 1 from public.product_prices")).rows).toHaveLength(0);
+    const { rows } = await db.query<{ line: string; installation: string; data: string; from: string; to: string | null }>(`
+      select pr.code || ' ' || pl.name || ' ' || pp.recharge_amount || ' ' || pl.download_mbps || '/' || pl.upload_mbps as line,
+             pp.installation_fee::text as installation, pl.data_allowance as data,
+             pp.effective_from::text as from, pp.effective_to::text as to
+      from public.plans pl
+      join public.products pr on pr.id = pl.product_id
+      join public.plan_prices pp on pp.plan_id = pl.id
+      order by pr.sort_order, pl.sort_order`);
+    expect(rows.map((r) => r.line)).toEqual([
+      "FTTA SO-Premium 150.00 50/50",
+      "FTTA SO-Seven Premium 100.00 40/35",
+      "FTTA SO-Family 60.00 30/30",
+      "FTTA SO-Lite 35.00 16/16",
+      "FTTA SO-Ultra 25.00 9/9",
+      "FTTA SO-Basic 20.00 6/6",
+      "FTTH SO-Prime 60.00 40/40",
+      "FTTH SO-Basic 35.00 35/35",
+      "FTTH SO-Home 25.00 25/25",
+      "FTTH SO-Home Basic 20.00 6/6",
+      "FTTB FTTB-210 210.00 60/60",
+      "FTTB FTTB-140 140.00 40/40",
+      "FTTB FTTB-70 70.00 30/30",
+      "FTTB FTTB-40 40.00 20/20",
+      "FTTB FTTB-25 25.00 15/15",
+      "LTE SO!-Premium 40.00 20/20",
+      "LTE SO!-Family 25.00 15/15",
+      "LTE SO!-Lite 15.00 8/8",
+    ]);
+    for (const r of rows) expect([r.installation, r.data, r.from, r.to]).toEqual(["0.00", "Unlimited", "2026-10-22", null]);
   });
 
   it("has customer types, serialized stock items (PDCOM spelling) and no districts", async () => {
@@ -92,7 +130,7 @@ describe("seeded master data (SDD §9)", () => {
 });
 
 describe("reading master data", () => {
-  it.each(["branches", "districts", "customer_types", "products", "product_prices", "stock_items", "public_holidays", "app_settings"])(
+  it.each(["branches", "districts", "customer_types", "products", "plans", "plan_prices", "stock_items", "public_holidays", "app_settings"])(
     "%s is readable by active users only",
     async (table) => {
       expect(await errorOf(call(AG, `select * from public.${table}`))).toBeNull();
@@ -101,7 +139,7 @@ describe("reading master data", () => {
     }
   );
 
-  it.each(["branches", "districts", "customer_types", "products", "product_prices", "stock_items", "public_holidays", "app_settings"])(
+  it.each(["branches", "districts", "customer_types", "products", "plans", "plan_prices", "stock_items", "public_holidays", "app_settings"])(
     "%s cannot be written directly, even by Super Admin",
     async (table) => {
       expect(await errorOf(call(SA, `delete from public.${table}`))).toMatch(/permission denied/);
@@ -156,7 +194,8 @@ describe("maintaining lists (settings.manage)", () => {
     ["admin_delete_holiday('00000000-0000-0000-0000-000000000000')"],
     ["admin_set_setting('incentive_rate', '6')"],
     ["admin_save_product(null, 'FTTX', 'FTTX', true)"],
-    ["admin_save_price(null, '00000000-0000-0000-0000-000000000000', null, 10, '2026-01-01', null)"],
+    ["admin_save_plan(null, '00000000-0000-0000-0000-000000000000', 'X plan', 10, 10, 'Unlimited', true)"],
+    ["admin_save_plan_price(null, '00000000-0000-0000-0000-000000000000', 10, 0, '2026-01-01', null)"],
   ])("%s is refused for an agent, Finance and a deactivated Super Admin", async (fn) => {
     for (const user of [AG, FIN, OFF]) {
       expect(await errorOf(call(user, `select public.${fn}`)), user).toMatch(/not allowed/);
@@ -210,11 +249,15 @@ describe("settings (admin_set_setting)", () => {
   });
 });
 
-describe("products and prices (prices.manage)", () => {
-  const savePrice = (city: string | null, price: number, from: string, to: string | null, id: string | null = null, product = ftth) =>
-    one<{ id: string }>(SA, "select public.admin_save_price($1, $2, $3, $4, $5, $6) as id", [id, product, city, price, from, to]);
-  const priceFor = async (city: string, on: string, user = AG) =>
-    (await one<{ p: string | null }>(user, "select public.price_for($1, $2, $3) as p", [ftth, city, on])).p;
+describe("products, plans and prices (prices.manage, D-34)", () => {
+  const savePrice = (recharge: number, from: string, to: string | null, id: string | null = null, installation = 0, forPlan = plan) =>
+    one<{ id: string }>(SA, "select public.admin_save_plan_price($1, $2, $3, $4, $5, $6) as id", [id, forPlan, recharge, installation, from, to]);
+  const priceOn = async (on: string, user = AG, forPlan = plan) =>
+    (
+      await asUser(user, () =>
+        db.query<{ recharge_amount: string; installation_fee: string }>("select * from public.plan_price($1, $2)", [forPlan, on])
+      )
+    ).rows[0] ?? null;
 
   it("adds a product with a fixed code", async () => {
     const { id } = await one<{ id: string }>(SA, "select public.admin_save_product(null, 'fttx', 'Fibre X', true) as id");
@@ -223,48 +266,55 @@ describe("products and prices (prices.manage)", () => {
       .rows[0];
     expect(row).toEqual({ code: "FTTX", name: "Fibre X2", is_active: false });
     expect(await errorOf(call(SA, "select public.admin_save_product(null, 'FTTH', 'Duplicate', true)"))).toMatch(/NAME_TAKEN/);
-    expect(await errorOf(savePrice(null, 10, "2026-01-01", null, null, id))).toMatch(/PRODUCT_INACTIVE/);
+    expect(await errorOf(call(SA, "select public.admin_save_plan(null, $1, 'X plan', 10, 10, 'Unlimited', true)", [id]))).toMatch(/PRODUCT_INACTIVE/);
   });
 
-  it("returns the effective price for a date, preferring the city's own price", async () => {
-    await savePrice(null, 25, "2026-01-01", "2026-10-31");
-    await savePrice(null, 30, "2026-11-01", null);
-    await savePrice(burco, 28, "2026-11-01", null);
-
-    expect(await priceFor(hargeisa, "2025-12-31")).toBeNull();
-    expect(await priceFor(hargeisa, "2026-01-01")).toBe("25.00");
-    expect(await priceFor(hargeisa, "2026-10-31")).toBe("25.00");
-    expect(await priceFor(hargeisa, "2026-11-01")).toBe("30.00");
-    expect(await priceFor(burco, "2026-10-15")).toBe("25.00");
-    expect(await priceFor(burco, "2026-11-01")).toBe("28.00");
-    expect(await priceFor(hargeisa, "2027-06-01")).toBe("30.00");
+  it("adds and edits plans; names are unique within a product only; the product never changes", async () => {
+    expect(await errorOf(call(SA, "select public.admin_save_plan(null, $1, 'so-home', 5, 5, '', true)", [ftth]))).toMatch(/NAME_TAKEN/);
+    const lte = (await db.query<{ id: string }>("select id from public.products where code = 'LTE'")).rows[0].id;
+    const { id } = await one<{ id: string }>(SA, "select public.admin_save_plan(null, $1, 'SO-Home', 5, 5, '', true) as id", [lte]);
+    await call(SA, "select public.admin_save_plan($1, $2, 'SO!-Home', 6, 6, '100 GB', false)", [id, ftth]);
+    const row = (
+      await db.query<{ product_id: string; name: string; data_allowance: string; is_active: boolean }>(
+        "select product_id, name, data_allowance, is_active from public.plans where id = $1",
+        [id]
+      )
+    ).rows[0];
+    expect(row).toEqual({ product_id: lte, name: "SO!-Home", data_allowance: "100 GB", is_active: false });
+    expect(await errorOf(call(SA, "select public.admin_save_plan(null, $1, 'Zero', 0, 5, '', true)", [lte]))).toMatch(/INVALID_PLAN/);
+    expect(await errorOf(savePrice(10, "2030-01-01", null, null, 0, id))).toMatch(/PLAN_INACTIVE/);
   });
 
-  it("refuses overlapping ranges for the same product and city", async () => {
-    expect(await errorOf(savePrice(null, 31, "2026-10-31", "2026-11-30"))).toMatch(/PRICE_OVERLAP/);
-    expect(await errorOf(savePrice(burco, 29, "2027-01-01", null))).toMatch(/PRICE_OVERLAP/);
-    expect(await errorOf(savePrice(hargeisa, 29, "2027-01-01", null))).toBeNull();
+  it("returns the recharge and installation fee in force on a date", async () => {
+    expect(await priceOn("2026-10-21")).toBeNull();
+    expect(await priceOn("2026-10-22")).toEqual({ recharge_amount: "25.00", installation_fee: "0.00" });
+    expect(await priceOn("2030-01-01")).toEqual({ recharge_amount: "25.00", installation_fee: "0.00" });
   });
 
-  it("refuses invalid prices and dates", async () => {
-    expect(await errorOf(savePrice(null, 0, "2030-01-01", null))).toMatch(/INVALID_PRICE/);
-    expect(await errorOf(savePrice(null, 10.555, "2030-01-01", null))).toMatch(/INVALID_PRICE/);
-    expect(await errorOf(savePrice(null, 10, "2030-02-01", "2030-01-01"))).toMatch(/INVALID_DATES/);
+  it("refuses overlapping dates for the same plan", async () => {
+    expect(await errorOf(savePrice(30, "2027-01-01", null))).toMatch(/PRICE_OVERLAP/);
+    expect(await errorOf(savePrice(70, "2027-01-01", null, null, 0, await planId("FTTH", "SO-Prime")))).toMatch(/PRICE_OVERLAP/);
   });
 
-  it("can close an open range so a new price can start", async () => {
-    const { rows } = await db.query<{ id: string }>(
-      "select id from public.product_prices where product_id = $1 and city_id is null and effective_to is null",
-      [ftth]
-    );
-    await savePrice(null, 30, "2026-11-01", "2027-12-31", rows[0].id);
-    await savePrice(null, 35, "2028-01-01", null);
-    expect(await priceFor(hargeisa, "2027-12-31")).toBe("29.00"); // Hargeisa's own price from 2027-01-01
-    expect(await priceFor(burco, "2028-02-01")).toBe("28.00");
-    expect(await one<{ p: string }>(AG, "select public.price_for($1, $2, '2028-02-01') as p", [ftth, (await db.query<{ id: string }>("select id from public.cities where name = 'Berbera'")).rows[0].id])).toEqual({ p: "35.00" });
+  it("changes a price by ending the old one and starting a new one; old dates keep the old price", async () => {
+    const current = (await db.query<{ id: string }>("select id from public.plan_prices where plan_id = $1", [plan])).rows[0].id;
+    await savePrice(25, "2026-10-22", "2026-12-31", current);
+    await savePrice(28, "2027-01-01", null, null, 5);
+    expect(await priceOn("2026-12-31")).toEqual({ recharge_amount: "25.00", installation_fee: "0.00" });
+    expect(await priceOn("2027-01-01")).toEqual({ recharge_amount: "28.00", installation_fee: "5.00" });
+    const log = await db.query<{ action: string }>("select action from public.activity_log where entity_type = 'plan_prices' order by occurred_at");
+    expect(log.rows.map((r) => r.action)).toEqual(["plan_prices.update", "plan_prices.create"]);
+  });
+
+  it("refuses invalid amounts and dates", async () => {
+    expect(await errorOf(savePrice(0, "2031-01-01", null))).toMatch(/INVALID_PRICE/);
+    expect(await errorOf(savePrice(10.555, "2031-01-01", null))).toMatch(/INVALID_PRICE/);
+    expect(await errorOf(savePrice(10, "2031-01-01", null, null, -1))).toMatch(/INVALID_PRICE/);
+    expect(await errorOf(savePrice(10, "2031-02-01", "2031-01-01"))).toMatch(/INVALID_DATES/);
   });
 
   it("is hidden from deactivated users", async () => {
-    expect(await priceFor(hargeisa, "2026-01-01", OFF)).toBeNull();
+    expect(await priceOn("2026-12-01", OFF)).toBeNull();
+    expect((await call(OFF, "select * from public.plans")).rows).toHaveLength(0);
   });
 });

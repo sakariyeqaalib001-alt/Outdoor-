@@ -21,6 +21,8 @@ const DB_ERRORS: Record<string, MessageKey> = {
   BAND_ORDER: "settings.errors.bandOrder",
   PRICE_OVERLAP: "settings.errors.priceOverlap",
   PRODUCT_INACTIVE: "settings.errors.productInactive",
+  PLAN_INACTIVE: "settings.errors.planInactive",
+  INVALID_PLAN: "settings.errors.invalidPlan",
   INVALID_PRICE: "settings.errors.invalidPrice",
   INVALID_DATES: "settings.errors.invalidDates",
 };
@@ -115,29 +117,45 @@ export async function saveProduct(_prev: SettingsResult, formData: FormData): Pr
   ]);
 }
 
-export async function savePrice(_prev: SettingsResult, formData: FormData): Promise<SettingsResult> {
+const mbps = z.coerce.number().int().min(1).max(100000);
+const amount = z.coerce.number().min(0).max(100000);
+
+export async function savePlan(_prev: SettingsResult, formData: FormData): Promise<SettingsResult> {
   const parsed = z
-    .object({
-      id: optionalUuid,
-      productId: uuid,
-      cityId: optionalUuid,
-      price: z.coerce.number().positive().max(100000),
-      from: date,
-      to: optionalDate,
-    })
+    .object({ id: optionalUuid, productId: uuid, name: z.string().trim().min(2).max(60), download: mbps, upload: mbps, data: z.string().trim().max(40) })
     .safeParse({
       id: formData.get("id"),
       productId: formData.get("productId"),
-      cityId: formData.get("cityId"),
-      price: formData.get("price"),
+      name: formData.get("name"),
+      download: formData.get("download"),
+      upload: formData.get("upload"),
+      data: formData.get("data") ?? "",
+    });
+  if (!parsed.success) return checkFields;
+  const p = parsed.data;
+  return rpc(
+    "admin_save_plan",
+    { p_id: p.id, p_product: p.productId, p_name: p.name, p_download_mbps: p.download, p_upload_mbps: p.upload, p_data_allowance: p.data, p_active: active(formData) },
+    ["/products"]
+  );
+}
+
+export async function savePlanPrice(_prev: SettingsResult, formData: FormData): Promise<SettingsResult> {
+  const parsed = z
+    .object({ id: optionalUuid, planId: uuid, recharge: amount.positive(), installation: amount, from: date, to: optionalDate })
+    .safeParse({
+      id: formData.get("id"),
+      planId: formData.get("planId"),
+      recharge: formData.get("recharge"),
+      installation: formData.get("installation") || 0,
       from: formData.get("from"),
       to: formData.get("to"),
     });
   if (!parsed.success) return checkFields;
   const p = parsed.data;
   return rpc(
-    "admin_save_price",
-    { p_id: p.id, p_product: p.productId, p_city: p.cityId, p_monthly_price: p.price, p_effective_from: p.from, p_effective_to: p.to },
+    "admin_save_plan_price",
+    { p_id: p.id, p_plan: p.planId, p_recharge: p.recharge, p_installation: p.installation, p_effective_from: p.from, p_effective_to: p.to },
     ["/products"]
   );
 }

@@ -271,6 +271,7 @@ Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on Git
   - RLS: every active user reads the lists (forms need them); no direct insert/update/delete for any API role; change history on every new table.
 - Screens: **Settings** (General, Branches, Districts, Lists, Public holidays) and **Products** (products + price list with Current / Upcoming / Ended, "No current price" warning). Shared tab bar `src/components/page-tabs.tsx` (Users tabs use it too). Menu items Settings and Products now active (`COMPLETED_PHASE = 5`).
 - Owner input **D-33**: customer mobile prefixes 063 and 065; week starts Saturday.
+- Owner input **D-34** (same day, after the first build): products have **plans**. Migration `20261022120000_plans.sql` replaces the product-level `product_prices` (never used) with `plans` (name, speeds, data) and `plan_prices` (recharge + installation fee, effective dates, same in all cities, no overlaps); loads the owner's 18 plans (BRD §6.3.1) effective 22 Oct 2026; functions `admin_save_plan`, `admin_save_plan_price`, `plan_price(plan, date)`. Products screen shows products, plans (current price, speeds, "No current price" warning) and price history.
 
 **Not in scope:** applying the prefixes and the price snapshot to sales (Phase 7); targets per agent (Phase 14); other dropdown lists (refund reasons, stock return reasons, leave types) arrive with their modules.
 
@@ -281,9 +282,9 @@ Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on Git
 | FR-USER-04 customer types and dropdown options | ✅ customer types renamable (codes fixed); module dropdowns arrive with their phases |
 | FR-USER-09 branches seeded; add/rename/deactivate | ✅ Settings → Branches |
 | FR-USER-10 districts per city; Area not a list | ✅ Settings → Districts; no areas table |
-| FR-CONF-01 products and price list (FTTA, FTTH, FTTB, LTE) | ✅ Products screen |
-| FR-CONF-03 price stored on each sale | ✅ `price_for` ready; snapshot stored by sales ➡ Phase 7 |
-| FR-CONF-05 prices entered by Super Admin, effective dates, optional city; none loaded | ✅ no prices seeded; overlap refused |
+| FR-CONF-01 products, plans and price list (FTTA, FTTH, FTTB, LTE) | ✅ Products screen; 18 plans loaded (D-34) |
+| FR-CONF-03 price stored on each sale | ✅ `plan_price` ready; snapshot stored by sales ➡ Phase 7 |
+| FR-CONF-05 plan prices with effective dates, same in all cities (D-34) | ✅ owner's prices loaded; edits by Super Admin; overlap refused |
 | FR-CONF-07 target 20 / baseline 15 set by Super Admin | ✅ Settings → General (baseline must stay below target); bands shown ➡ Phases 10/14 |
 | FR-LEAVE-07 weekend days and holidays configurable | ✅ settings + Public holidays (used in Phase 17) |
 | FR-SALE-04 allowed prefixes configurable | ✅ setting (063, 065); enforced on sales ➡ Phase 7 |
@@ -293,7 +294,7 @@ Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on Git
 
 | Command | Result |
 |---|---|
-| `npm run check` (lint, typecheck, tests, build) | Pass — 258 tests (new: 51 master-data database tests, 4 settings-form and date tests); build adds `/settings`, `/settings/branches`, `/settings/districts`, `/settings/lists`, `/settings/holidays`, `/products` |
+| `npm run check` (lint, typecheck, tests, build) | Pass — 262 tests (new: 55 master-data database tests incl. plans, 4 settings-form and date tests); build adds `/settings`, `/settings/branches`, `/settings/districts`, `/settings/lists`, `/settings/holidays`, `/products` |
 | `npm run db:sql-editor` | Generated `supabase/sql-editor/20261022090000_master_data.sql` |
 
 Not yet run: the owner's test of the new screens on "Outdoor" (the browser pane cannot sign in — the SMS code goes to the owner's phone); CI on GitHub (after upload).
@@ -303,13 +304,13 @@ Not yet run: the owner's test of the new screens on "Outdoor" (the browser pane 
 | Criterion | Result |
 |---|---|
 | Admin can maintain all lists; others denied | ✅ database tests: Super Admin allowed; agent, Finance, deactivated Super Admin and anonymous refused for every function; direct table writes refused even for Super Admin; ⏳ owner UI test |
-| Price lookup returns the correct effective price for a date/city | ✅ database tests (boundaries, city override, open-ended, gaps, overlaps) |
+| Price lookup returns the correct effective price for a date | ✅ database tests for plan prices (boundaries, open-ended, price change, overlaps); seed compared with the owner's sheets |
 | Branch seed matches BRD §6.2.1; districts and prices enterable on staging | ✅ test compares the seed with the BRD table; ⏳ owner enters districts and prices on "Outdoor" |
 
-**Manual steps for the owner** — `docs/06-operations/settings.md`: paste `supabase/sql-editor/20261022090000_master_data.sql`; run the tests in section 3.
+**Manual steps for the owner** — `docs/06-operations/settings.md`: paste `supabase/sql-editor/20261022090000_master_data.sql`, then `20261022120000_plans.sql`; run the tests in section 3.
 
 **Risks / open items**
-- Prices and districts must be entered by the business before go-live (D-04, D-29); Phase 11 readiness checks them.
+- Districts must be entered by the business before go-live (D-29); plan prices are loaded (D-34) and must be kept current; Phase 11 readiness checks both.
 - Turning **SMS code at sign-in** off disables the code for everyone; it is for emergencies only (e.g. SMS outage).
 
 **Next prompt (not executed):**
