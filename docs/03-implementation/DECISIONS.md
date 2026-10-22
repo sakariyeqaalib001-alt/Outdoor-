@@ -18,8 +18,8 @@ The BRD (§15) remains the authoritative business register; this file mirrors it
 | D-08 | Temporary base salary: flat amount set by Super Admin (currently $100), no pro-rating | 6.9 | v1.2 |
 | D-09 | Revenue = amount collected; free-month handling (default $50, 1 unit) | 6.11 | v1.1 |
 | D-10 | Stock item spelling is PDCOM | 6.12 | v1.3 |
-| D-11 | Stock custody chain (chain replaced by D-31: Central → Team Leader → Agent) | 6.12 | v1.1 |
-| D-12 | Serial tracking for WiFi Router, PDCOM, CALIX | 6.12 | v1.1 |
+| D-11 | Stock custody chain (replaced by D-31 and D-35: Central → team stock) | 6.12 | v1.1 |
+| D-12 | ~~Serial tracking~~ (replaced by D-35) for WiFi Router, PDCOM, CALIX | 6.12 | v1.1 |
 | D-13 | Audit case states Open → Under Review → Confirmed Issue / False Positive → Resolved | 7.2 | v1.1 |
 | D-14 | Retention approver = Team Leader (Super Admin fallback), no self-approval, stock at submission | 6.4 | v1.1 |
 | D-15 | Refund effects and timing | 6.5 | v1.1 |
@@ -41,6 +41,7 @@ The BRD (§15) remains the authoritative business register; this file mirrors it
 | D-32 | SMS OTP at sign-in for every user (agents and staff); every user has a mobile number | 6.1, 6.3, 6.16 | v1.5 |
 | D-33 | Customer mobile prefixes 063 and 065; business week starts Saturday | 6.4, 6.8 | v1.5 |
 | D-34 | Products have plans; price per plan (recharge + installation), same in all cities; 18 plans loaded | 6.3, 6.4 | v1.5 |
+| D-35 | Stock by quantity, no serials; team stock accepted by TL/Supervisor (or Super Admin); sales deduct from team stock; returns by Stock Officer | 6.12 | v1.5 |
 
 ## Business decisions — open (blocking)
 
@@ -80,3 +81,4 @@ The BRD (§15) remains the authoritative business register; this file mirrors it
 | D-32 *(business)* | 21 Oct 2026 | **SMS code for everyone** (owner chose "Everyone" over "staff with admin power" and "per-user tick"): temporary agents, permanent agents and all staff receive the 6-digit SMS code after their password at every new sign-in; staff still sign in with email. Every user has a mobile number (`user_profiles.login_phone_e164`, unique per employment type, so one person may hold a staff account and an agent account on the same number). A user without a number cannot finish sign-in. Same limits as T-15; the Phase 5 `otp_enabled` setting turns it off for everyone. Migration `20261021090000_otp_for_everyone`; the first Super Admin adds their own number once with `app.set_user_phone` in the SQL Editor. Changes FR-AUTH-03 (was email + password only) | Stronger protection for staff accounts with wide access, especially Super Admin |
 | D-33 *(business)* | 22 Oct 2026 | **Phase 5 setting defaults** (owner): allowed customer mobile prefixes **063 (Telesom) and 065 (Somtel)** — stored as `["63", "65"]` in `allowed_phone_prefixes`, applied to customer phones from Phase 7; the business **week starts on Saturday** (`week_start_day`). Both are editable by Super Admin in Settings → General | SDD §8.3 listed the settings without values |
 | D-34 *(business)* | 22 Oct 2026 | **Plans** (owner's price sheets): each product has plans with monthly recharge, installation fee, download/upload speed and data; the **price belongs to the plan** and is the **same in all cities**; a sale records product + plan and keeps the price in force on its date. The owner asked to **load** the 18 plans (BRD §6.3.1, effective 22 Oct 2026) — this replaces the D-04 rule that no price list is loaded. Names tidied with the owner; the $15 LTE plan is SO!-Lite. Migration `20261022120000_plans` replaces `product_prices` (unused) with `plans` + `plan_prices` | The business sells plans, not bare products |
+| D-35 *(business)* | 22 Oct 2026 | **Stock without serial numbers** (owner, Phase 6 questions): WiFi Router, PDCOM and CALIX are counted by quantity — no serials anywhere (replaces D-12). The Stock Officer receives into Central and sends quantities to a team; the team's Team Leader / Supervisor accepts (Super Admin may accept on their behalf); only accepted stock counts. Each sale by a member or the leader of the team deducts the items the agent picks on the sale from the team's stock (refused when short). Returns are recorded by the Stock Officer only. Adjustments: Stock Officer requests, Super Admin approves. Agents hold no stock of their own. Migration `20261022150000_stock` | Simpler for the field; custody is at team level |

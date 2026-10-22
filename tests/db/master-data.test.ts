@@ -94,7 +94,7 @@ describe("seeded master data (SDD §9)", () => {
     for (const r of rows) expect([r.installation, r.data, r.from, r.to]).toEqual(["0.00", "Unlimited", "2026-10-22", null]);
   });
 
-  it("has customer types, serialized stock items (PDCOM spelling) and no districts", async () => {
+  it("has customer types, stock items counted by quantity (PDCOM spelling, D-35) and no districts", async () => {
     expect((await db.query<{ code: string }>("select code from public.customer_types order by sort_order")).rows.map((r) => r.code)).toEqual([
       "new",
       "retention",
@@ -103,9 +103,9 @@ describe("seeded master data (SDD §9)", () => {
       "select code, display_name, is_serialized from public.stock_items order by sort_order"
     );
     expect(items.rows).toEqual([
-      { code: "WIFI_ROUTER", display_name: "WiFi Router", is_serialized: true },
-      { code: "PDCOM", display_name: "PDCOM", is_serialized: true },
-      { code: "CALIX", display_name: "CALIX", is_serialized: true },
+      { code: "WIFI_ROUTER", display_name: "WiFi Router", is_serialized: false },
+      { code: "PDCOM", display_name: "PDCOM", is_serialized: false },
+      { code: "CALIX", display_name: "CALIX", is_serialized: false },
     ]);
     expect((await db.query("select 1 from public.districts")).rows).toHaveLength(0);
   });

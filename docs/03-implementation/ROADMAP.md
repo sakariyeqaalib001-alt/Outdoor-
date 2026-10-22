@@ -39,7 +39,7 @@ Never ask Claude Code to build several phases at once.
 | R-8 | Branch list supplied (**done**, D-29); stock item spelling PDCOM (**done**, D-10) | — | Phase 5 |
 | R-9 | Index Number definition (**done**, D-02: exactly 8 digits) | — | Phase 7 |
 | R-10 | Super Admin ready to enter prices, districts, teams and users in Settings before the pilot (D-04, D-29) | Super Admin | Phase 11 |
-| R-11 | Stock Officer physical count of opening stock with serial numbers, for entry as receipts (D-21) | Stock Officer | Phase 11 |
+| R-11 | Stock Officer physical count of opening stock (quantities), for entry as receipts (D-21) | Stock Officer | Phase 11 |
 
 The auth/SMS spike (R-6) is throwaway code in a separate scratch folder, not the product repository.
 
@@ -65,7 +65,7 @@ The auth/SMS spike (R-6) is throwaway code in a separate scratch folder, not the
     - Refunds require Super Admin approval; finalized payroll is never edited (D-15).
     - Product switch FTTA ↔ FTTH only; never a sale (D-16).
     - Free-month: configurable amount (default $50), revenue = amount collected, 1 unit (D-09).
-    - Equipment (WiFi Router, PDCOM, CALIX) is serial-tracked and issued only from the agent's custody (D-11, D-12).
+    - Equipment (WiFi Router, PDCOM, CALIX) is counted by quantity and issued only from the selling team's accepted stock (D-35).
     - Incentive = `MAX(0, eligible units − 15) × $5`, per agent per month, all products (D-07). Temporary base = flat amount from Settings (currently $100), no pro-rating (D-08); permanent base $0 in this module (D-05).
     - Index Number = exactly 8 digits (D-02).
     - Sale month is set by the server clock in EAT; agents never choose, backdate or future-date it; after-midnight submissions count in the new month; past months read-only; finalized months locked (D-30).
@@ -87,8 +87,8 @@ The auth/SMS spike (R-6) is throwaway code in a separate scratch folder, not the
 | 3 | Authentication + OTP | Email login, phone + password + Telesom OTP, lockout, first-login change | R-6 (Telesom credentials) |
 | 4 | Users, roles, permissions, teams | User admin, permission matrix, teams (created by Super Admin), deactivation | — |
 | 5 | Master data and settings | Cities, 16 seeded branches, districts, products, prices (entered by Super Admin), stock items, settings incl. base salary and performance bands | — |
-| 6 | Stock ledger, custody and serials | Receipt, transfer, acknowledge, return, adjustment, balances | — |
-| 7 | Sales registration | New + Retention submission, identity model (8-digit Index), free-month, serial issue, duplicate events, idempotency | — |
+| 6 | Stock ledger and team custody | Receipt, send to team, accept, return, adjustment, balances (quantities, D-35) | — |
+| 7 | Sales registration | New + Retention submission, identity model (8-digit Index), free-month, equipment issue from team stock, duplicate events, idempotency | — |
 | 8 | Retention approval and product switch | Approval workflow, switch transaction, notifications | — |
 | 9 | Duplicate detection, audit cases and alerts | Rules, cases, history, email alerts, payroll-hold flag | R-5 |
 | 10 | Eligibility service and operational dashboard | Shared eligible-sales function, dashboard | — |
@@ -276,7 +276,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Cities (seeded 4); branches seeded from `data/master/branches.csv` (16, BRD §6.2.1) with admin UI to add/rename/deactivate; districts per city entered by Super Admin; **no areas table** (Area is free text on the sales form).
 - Products FTTA/FTTH/FTTB/LTE seeded; **prices entered by Super Admin** in Settings (none seeded), with effective dates and optional city; no overlapping ranges.
 - Customer types New/Retention (fixed codes).
-- Stock items WiFi Router, PDCOM, CALIX (serialized; editable display names).
+- Stock items WiFi Router, PDCOM, CALIX (editable display names; counted by quantity since D-35).
 - `app_settings` values (cutoff day 3, threshold 15, rate 5, temp base 100 (flat, editable), performance target 20, performance baseline 15, free-month amount 50, phone prefixes, week start day, weekend days, OTP enabled) and `public_holidays`.
 - Deactivated values readable on history, rejected for new records; changes logged.
 
@@ -285,26 +285,26 @@ STOP after reporting. Wait for my explicit instruction.
 - Price lookup returns the correct effective price for a date/city (tests).
 - Branch seed matches BRD §6.2.1; Super Admin can enter districts and prices on staging.
 
-**Next prompt:** "Proceed with Phase 6 only: stock ledger, custody and serials…"
+**Next prompt:** "Proceed with Phase 6 only: stock ledger and team custody…"
 
 ---
 
-# Phase 6 — Stock ledger, custody and serials
+# Phase 6 — Stock ledger and team custody (D-35: quantities, no serials)
 
 **Goal:** Track every equipment unit from receipt to customer (SDD §12).
 
 **Scope**
-- `stock_locations` (central, one per Team Leader/Supervisor, one per agent — D-31), `stock_serials`, `stock_movements` (append-only), `stock_transfers`.
-- Receive into Central (bulk scan/paste serials; duplicate serials rejected).
-- Transfer Central → Team Leader/Supervisor → Agent; receiver acknowledgement. Branches hold no Outdoor stock (D-31). Confirm with the owner whether Team Leaders may also issue to customers directly.
-- Returns with reason; adjustments requested by Stock Officer and approved by Super Admin.
-- Balance and reconciliation report (received, transferred, issued, returned, adjusted, closing) per item/location, with serial-level drill-down.
-- Agent "My custody" mobile view.
+- `stock_locations` (Central, faulty store, one per team — D-31, D-35), `stock_movements` (append-only), `stock_transfers` with lines, `stock_adjustments`.
+- Receive into Central (quantities per item).
+- Send Central → team; the team's Team Leader/Supervisor (or Super Admin) accepts. Branches hold no Outdoor stock (D-31). Sales by any member or the leader of the team deduct from team stock (D-35).
+- Returns with reason, recorded by the Stock Officer only; adjustments requested by Stock Officer and approved by Super Admin.
+- Balance and reconciliation report (received, transferred, issued, returned, adjusted, closing) per item/location, plus movement history.
+- Agents and Team Leaders see their team's stock.
 - Issue operation exposed as an internal function for Phase 7/8 (not wired to a UI yet).
 
 **Acceptance gate (UAT-09 basis)**
-- Movements reconcile to balances; serial counts agree with ledger.
-- Concurrent transfers/issues of the same serial cannot both succeed (parallel-session test).
+- Movements reconcile to balances.
+- Concurrent deductions of the same team stock cannot overdraw it (lock on location + item).
 - No negative balances; invalid or unauthorized actions rejected.
 - Movement history immutable and inspectable.
 
@@ -321,8 +321,8 @@ STOP after reporting. Wait for my explicit instruction.
 **Scope**
 - `customers`, `customer_identifiers` (unique type/value), `sales`, `sale_items`.
 - Mobile-first sales form with all BRD fields; district dropdown filtered by city; Area free text; Index Number validated as exactly 8 digits; city default with override only for permitted roles; price from catalog; months paid; free-month option.
-- `create_sale` RPC: identity resolution for New and Retention; same-month rule; serial issue from agent custody in the same transaction; New → approved, Retention → pending_approval.
-- Durable duplicate-attempt `audit_events` (DUP_PHONE, DUP_INDEX, IDENTITY_CONFLICT, SAME_MONTH, SERIAL_REUSE) that survive rejection.
+- `create_sale` RPC: identity resolution for New and Retention; same-month rule; equipment issue from the team's stock in the same transaction (`app.issue_stock`, D-35); New → approved, Retention → pending_approval.
+- Durable duplicate-attempt `audit_events` (DUP_PHONE, DUP_INDEX, IDENTITY_CONFLICT, SAME_MONTH) that survive rejection.
 - Idempotency via `client_request_id`; draft autosave on device.
 - **Sales month (D-30):** no date field on the form; `submitted_at` set by the database only; client dates ignored; warning when a previous-month draft is submitted; My Sales month selector (current month default, past months read-only, server rejects writes to past months).
 - Agent's "My sales" list and sale detail.
@@ -348,8 +348,8 @@ STOP after reporting. Wait for my explicit instruction.
 **Scope**
 - Team Leader approval queue (own team only); Super Admin fallback; no self-approval.
 - Approve/reject with reason; `sale_approvals` history; `approved_at`.
-- Rejection → "return required" task; return movement for issued serials.
-- Product switch form and RPC: FTTA ↔ FTTH only, identity match, new serial issued, old serial returned; never a sale.
+- Rejection → "return required" task; return recorded by the Stock Officer (D-35).
+- Product switch form and RPC: FTTA ↔ FTTH only, identity match, new equipment issued from team stock, old equipment returned via the Stock Officer; never a sale.
 - In-app notifications table and bell (Retention awaiting review, rejection, transfer awaiting acknowledgement).
 
 **Acceptance gate (UAT-06, 12, 34, 35, 36)**
@@ -409,7 +409,7 @@ STOP after reporting. Wait for my explicit instruction.
 **Scope**
 - Automated readiness checks (admin page + script): every active product has an active price; every Hargeisa agent has a city, a team and a custody location; districts exist for Hargeisa; base salary and performance settings set; no test data in production.
 - Production setup by Super Admin: prices, Hargeisa districts, teams, users (R-10).
-- Opening stock: Stock Officer enters the physical count as receipts with serials, then transfers to Team Leaders and agents; reconciliation report agrees with the count (R-11).
+- Opening stock: Stock Officer enters the physical count as receipts (quantities), then sends to teams for acceptance; reconciliation report agrees with the count (R-11).
 - Production environment, secrets, backups + restore drill, monitoring, incident runbook, support owner.
 - Agent training material (quick guide for sales form, custody, Index Number entry) and Team Leader guide (Retention approval, spotting returning customers registered as New).
 - Pilot UAT across Phases 3–10 workflows.

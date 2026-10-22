@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20–21 Oct 2026 | D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20–22 Oct 2026 | D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -37,9 +37,9 @@ The system is built in phases. This document is **not** authorization to build a
 # 2. Design objectives
 
 1. One traceable record of outdoor sales and customers.
-2. Database-enforced uniqueness of customer phone, Index Number and equipment serials.
+2. Database-enforced uniqueness of customer phone and Index Number; stock balances never below zero.
 3. Controlled approval of Retention sales and refunds.
-4. Stock accountability by location (Central Store → Team Leader/Supervisor custody → Agent custody, D-31) and serial number.
+4. Stock accountability by location and item (Central Store → team stock accepted by its Team Leader/Supervisor, D-31, D-35).
 5. Follow-up tracking with Active / Expire / Not Reached.
 6. Durable duplicate-attempt events and reviewable audit cases.
 7. One shared **eligible-sale** definition used by targets, dashboard, payroll and rankings.
@@ -97,7 +97,7 @@ Modules (with owning roadmap phase):
 | 3 | Authentication, sessions, OTP | 3 |
 | 4 | Users, roles, permissions, teams | 4 |
 | 5 | Master data and settings | 5 |
-| 6 | Stock ledger, custody, serials | 6 |
+| 6 | Stock ledger and team custody (quantities, D-35) | 6 |
 | 7 | Sales registration (New + Retention submission, free-month) | 7 |
 | 8 | Retention approval, product switch | 8 |
 | 9 | Duplicate detection, audit cases, alerts | 9 |
@@ -324,9 +324,9 @@ erDiagram
     SALE ||--o{ STOCK_MOVEMENT : issues
     SALE ||--o| REFUND : may_have
     CUSTOMER ||--o{ PRODUCT_SWITCH : has
-    STOCK_ITEM ||--o{ STOCK_SERIAL : has
-    STOCK_LOCATION ||--o{ STOCK_SERIAL : holds
-    STOCK_SERIAL ||--o{ STOCK_MOVEMENT : moved_by
+    STOCK_ITEM ||--o{ STOCK_MOVEMENT : counted_in
+    STOCK_LOCATION ||--o{ STOCK_MOVEMENT : moves
+    TEAM ||--|| STOCK_LOCATION : holds
     CUSTOMER ||--o{ FOLLOW_UP : receives
     AUDIT_CASE ||--o{ AUDIT_CASE_LINK : links
     AUDIT_EVENT }o--o| AUDIT_CASE : grouped_in
@@ -350,18 +350,18 @@ erDiagram
 | `plan_prices` | plan_id, recharge_amount, installation_fee, effective_from, effective_to; same in all cities; overlapping ranges for the same plan refused (D-34; replaces `product_prices`) | 5 |
 | `app_settings` | key/value: payroll_cutoff_day (3), incentive_threshold (15), incentive_rate (5), temp_base_salary (100, flat, edited by Super Admin), performance_target_units (20), performance_baseline_units (15), free_month_amount (50), allowed_phone_prefixes, week_start_day, weekend_days, otp_enabled | 5 |
 | `public_holidays` | date, name | 5 |
-| `stock_items` | code unique (`WIFI_ROUTER`,`PDCOM`,`CALIX`), display_name, is_serialized | 5 |
-| `stock_locations` | type (`central`,`team_leader`,`agent`), user_id; one location per Team Leader and per agent (D-31: branches hold no Outdoor stock) | 6 |
-| `stock_serials` | serial unique per item, item_id, current_location_id, status (`in_stock`,`in_transit`,`issued`,`returned`,`faulty`), current_customer_id, current_sale_id | 6 |
-| `stock_movements` | append-only; movement_type (`receipt`,`transfer_out`,`transfer_in`,`issue`,`return`,`adjustment`), item_id, serial_id, quantity, from_location_id, to_location_id, ref_type, ref_id, reason, actor, approved_by | 6 |
-| `stock_transfers` | from/to location, status (`sent`,`acknowledged`,`cancelled`), serial list | 6 |
+| `stock_items` | code unique (`WIFI_ROUTER`,`PDCOM`,`CALIX`), display_name, is_serialized (always false, D-35) | 5 |
+| `stock_locations` | kind (`central`,`faulty`,`team`), team_id (one stock per team, created with the team) — D-31, D-35 | 6 |
+| `stock_adjustments` | location, item, quantity_change, reason, status (`requested`,`approved`,`rejected`), requested_by, decided_by, decision_note | 6 |
+| `stock_movements` | append-only; movement_type (`receipt`,`transfer_out`,`transfer_in`,`issue`,`return`,`adjustment`), item_id, quantity, from_location_id, to_location_id, ref_type, ref_id, reason, actor_id, approved_by | 6 |
+| `stock_transfers` | to_location (a team), status (`sent`,`accepted`,`cancelled`), note, sent_by, decided_by; lines in `stock_transfer_lines` (item, quantity) | 6 |
 | `customers` | full_name, phone_e164, phone_display, index_number (check `^[0-9]{8}$`), district_id, area_text, city_id, branch_id | 7 |
 | `customer_identifiers` | (`type` in `phone`,`index`), value, customer_id, is_current; **unique(type, value)** — covers current and historical values (reservation, D-01) | 7 |
 | `sales` | customer_id, agent_id, product_id, plan_id, plan_price_id, unit_price (recharge snapshot), installation_fee (snapshot), months_paid, amount_collected, free_month bool, customer_type, city_id, branch_id (money hand-in branch, chosen per sale — D-31), district_id, area_text, status, submitted_at (database `now()` only — never from the client, D-30), approved_at, sale_month (generated from submitted_at in EAT), client_request_id **unique** (idempotency) | 7 |
 | — | partial unique index `(customer_id, sale_month)` where status in (`approved`,`pending_approval`) → one active sale per customer per month (D-01) | 7 |
-| `sale_items` | sale_id, stock_item_id, serial_id | 7 |
+| `sale_items` | sale_id, stock_item_id, quantity (D-35: no serial) | 7 |
 | `sale_approvals` | sale_id, decision, reason, decided_by, decided_at (append-only) | 8 |
-| `product_switches` | customer_id, from_product_id, to_product_id (check from ≠ to, both in FTTA/FTTH), issued serials, returned serials, actor | 8 |
+| `product_switches` | customer_id, from_product_id, to_product_id (check from ≠ to, both in FTTA/FTTH), equipment issued (item, quantity), actor | 8 |
 | `audit_events` | rule_code, severity, attempted_values jsonb (masked where needed), matched_customer_id, actor_id, context, created_at; append-only | 2 (table), 7 (duplicate events) |
 | `audit_rules` | code, description, enabled | 9 |
 | `audit_cases` | state, assigned_to, opened_at, closed_at, disposition | 9 |
@@ -388,9 +388,9 @@ Create each table in the phase that owns it, with its RLS policies and tests.
 ## 8.4 Integrity rules
 
 - Phone and Index uniqueness enforced by `customer_identifiers` unique index; old values stay reserved.
-- Serial uniqueness: one row per physical serial; `status = 'issued'` and `current_customer_id` set atomically; issuing an issued serial fails.
-- Sale + sale_items + stock movements + serial status change in one transaction (RPC).
-- Stock balance derived from `stock_serials` (serialized) and `stock_movements` (non-serialized quantity, future use); no editable balance column.
+- Stock: deductions lock (location, item) and refuse to go below zero (D-35).
+- Sale + sale_items + stock movements in one transaction (RPC).
+- Stock balance derived from `stock_movements` (quantities, D-35); no editable balance column.
 - Refunds never delete sales; they set the sale's `reversed` flag through the refund approval function.
 - Payroll lines of a finalized run are immutable (trigger rejects UPDATE when run is finalized).
 - **Finalized-month lock (D-30):** a trigger rejects INSERT/UPDATE on `sales`, `sale_items` and `sale_approvals` for sales whose counting month belongs to a finalized payroll run; later corrections go through `payroll_adjustments` in the next run. Not locked: refunds (approval after finalization creates an adjustment, D-15), follow-ups (recorded in the month after the sale, D-17), audit cases and stock returns.
@@ -405,7 +405,7 @@ Create each table in the phase that owns it, with its RLS policies and tests.
 - Products seeded: FTTA, FTTH, FTTB, LTE, each with **plans** (D-34). The owner's 18 plans and their recharge / installation prices are loaded (BRD §6.3.1), effective 22 Oct 2026; Super Admin maintains them on the Products screen. Pilot readiness (Phase 11) checks that every active plan has a current price.
 - Performance settings: target 20 and baseline 15 eligible units per month, editable by Super Admin.
 - Base salary for temporary agents: one flat amount (currently $100), editable by Super Admin (D-08).
-- Stock items seeded: WiFi Router, PDCOM, CALIX (all serialized). Spelling "PDCOM" confirmed (D-10).
+- Stock items seeded: WiFi Router, PDCOM, CALIX, counted by quantity (D-35). Spelling "PDCOM" confirmed (D-10).
 - Deactivated values remain readable on history and are rejected for new records.
 - All changes recorded in `activity_log`.
 - Phone prefixes (`allowed_phone_prefixes`) configurable; initial value 063 and 065 (D-33). Business week starts Saturday (`week_start_day`, D-33); weekend Friday (D-18).
@@ -446,7 +446,7 @@ flowchart TD
     D --> E{Identity check}
     E -->|Duplicate| F[Insert audit_event; return DUPLICATE]
     E -->|OK| G[Insert customer/sale/sale_items]
-    G --> H[Lock serials FOR UPDATE; verify in agent custody; mark issued; insert movements]
+    G --> H[Lock team stock per item; verify quantity available; insert issue movements]
     H --> I{customer_type}
     I -->|New| J[status = approved]
     I -->|Retention| K[status = pending_approval; notify Team Leader]
@@ -465,7 +465,7 @@ flowchart TD
 flowchart TD
     A[pending_approval] --> B{Team Leader of agent's team or Super Admin}
     B -->|Approve| C[approved; approved_at set]
-    B -->|Reject + reason| D[rejected; return movement required for issued serials]
+    B -->|Reject + reason| D[rejected; Stock Officer records the return of the equipment]
 ```
 
 - Reviewer cannot be the submitting agent (check in RPC and RLS).
@@ -476,7 +476,7 @@ flowchart TD
 
 - Allowed only FTTA ↔ FTTH; check constraint `from_product_id <> to_product_id`.
 - Name, phone and Index must match the existing customer.
-- One RPC: insert `product_switches`, issue new serial(s) from agent custody, record return of old serial(s) to the Team Leader's custody.
+- One RPC: insert `product_switches`, issue the new equipment from the team's stock; the old equipment is returned via the Stock Officer (D-35).
 - Never creates a sale; excluded from all unit/revenue metrics.
 
 ## 10.5 Refund (D-15)
@@ -520,7 +520,6 @@ A rejected submission must still leave an audit event. Design:
 | DUP_INDEX | New sale with existing Index | 7 | on |
 | IDENTITY_CONFLICT | Retention with phone/Index of different customers or name mismatch | 7 | on |
 | SAME_MONTH | Second active sale for customer in month | 7 | on |
-| SERIAL_REUSE | Attempt to issue an already-issued serial | 7 | on |
 | SWITCH_MISMATCH | Switch identity mismatch | 8 | on |
 | MULTI_AGENT_ATTEMPT | Same identifier attempted by ≥ 2 agents in 30 days | 9 | off until pilot review |
 | BURST | ≥ N sales by one agent in M minutes | 9 | off |
@@ -542,41 +541,43 @@ Open → Under Review → Confirmed Issue → Resolved
 - Effects: Open/Under Review → linked agents' payroll lines **on hold**; Confirmed Issue → linked sales ineligible; False Positive → no effect.
 - No user can edit or delete events, cases or history.
 
-# 12. Stock management design (D-10, D-11, D-12)
+# 12. Stock management design (D-10, D-31, D-35)
+
+D-35 (owner, 22 Oct 2026) replaces serial tracking: stock is counted by **quantity** per item (WiFi Router, PDCOM, CALIX). Built in Phase 6 (migration `20261022150000_stock`).
 
 ## 12.1 Locations and custody
 
 ```text
-Central Store (Stock Officer)
-   └─ transfer → Team Leader / Supervisor custody (acknowledges)
-          └─ transfer → Agent custody (agent acknowledges)
-                    └─ issue → Customer (via sale / switch)
-Returns: Customer/Agent → Team Leader custody or Central (reason required)   — branches hold no Outdoor stock (D-31)
+Central Store (Stock Officer)          Central Store — faulty
+   └─ send → team stock (in transit until the Team Leader / Supervisor — or Super Admin — accepts)
+                 └─ issue → customer (sale / switch by any member or the leader of the team)
+Returns (Stock Officer only): team or customer → Central Store, or → faulty store; reason required
+Agents hold no stock of their own; branches hold no Outdoor stock (D-31)
 ```
 
-## 12.2 Operations
+## 12.2 Operations (database functions; each checks its permission)
 
-| Operation | Who | Effect |
-|---|---|---|
-| Receive | Stock Officer | Serials created at Central (`in_stock`); `receipt` movement. Bulk scan/paste of serials; duplicates rejected. |
-| Transfer | Stock Officer | Serials `in_transit`; `transfer_out` movement; `stock_transfers.status = sent` |
-| Acknowledge | Receiving Team Leader / agent | Serials `in_stock` at destination; `transfer_in` movement |
-| Issue | Agent (via sale/switch RPC) | Serial `issued`, customer/sale linked; `issue` movement |
-| Return | Stock Officer / agent | Serial back `in_stock` or `faulty`; `return` movement with reason and source reference |
-| Adjustment | Requested by Stock Officer, approved by Super Admin | `adjustment` movement; e.g., lost/damaged |
+| Operation | Who | Function | Effect |
+|---|---|---|---|
+| Receive | Stock Officer (`stock.receive`) | `stock_receive(lines, note)` | `receipt` movements into Central |
+| Send | Stock Officer (`stock.transfer`) | `stock_send(team, lines, note)` | `stock_transfers` (sent) + `transfer_out` from Central; not yet counted for the team |
+| Accept | The team's Team Leader / Supervisor (`stock.acknowledge`) or Super Admin | `stock_accept(transfer)` | `transfer_in` to the team; status accepted |
+| Cancel | Stock Officer, before acceptance, with reason | `stock_cancel(transfer, reason)` | `transfer_in` back to Central; status cancelled |
+| Issue | Sale / switch (internal, Phases 7–8) | `app.issue_stock(seller, lines, ref)` | `issue` from the seller's team stock; refused when short or the seller has no team |
+| Return | Stock Officer only (`stock.transfer`) | `stock_return(team or null, item, qty, reason, note, faulty)` | `return` to Central or the faulty store; reasons faulty / refund / switch / retention_rejected / other |
+| Adjustment | Requested by Stock Officer, approved by Super Admin (never by the requester) | `stock_request_adjustment`, `stock_decide_adjustment` | `adjustment` movement on approval |
 
 ## 12.3 Balance and reconciliation
 
 ```text
-Location closing = opening + receipts + transfers_in + returns_in
-                   − transfers_out − issues − returns_out ± approved adjustments
+Location closing = opening + received + transferred in − transferred out − issued + returned in − returned out ± adjustments
 ```
 
-For serialized items the balance is also the count of `stock_serials` at the location with `in_stock` status; the two must agree (reconciliation report flags differences). There is no legacy import (D-21): opening stock is recorded by the Stock Officer as ordinary receipts with serials before go-live.
+Balances are computed from the append-only `stock_movements` ledger (no balance column). `stock_report(from, to)` returns these columns per location and item, plus stock in transit to each team; RLS limits it to the locations the caller may see (all for Stock Officer / Finance / Auditor / Super Admin; their own team for Team Leaders and agents). There is no legacy import (D-21): opening stock is recorded as ordinary receipts before go-live.
 
 ## 12.4 Concurrency
 
-Serial rows are locked `FOR UPDATE` inside the issuing RPC; a serial not at the agent's location or not `in_stock` aborts the transaction. No balance column exists to drift.
+Every decrease takes a transaction-level advisory lock on (location, item) and re-reads the balance before writing, so two deductions cannot overdraw the same stock; a short balance aborts the whole transaction (all lines or none).
 
 # 13. Customer follow-up design (D-17)
 
@@ -760,7 +761,7 @@ Notifications are rows in `notifications`; email sending is retried by a job; fa
 The v1.1 legacy import design is **retired**: Sogasho starts the system as brand new.
 
 - No customer import. Customers are created only through sales registration; earlier Sogasho customers are registered on their first visit (normally as Retention, which requires approval).
-- Opening stock: the Stock Officer records every unit on hand as a `receipt` into Central Store (bulk serial scan/paste), then transfers to Team Leaders and agents as normal.
+- Opening stock: the Stock Officer records every unit on hand as a `receipt` into Central Store (quantities), then sends to teams, whose Team Leaders accept (D-35).
 - Settings populated by Super Admin before go-live: prices for every active product, districts for the pilot city, teams, users, base salary, performance target/baseline.
 - Pilot readiness check (automated where possible): every active product has an active price; every agent has a city, a team and a custody location; Central Store stock count agrees with the Stock Officer's physical count.
 - Fraud consideration: with no prior customer list, a returning customer could be registered as New. Mitigations: Retention approval, MULTI_AGENT_ATTEMPT rule, New/Retention mix by agent on the dashboard, Team Leader spot checks of Index Numbers against service status.
@@ -772,7 +773,7 @@ The v1.1 legacy import design is **retired**: Sogasho starts the system as brand
 | Sale | `pending_approval` (Retention) → `approved` / `rejected`; New: created as `approved`; `approved` → `reversed` (refund approved) |
 | Refund | `pending` → `approved` / `rejected` |
 | Product switch | `completed` (single atomic step) |
-| Stock serial | `in_stock` → `in_transit` → `in_stock` (acknowledged) → `issued` → `returned`/`in_stock` or `faulty` |
+| Stock transfer | `sent` → `accepted` or `cancelled` (D-35) |
 | Stock transfer | `sent` → `acknowledged` / `cancelled` |
 | Audit case | `open` → `under_review` → `confirmed_issue` / `false_positive` → `resolved` |
 | Follow-up | `due` (outcome null) → `active` / `expire` / `not_reached`; derived `not_reviewed` after due month |
@@ -794,7 +795,7 @@ Required fields; phone normalization and prefixes; Index format (configurable); 
 | Code | Meaning | User message style |
 |---|---|---|
 | `VALIDATION` | Input invalid | Field-level, how to fix |
-| `DUPLICATE` | Identity/serial/same-month conflict | Which field conflicts; no other customer's personal data shown to agents |
+| `DUPLICATE` | Identity/same-month conflict | Which field conflicts; no other customer's personal data shown to agents |
 | `FORBIDDEN` | Not permitted | "You don't have access to this action" |
 | `CONFLICT` | State changed (e.g., already approved) | Refresh prompt |
 | `INTEGRATION` | External service failed | Retry later / contact admin |
@@ -847,7 +848,7 @@ Signika, self-hosted WOFF2 (300/400/600/700) loaded locally (no external font CD
 
 ## 22.4 Layout and usability
 
-- Mobile-first for agent screens (sales form, custody, own performance): single column, large touch targets (≥ 44 px), numeric keypad for phone, scan button for serials (camera barcode scan where the browser supports it, manual entry always available).
+- Mobile-first for agent screens (sales form, custody, own performance): single column, large touch targets (≥ 44 px), numeric keypad for phone and quantities.
 - Desktop-first for admin, audit, reports and payroll: data tables with pagination, sticky filters.
 - **Month selector instead of month tabs (D-30):** My Sales (agent), team sales (Team Leader) and agent detail (Super Admin) show one `Month ▼` selector defaulting to the current month (EAT). Past months render read-only: no add/edit buttons, and the server rejects writes regardless of UI. Header shows the month's eligible units and performance band. Months with a finalized payroll run show a "Locked" badge.
 - Every screen has loading, empty, error and permission-denied states.
@@ -901,14 +902,14 @@ Expected volume (D-28): **46 agents** (7 permanent, 39 temporary) for the next 2
 | Layer | Tooling (adapt to repo) | Covers |
 |---|---|---|
 | Unit | Vitest / Jest | Phone normalization, Index format, identity resolution logic, incentive, base salary, performance band, title streak, working days, cutoff month, eligibility rules, state transitions |
-| Database | pgTAP or SQL test scripts via Supabase CLI | Constraints, RLS per role, RPC behaviour, concurrency (parallel sessions issuing same serial / same phone) |
+| Database | pgTAP or SQL test scripts via Supabase CLI | Constraints, RLS per role, RPC behaviour, concurrency (parallel sessions deducting the same team stock / same phone) |
 | Integration | Server services with test DB and adapter doubles | Sale + stock transaction, duplicate event survives rejection, refunds/payroll adjustments, Kobo/SMS failures |
 | E2E | Playwright (mobile + desktop viewports) | BRD UAT journeys per role |
 | Accessibility | Automated axe checks in E2E + manual review | Contrast, labels, focus |
 
 ## 25.2 Fixtures
 
-Fake but realistic seed data: 4 cities, 2 branches each, 3 teams, 10 agents (temporary and permanent), products, prices, 50 serials, and agents with 14, 15, 19 and 20 eligible units plus a 4-month Best Agent streak for band and title tests.
+Fake but realistic seed data: 4 cities, 2 branches each, 3 teams, 10 agents (temporary and permanent), products, plans and prices, stock quantities, and agents with 14, 15, 19 and 20 eligible units plus a 4-month Best Agent streak for band and title tests.
 
 ## 25.3 Definition of done (each phase)
 
@@ -953,7 +954,7 @@ Fake but realistic seed data: 4 cities, 2 branches each, 3 teams, 10 agents (tem
 | 3 | Authentication, OTP, lockout, first-login password change (§6) |
 | 4 | Users, roles, permissions, teams, deactivation (§7) |
 | 5 | Master data, prices, settings, stock items (§9) |
-| 6 | Stock locations, serials, transfers, acknowledgements, returns, adjustments (§12) |
+| 6 | Stock locations, deliveries to teams, acceptance, returns, adjustments (§12, D-35) |
 | 7 | Customers, identifiers, sales RPC, free-month, idempotency, duplicate events (§10.1–10.2, 10.6, 11.1) |
 | 8 | Retention approval, product switch, approval notifications (§10.3–10.4) |
 | 9 | Audit rules, cases, history, alerts, payroll-hold flag (§11) |

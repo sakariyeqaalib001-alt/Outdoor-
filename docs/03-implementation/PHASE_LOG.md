@@ -315,3 +315,61 @@ Not yet run: the owner's test of the new screens on "Outdoor" (the browser pane 
 
 **Next prompt (not executed):**
 > Proceed with Phase 6 only: stock ledger, custody and serials. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 6, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 6 — Stock ledger and team custody
+
+**Date:** 22 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/stock.md`).
+
+**Owner decisions before building (D-35, 22 Oct 2026):** no serial numbers anywhere — stock is counted by quantity; the Stock Officer sends quantities to each team; the team's Team Leader / Supervisor accepts (Super Admin may accept for them); each sale by the team deducts the items the agent picks from the team's accepted stock; returns are recorded by the Stock Officer only. This replaces D-12 (serial tracking) and the agent-custody level of D-31. BRD/SDD/Roadmap/CLAUDE.md updated (FR-SALE-08, FR-STK-03, 06, 08, 09, 10, FR-REF-08, FR-SW-02, UAT-08, 22, 35; SDD §12 rewritten).
+
+**Scope delivered (BRD §6.12; SDD §12)**
+- Migration `20261022150000_stock.sql`:
+  - `stock_locations` (Central Store, Central Store — faulty, one per team; created automatically with each team), `stock_movements` (append-only ledger: receipt, transfer_out, transfer_in, issue, return, adjustment), `stock_transfers` + `stock_transfer_lines`, `stock_adjustments`. Stock items set to not serialized.
+  - Functions: `stock_receive`, `stock_send`, `stock_accept` (receiving Team Leader or Super Admin), `stock_cancel` (before acceptance, reason), `stock_return` (Stock Officer; to Central or the faulty store; reason codes), `stock_request_adjustment` / `stock_decide_adjustment` (no self-approval), `stock_report(from, to)`; internal `app.issue_stock(seller, lines, ref)` for sales in Phase 7 (not callable through the API).
+  - Balances computed from the ledger only; every decrease locks (location, item) and refuses to go below zero; multi-item operations are all-or-nothing.
+  - RLS: Stock Officer, Finance, Auditor, Super Admin see all locations; Team Leaders and agents see only their team (`app.can_read_location`); no direct writes for any API role; change history on every new table.
+- Screens (**Stock**): Overview (balances, in transit, deliveries to accept), Deliveries (receive, send, accept, cancel), Returns & adjustments, Report & history. Menu item enabled (`COMPLETED_PHASE = 6`).
+
+**BRD check (FR-STK-01…10)**
+
+| Requirement | Result |
+|---|---|
+| FR-STK-01 receipts into Central | ✅ Receive stock |
+| FR-STK-02 items WiFi Router, PDCOM, CALIX; names editable | ✅ (names in Settings → Lists, Phase 5) |
+| FR-STK-03 sale deducts in the same transaction | ✅ `app.issue_stock` ready and tested; called by sales ➡ Phase 7 |
+| FR-STK-04 report: received, transferred, issued, returned, adjusted, balance per item and location | ✅ Report & history |
+| FR-STK-05 no negative balance | ✅ enforced in the database with a lock per location and item |
+| FR-STK-06 movement records item, quantity, from/to, link, user, time, type | ✅ append-only ledger |
+| FR-STK-07 adjustments need reason and Super Admin approval | ✅ no self-approval |
+| FR-STK-08 Central → team stock; counts after acceptance | ✅ (D-35) |
+| FR-STK-09 counted by quantity, no serials | ✅ (D-35) |
+| FR-STK-10 returns by the Stock Officer with a reason | ✅ to Central or the faulty store |
+
+**Commands run (22 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 286 tests (24 new stock database tests); build adds `/stock`, `/stock/deliveries`, `/stock/returns`, `/stock/history` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261022150000_stock.sql` |
+
+Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — the SMS code goes to the owner's phone); CI on GitHub (after upload).
+
+**Acceptance gate**
+
+| Criterion | Result |
+|---|---|
+| Movements reconcile to balances | ✅ database test: every report row satisfies closing = opening + in − out and equals the ledger balance |
+| Concurrent deductions cannot overdraw | ⚠️ enforced by a transaction lock on (location, item) plus a balance re-check; the PGlite test database has a single connection, so a true two-session race was **not** run — tested as sequential overdraw refusal and all-or-nothing behaviour |
+| No negative balances; invalid or unauthorized actions rejected | ✅ database tests for every function and role (Stock Officer, Team Leader of the right/wrong team, agent, Finance, Super Admin, anonymous) |
+| Movement history immutable and inspectable | ✅ updates/deletes refused for everyone; History tab |
+
+**Manual steps for the owner** — `docs/06-operations/stock.md`: paste `supabase/sql-editor/20261022150000_stock.sql`; give a user the Stock Officer role; run the tests in section 3.
+
+**Risks / open items**
+- Without serials, a specific unit cannot be traced to a customer; accountability is per team and item (owner decision D-35).
+- A sale by someone who belongs to no team (and leads none) cannot take equipment — every seller must be in a team.
+
+**Next prompt (not executed):**
+> Proceed with Phase 7 only: sales registration. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 7, run `npm run check`, update the logs, report the gate and stop.
