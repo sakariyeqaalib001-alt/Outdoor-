@@ -260,7 +260,7 @@ Not yet run: the owner's sign-in test of the new screens on "Outdoor"; CI on Git
 
 ## Phase 5 — Master data and settings
 
-**Date:** 22 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/settings.md`).
+**Date:** 22 Oct 2026 · **Status:** ✅ Accepted by the owner on 22 Oct 2026 — owner-tested on "Outdoor" (both SQL files applied; settings, lists, products, 18 plans and prices; agent sees no Settings/Products); CI green (incl. real-Supabase pgTAP).
 
 **Scope delivered (BRD §6.2 FR-USER-04, 09, 10; §6.3 FR-CONF-01, 03, 05, 07 settings; SDD §8.3, §9; D-04, D-08, D-10, D-18, D-29, D-33)**
 - Migration `20261022090000_master_data.sql`:

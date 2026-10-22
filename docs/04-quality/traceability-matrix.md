@@ -7,8 +7,8 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | Requirement group | SDD section | Roadmap phase | UAT | Status |
 |---|---|---|---|---|
 | FR-AUTH-01…09 | 6 | 3 (deactivation: 4) | 01, 02, 14, 33 | Accepted (Phase 3) — UAT-01, 02, 33 passed; FR-AUTH-06 deactivation and D-32 SMS code for staff accepted in Phase 4 (UAT-14, UAT-02 re-test passed) |
-| FR-USER-01…10 | 7, 9 | 4 (branches, districts: 5) | 14, 16 | Accepted (Phase 4); FR-USER-04, -09 maintenance and -10 built in Phase 5 (owner test pending) |
-| FR-CONF-01, 03, 05 | 9 | 5 (snapshot on sale: 7) | 18 | Built (Phase 5) — products, plans and plan prices (D-34), `plan_price`; FR-CONF-03 snapshot stored by sales in Phase 7 |
+| FR-USER-01…10 | 7, 9 | 4 (branches, districts: 5) | 14, 16 | Accepted (Phase 4); FR-USER-04, -09 maintenance and -10 accepted in Phase 5 |
+| FR-CONF-01, 03, 05 | 9 | 5 (snapshot on sale: 7) | 18 | Accepted (Phase 5) — products, plans and plan prices (D-34), `plan_price`; FR-CONF-03 snapshot stored by sales in Phase 7 |
 | FR-CONF-02, 04, 06, 07 | 14 | 14 (band settings: 5) | 26, 38 | In progress — FR-CONF-07 band settings built (Phase 5); targets in Phase 14 |
 | FR-SALE-01…06, 08…22 | 10, 22.4 | 7 (FR-SALE-21 lock: 16) | 03–05, 08, 09, 19–22, 30, 32, 37, 42–46 | Not started |
 | FR-SALE-07 | 10.3 | 8 | 06, 36 | Not started |
