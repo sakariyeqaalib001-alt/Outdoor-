@@ -17,7 +17,7 @@ Trainees on the **same Wi-Fi** can open the training site from their phones at `
 1. supabase.com → **New project** → name **Outdoor Training** → same organisation and region as "Outdoor" → choose a strong database password (keep it in your password manager; not in chat).
 2. Wait until the project is ready.
 3. **SQL Editor** → **New query** → paste the whole file `supabase/fresh-project/all_changes_in_order.sql` → **Run**. Expected: `Applied all … changes successfully`. (One file sets up everything: users, roles, settings, branches, 18 plans, stock.)
-4. **Authentication → Sign In / Providers → Email**: **On**; turn **off** "Allow new users to sign up" — the same choices as "Outdoor" (`docs/06-operations/auth.md`, step 1).
+4. **Authentication → Sign In / Providers → Email**: **On**; turn **off** "Allow new users to sign up" — the same choices as "Outdoor" (`docs/06-operations/auth.md`, step 2).
 
 ### 2. Fill in `.env.training.local` (on your computer)
 In the project folder create a file named exactly `.env.training.local` with these lines, using the **Outdoor Training** project's values (Supabase → Project Settings → API Keys / Data API). Type them yourself — never paste keys into chat:
