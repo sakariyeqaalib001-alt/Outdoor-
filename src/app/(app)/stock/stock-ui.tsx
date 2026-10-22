@@ -134,7 +134,3 @@ export function TransferStatus({ status }: { status: TransferRow["status"] }) {
   } as const;
   return <StatusBadge status={map[status].badge} label={t(map[status].label)} />;
 }
-
-export function linesText(lines: { item_id: string; quantity: number }[], itemName: Record<string, string>): string {
-  return lines.map((l) => `${l.quantity} × ${itemName[l.item_id] ?? "?"}`).join(", ");
-}

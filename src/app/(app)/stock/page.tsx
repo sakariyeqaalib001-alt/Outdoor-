@@ -3,13 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { businessToday, formatBusinessDateTime } from "@/lib/dates";
 import { t } from "@/lib/i18n";
+import { linesText } from "@/lib/stock";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { acceptTransfer } from "@/server/stock/actions";
 import { getAccess } from "@/server/auth/access";
 import { getSessionId } from "@/server/auth/session";
 import { getReport, getStockContext, listTransfers } from "@/server/stock/queries";
 import { StockShell } from "./stock-shell";
-import { ActionButton, linesText } from "./stock-ui";
+import { ActionButton } from "./stock-ui";
 
 export const metadata: Metadata = { title: t("nav.stock") };
 

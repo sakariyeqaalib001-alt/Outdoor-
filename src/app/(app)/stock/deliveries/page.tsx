@@ -8,13 +8,14 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatBusinessDateTime } from "@/lib/dates";
 import { t } from "@/lib/i18n";
+import { linesText } from "@/lib/stock";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { can, getAccess } from "@/server/auth/access";
 import { getSessionId } from "@/server/auth/session";
 import { acceptTransfer, cancelTransfer, receiveStock, sendStock } from "@/server/stock/actions";
 import { getStockContext, listTransfers } from "@/server/stock/queries";
 import { StockShell } from "../stock-shell";
-import { ActionButton, ActionDialog, linesText, QuantityFields, TransferStatus } from "../stock-ui";
+import { ActionButton, ActionDialog, QuantityFields, TransferStatus } from "../stock-ui";
 
 export const metadata: Metadata = { title: t("stock.tabDeliveries") };
 
