@@ -9,6 +9,7 @@ supabase/.env*
 # Dependencies and build output
 node_modules/
 .next/
+.next-training/
 out/
 dist/
 build/

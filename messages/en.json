@@ -476,5 +476,9 @@
     "supervisor": "Outdoor Supervisor",
     "noSupervisor": "No team has an Outdoor Supervisor yet. Set one on Users → Teams.",
     "noSupervisorShort": "no Outdoor Supervisor"
+  },
+  "environment": {
+    "trainingLabel": "Training site",
+    "trainingNote": "Practice only — nothing here is real or counts for pay."
   }
 }

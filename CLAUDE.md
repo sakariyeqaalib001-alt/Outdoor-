@@ -60,11 +60,13 @@ Next.js 16 (App Router, Turbopack, Cache Components), React 19, TypeScript stric
 | `npm run db:sql-editor` | Regenerate the SQL Editor paste files in `supabase/sql-editor/` from the migrations |
 | `npm run user:create -- --type …` | Owner-only: create a sign-in account (prints a temporary password in the owner's terminal) — see `docs/06-operations/auth.md` |
 | `npm run icons` | Regenerate favicon and maskable icon from the brand kit |
+| `npm run training:build` / `training:start` | Training site (T-24) on http://localhost:3001 with its own database and banner — see `docs/06-operations/training-site.md` |
 
 Next.js 16 differs from older versions: read `node_modules/next/dist/docs/` before using an API you are unsure of.
 
 ## Environments (current)
 
 - **Local:** app on the owner's computer (`npm run dev`); no Docker.
+- **Training site (T-24):** Supabase project "Outdoor Training" (practice data), run locally on port 3001. Every new migration must also be pasted into the training project.
 - **Database:** Supabase project "Outdoor" (staging, fake data only) — used for development until a production project is created at Phase 11.
 - **Hosting:** deferred (Vercel Hobby cannot be used commercially). Staging deploy steps in Phase 1 are postponed — see T-02.

@@ -12,7 +12,10 @@
     "icons": "node scripts/generate-icons.mjs",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "db:sql-editor": "node scripts/sql-editor.mjs",
-    "user:create": "node --env-file=.env.local scripts/create-user.mjs"
+    "user:create": "node --env-file=.env.local scripts/create-user.mjs",
+    "training:build": "node scripts/training.mjs build",
+    "training:start": "node scripts/training.mjs start",
+    "training:user-create": "node --env-file=.env.training.local scripts/create-user.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

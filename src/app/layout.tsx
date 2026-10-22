@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { EnvironmentBanner } from "@/components/environment-banner";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { isTrainingSite } from "@/lib/environment";
 import { t } from "@/lib/i18n";
 import "./globals.css";
 
@@ -20,7 +22,7 @@ const signika = localFont({
 export const metadata: Metadata = {
   title: {
     default: t("app.name"),
-    template: `%s · ${t("app.shortName")}`,
+    template: `%s · ${t("app.shortName")}${isTrainingSite() ? ` (${t("environment.trainingLabel")})` : ""}`,
   },
   description: t("app.description"),
   applicationName: t("app.shortName"),
@@ -42,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${signika.variable} h-full antialiased`}>
       <body className="min-h-full">
+        <EnvironmentBanner />
         <TooltipProvider>{children}</TooltipProvider>
         <ServiceWorkerRegister />
       </body>

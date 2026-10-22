@@ -70,6 +70,56 @@ select 'Applied ${version}_${name} successfully' as result;
 `;
 }
 
+export const freshProjectFile = path.join(root, "supabase", "fresh-project", "all_changes_in_order.sql");
+
+/**
+ * Every migration in one paste, for a NEW empty Supabase project (e.g. the training site, T-24).
+ * One transaction: all changes apply or none do. Refuses if any change is already recorded.
+ */
+export function buildFreshProjectFile() {
+  const list = migrationList();
+  const last = list[list.length - 1];
+  return `-- =====================================================================================
+-- Sogasho Outdoor — ALL database changes in order (${list.length}), for a NEW empty Supabase project
+-- Up to ${last.version}_${last.name}.
+-- HOW TO APPLY: new project → SQL Editor → New query → paste this WHOLE file → Run.
+-- Safe: one transaction (everything or nothing); refuses if the project already has any change.
+-- For an existing project use the single files in supabase/sql-editor instead.
+-- Generated from supabase/migrations — do not edit; run "npm run db:sql-editor".
+-- =====================================================================================
+begin;
+
+create schema if not exists supabase_migrations;
+create table if not exists supabase_migrations.schema_migrations (
+  version text not null primary key,
+  statements text[],
+  name text
+);
+alter table supabase_migrations.schema_migrations enable row level security;
+
+do $sogasho_guard$
+begin
+  if exists (select 1 from supabase_migrations.schema_migrations) then
+    raise exception 'This project already has database changes. Use the single files in supabase/sql-editor. Nothing was changed.';
+  end if;
+end
+$sogasho_guard$;
+${list
+  .map(
+    (m) => `
+-- ================================ ${m.version}_${m.name} ================================
+${m.sql.trim()}
+
+insert into supabase_migrations.schema_migrations (version, name) values ('${m.version}', '${m.name}');
+`
+  )
+  .join("")}
+commit;
+
+select 'Applied all ${list.length} changes successfully (up to ${last.version}_${last.name})' as result;
+`;
+}
+
 export function buildAll() {
   const list = migrationList();
   return list.map((m, i) => ({
@@ -85,4 +135,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   for (const f of files) writeFileSync(f.path, f.content);
   console.log(`SQL Editor files written to supabase/sql-editor (${files.length}):`);
   for (const f of files) console.log(`  ${path.basename(f.path)}`);
+  mkdirSync(path.dirname(freshProjectFile), { recursive: true });
+  writeFileSync(freshProjectFile, buildFreshProjectFile());
+  console.log("New-project file written: supabase/fresh-project/all_changes_in_order.sql");
 }
