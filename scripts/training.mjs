@@ -49,12 +49,9 @@ function trainingEnv() {
 }
 
 function run(args, env) {
-  const child = spawn(process.platform === "win32" ? "npx.cmd" : "npx", ["next", ...args], {
-    cwd: root,
-    env,
-    stdio: "inherit",
-    shell: process.platform === "win32",
-  });
+  // Run Next.js's own script with this Node (no shell), so arguments are passed safely on every OS.
+  const nextBin = path.join(root, "node_modules", "next", "dist", "bin", "next");
+  const child = spawn(process.execPath, [nextBin, ...args], { cwd: root, env, stdio: "inherit" });
   child.on("exit", (code) => process.exit(code ?? 1));
 }
 
