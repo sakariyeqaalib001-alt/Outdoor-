@@ -29,7 +29,6 @@ const saleSchema = z.object({
   plan_id: uuid,
   months_paid: z.number().int().min(1).max(MONTHS_PAID_MAX),
   free_month: z.boolean(),
-  items: z.array(z.object({ item_id: uuid, quantity: z.number().int().min(1).max(100) })).max(20),
 });
 export type SaleInput = z.infer<typeof saleSchema>;
 

@@ -95,15 +95,15 @@ beforeAll(async () => {
 }, 60_000);
 
 describe("a New sale (FR-SALE-01…05, 14, 17)", () => {
-  it("is approved at once, priced from the plan, timed by the server, and ignores any date or agent sent", async () => {
+  it("waits for approval (D-37), is priced from the plan, timed by the server, and ignores any date or agent sent", async () => {
     const r = await sell(AG, saleInput({ submitted_at: "2020-01-01T00:00:00Z", sale_month: "2020-01-01", agent_id: AG2, unit_price: 1 }));
-    expect(r).toMatchObject({ status: "ok", sale_status: "approved", existing: false });
-    const sale = (await db.query<{ agent_id: string; unit_price: string; amount_collected: string; recent: boolean; current_month: boolean; city_id: string }>(
-      `select agent_id, unit_price, amount_collected, city_id,
+    expect(r).toMatchObject({ status: "ok", sale_status: "pending_approval", existing: false });
+    const sale = (await db.query<{ agent_id: string; unit_price: string; amount_collected: string; recent: boolean; current_month: boolean; city_id: string; approved_at: string | null }>(
+      `select agent_id, unit_price, amount_collected, city_id, approved_at,
               submitted_at > now() - interval '1 minute' as recent,
               sale_month = app.business_month(now()) as current_month
          from public.sales where id = $1`, [r.sale_id])).rows[0];
-    expect(sale).toMatchObject({ agent_id: AG, unit_price: "25.00", amount_collected: "25.00", recent: true, current_month: true, city_id: hargeisa });
+    expect(sale).toMatchObject({ agent_id: AG, unit_price: "25.00", amount_collected: "25.00", recent: true, current_month: true, city_id: hargeisa, approved_at: null });
   });
 
   it("charges recharge × months paid + installation fee", async () => {
@@ -261,38 +261,29 @@ describe("free month (FR-FREE-01…04, UAT-19; D-36)", () => {
   });
 });
 
-describe("equipment from the team's stock (FR-STK-03, UAT-08, 09, 22)", () => {
-  it("deducts the picked items in the same transaction", async () => {
-    const before = await balance(locA, router);
-    const r = await sell(AG, saleInput({ items: [{ item_id: router, quantity: 1 }] }));
-    expect(await balance(locA, router)).toBe(before - 1);
-    const items = await db.query("select stock_item_id, quantity from public.sale_items where sale_id = $1", [r.sale_id]);
-    expect(items.rows).toEqual([{ stock_item_id: router, quantity: 1 }]);
-    const movement = await db.query<{ ref_id: string }>("select ref_id from public.stock_movements where movement_type = 'issue' and ref_id = $1", [r.sale_id]);
-    expect(movement.rows).toHaveLength(1);
+describe("equipment (D-37: recorded by the Supervisor at approval, Phase 8)", () => {
+  it("is not taken at registration — equipment sent with the request is ignored and no stock moves", async () => {
+    const [routers, pdcoms] = [await balance(locA, router), await balance(locA, pdcom)];
+    const r = await sell(AG, saleInput({ items: [{ item_id: router, quantity: 1 }, { item_id: pdcom, quantity: 5 }] }));
+    expect(r.status).toBe("ok");
+    expect([await balance(locA, router), await balance(locA, pdcom)]).toEqual([routers, pdcoms]);
+    expect((await db.query("select 1 from public.sale_items where sale_id = $1", [r.sale_id])).rows).toHaveLength(0);
   });
 
-  it("refuses more than the team holds and writes nothing at all", async () => {
-    const [sales, customers, routers] = [await salesCount(), await customersCount(), await balance(locA, router)];
-    expect(await errorOf(sell(AG, saleInput({ items: [{ item_id: router, quantity: 1 }, { item_id: pdcom, quantity: 2 }] })))).toMatch(/INSUFFICIENT_STOCK/);
-    expect([await salesCount(), await customersCount(), await balance(locA, router)]).toEqual([sales, customers, routers]);
-  });
-
-  it("refuses equipment for a seller without a team", async () => {
+  it("lets a seller without a team register a sale (the Supervisor's team stock is used at approval)", async () => {
     await db.query("update public.user_profiles set city_id = $1 where id = $2", [hargeisa, LONE]);
-    expect(await errorOf(sell(LONE, saleInput({ items: [{ item_id: router, quantity: 1 }] })))).toMatch(/NO_TEAM_STOCK/);
-    expect((await sell(LONE, saleInput())).status).toBe("ok"); // a sale without equipment is fine
+    expect((await sell(LONE, saleInput())).status).toBe("ok");
   });
 });
 
 describe("retries and double taps (FR-SALE-15, UAT-30)", () => {
-  it("create one sale and one stock deduction for the same request", async () => {
-    const input = saleInput({ items: [{ item_id: router, quantity: 1 }] });
-    const before = [await salesCount(), await balance(locA, router)];
+  it("create one sale for the same request", async () => {
+    const input = saleInput();
+    const before = await salesCount();
     const first = await sell(AG, input);
     const again = await sell(AG, input);
     expect(again).toEqual({ ...first, existing: true });
-    expect([await salesCount(), await balance(locA, router)]).toEqual([before[0] + 1, before[1] - 1]);
+    expect(await salesCount()).toBe(before + 1);
   });
 
   it("refuse another agent reusing someone's request id", async () => {

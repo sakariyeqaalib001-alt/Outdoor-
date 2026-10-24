@@ -30,7 +30,6 @@ type Values = {
   planId: string;
   monthsPaid: number;
   freeMonth: boolean;
-  quantities: Record<string, string>;
 };
 type Draft = { requestId: string; startedMonth: string; values: Values };
 
@@ -52,7 +51,6 @@ function newDraft(data: SaleFormData, currentMonth: string): Draft {
       planId: "",
       monthsPaid: 1,
       freeMonth: false,
-      quantities: {},
     },
   };
 }
@@ -71,7 +69,8 @@ function loadDraft(data: SaleFormData, currentMonth: string): Draft {
 }
 
 /**
- * Sales form (FR-SALE-01…22, FR-FREE-01…04). No date field (D-30). The draft — with its request id, so a
+ * Sales form (FR-SALE-01…22, FR-FREE-01…04). No date field (D-30). No equipment: the Supervisor records it at
+ * approval (D-37). The draft — with its request id, so a
  * retry never creates a second sale (FR-SALE-15) — is kept on this device until the sale is saved.
  */
 export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMonth: string }) {
@@ -116,9 +115,6 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
       setResult({ error: t("sales.errors.index") });
       return;
     }
-    const items = data.items
-      .map((i) => ({ item_id: i.id, quantity: Number(v.quantities[i.id] || 0) }))
-      .filter((i) => Number.isInteger(i.quantity) && i.quantity > 0);
     setResult({});
     startTransition(async () => {
       const r = await submitSale({
@@ -134,7 +130,6 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
         plan_id: v.planId,
         months_paid: months,
         free_month: freeMonth,
-        items,
       });
       if (!r.ok) {
         setResult({ error: r.error });
@@ -146,7 +141,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
         // ignore
       }
       setDraft(newDraft(data, currentMonth));
-      const note = r.existing ? "existing" : r.saleStatus === "pending_approval" ? "pending" : "approved";
+      const note = r.existing ? "existing" : "pending";
       router.push(`/sales/${r.saleId}?saved=${note}`);
     });
   };
@@ -291,31 +286,6 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
               ) : null}
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("sales.equipmentSection")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-3">
-          {!data.hasTeam ? <p className="text-sm text-muted-foreground sm:col-span-3">{t("sales.noTeamStock")}</p> : null}
-          {data.items.map((item) => (
-            <div key={item.id} className="space-y-1">
-              <Label htmlFor={`qty-${item.id}`}>{item.name}</Label>
-              <Input
-                id={`qty-${item.id}`}
-                inputMode="numeric"
-                pattern="\d*"
-                placeholder="0"
-                disabled={!data.hasTeam}
-                value={v.quantities[item.id] ?? ""}
-                onChange={(e) => set({ quantities: { ...v.quantities, [item.id]: e.target.value.replace(/\D/g, "").slice(0, 3) } })}
-                className="h-11 tabular-nums"
-              />
-              {item.available !== null ? <p className="text-xs text-muted-foreground">{t("sales.available", { count: item.available })}</p> : null}
-            </div>
-          ))}
         </CardContent>
       </Card>
 

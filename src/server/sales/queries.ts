@@ -25,8 +25,6 @@ export type PlanOption = {
   recharge: number;
   installation: number;
 };
-export type ItemOption = { id: string; name: string; available: number | null };
-
 export type SaleFormData = {
   myCity: string | null;
   canOverrideCity: boolean;
@@ -34,27 +32,22 @@ export type SaleFormData = {
   districts: DistrictOption[];
   branches: BranchOption[];
   plans: PlanOption[];
-  items: ItemOption[];
   freeMonthAmount: number;
-  hasTeam: boolean;
 };
 
-/** Everything the sales form needs: lists, prices in force today, and the seller's team stock. */
+/** Everything the sales form needs: lists and prices in force today (equipment is recorded at approval, D-37). */
 export async function getSaleFormData(canOverrideCity: boolean): Promise<SaleFormData> {
   const supabase = await client();
   const today = businessToday();
   const ids = await getSessionId(supabase);
-  const [me, cities, districts, branches, plans, prices, items, setting, supervisors, report] = await Promise.all([
+  const [me, cities, districts, branches, plans, prices, setting] = await Promise.all([
     supabase.from("user_profiles").select("city_id").eq("id", ids?.userId ?? "").maybeSingle(),
     supabase.from("cities").select("id, name").eq("is_active", true).order("name"),
     supabase.from("districts").select("id, name, city_id").eq("is_active", true).order("name"),
     supabase.from("branches").select("id, name, city_id").eq("is_active", true).order("name"),
     supabase.from("plans").select("id, product_id, name, download_mbps, upload_mbps, sort_order, products!inner(code, sort_order, is_active)").eq("is_active", true),
     supabase.from("plan_prices").select("plan_id, recharge_amount, installation_fee, effective_from, effective_to").lte("effective_from", today),
-    supabase.from("stock_items").select("id, display_name").eq("is_active", true).order("sort_order"),
     supabase.from("app_settings").select("value").eq("key", "free_month_amount").maybeSingle(),
-    supabase.rpc("stock_supervisors"),
-    supabase.rpc("stock_report", { p_from: today, p_to: today }),
   ]);
 
   type RawPlan = { id: string; product_id: string; name: string; download_mbps: number; upload_mbps: number; sort_order: number; products: { code: string; sort_order: number; is_active: boolean } };
@@ -75,15 +68,6 @@ export async function getSaleFormData(canOverrideCity: boolean): Promise<SaleFor
       installation: Number(current.get(p.id)!.installation_fee),
     }));
 
-  // The seller's team stock (same rule as app.team_location_of): the team they belong to, else the team they lead.
-  const teamRows = (supervisors.data ?? []) as { location_id: string; supervisor_id: string | null; team_id: string }[];
-  const membership = await supabase.from("team_members").select("team_id").eq("user_id", ids?.userId ?? "").maybeSingle();
-  const myTeam = (membership.data as { team_id: string } | null)?.team_id ?? teamRows.find((r) => r.supervisor_id === ids?.userId)?.team_id;
-  const myTeamLocation = teamRows.find((r) => r.team_id === myTeam)?.location_id ?? null;
-  const rows = (report.data ?? []) as { location_id: string; item_id: string; closing: number }[];
-  const available = (item: string) =>
-    myTeamLocation ? rows.find((r) => r.location_id === myTeamLocation && r.item_id === item)?.closing ?? 0 : null;
-
   return {
     myCity: (me.data as { city_id: string | null } | null)?.city_id ?? null,
     canOverrideCity,
@@ -91,9 +75,7 @@ export async function getSaleFormData(canOverrideCity: boolean): Promise<SaleFor
     districts: (districts.data ?? []) as DistrictOption[],
     branches: (branches.data ?? []) as BranchOption[],
     plans: planOptions,
-    items: ((items.data ?? []) as { id: string; display_name: string }[]).map((i) => ({ id: i.id, name: i.display_name, available: available(i.id) })),
     freeMonthAmount: Number((setting.data as { value: unknown } | null)?.value ?? 50),
-    hasTeam: Boolean(myTeamLocation),
   };
 }
 

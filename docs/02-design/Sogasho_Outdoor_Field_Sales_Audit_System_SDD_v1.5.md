@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20–24 Oct 2026 | D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20–24 Oct 2026 | D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -448,12 +448,8 @@ flowchart TD
     D --> E{Identity check}
     E -->|Duplicate| F[Insert audit_event; return DUPLICATE]
     E -->|OK| G[Insert customer/sale/sale_items]
-    G --> H[Lock team stock per item; verify quantity available; insert issue movements]
-    H --> I{customer_type}
-    I -->|New| J[status = approved]
-    I -->|Retention| K[status = pending_approval; notify Team Leader]
-    J --> L[Commit; return sale]
-    K --> L
+    G --> K[status = pending_approval for New and Retention; notify Team Leader]
+    K --> L[Commit; return sale]
 ```
 
 - Price: server selects the `plan_prices` row in force for the chosen plan at submission (D-34); client-sent price is ignored.
@@ -462,17 +458,17 @@ flowchart TD
 - `agent_id` always from the session.
 - **Sale date and month (D-30):** the form has no date field. `submitted_at` is set by the database (`default now()`, column not writable by application roles); `sale_month = app.business_month(submitted_at)`. Any date in the request payload is ignored. The device clock is never used. Option A: no feature exists to move a sale to another month.
 
-## 10.3 Retention approval (D-14)
+## 10.3 Sale approval (D-14, D-37)
 
 ```mermaid
 flowchart TD
     A[pending_approval] --> B{Team Leader of agent's team or Super Admin}
-    B -->|Approve| C[approved; approved_at set]
-    B -->|Reject + reason| D[rejected; Stock Officer records the return of the equipment]
+    B -->|Approve + equipment given| C[approved; approved_at set; app.issue_stock from the team; refused if short]
+    B -->|Reject + reason| D[rejected; a New sale's customer with no other sale releases phone and Index]
 ```
 
 - Reviewer cannot be the submitting agent (check in RPC and RLS).
-- Stock is deducted at submission; rejection creates a "return required" task for the agent → Stock return movement.
+- Applies to every sale, New and Retention (D-37). Equipment is chosen by the approver and deducted at approval (`sale_items` written then); nothing moves at submission. The approver cannot change the sale — approve or reject only.
 - Approval time drives the payroll counting month (§14.1).
 
 ## 10.4 Product switch (D-16)

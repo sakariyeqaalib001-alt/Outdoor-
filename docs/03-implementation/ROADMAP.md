@@ -321,7 +321,7 @@ STOP after reporting. Wait for my explicit instruction.
 **Scope**
 - `customers`, `customer_identifiers` (unique type/value), `sales`, `sale_items`.
 - Mobile-first sales form with all BRD fields; district dropdown filtered by city; Area free text; Index Number validated as exactly 8 digits; city default with override only for permitted roles; price from catalog; months paid; free-month option.
-- `create_sale` RPC: identity resolution for New and Retention; same-month rule; equipment issue from the team's stock in the same transaction (`app.issue_stock`, D-35); New → approved, Retention → pending_approval.
+- `create_sale` RPC: identity resolution for New and Retention; same-month rule; every sale saved as pending_approval; equipment recorded at approval in Phase 8 (D-37).
 - Durable duplicate-attempt `audit_events` (DUP_PHONE, DUP_INDEX, IDENTITY_CONFLICT, SAME_MONTH) that survive rejection.
 - Idempotency via `client_request_id`; draft autosave on device.
 - **Sales month (D-30):** no date field on the form; `submitted_at` set by the database only; client dates ignored; warning when a previous-month draft is submitted; My Sales month selector (current month default, past months read-only, server rejects writes to past months).
@@ -341,18 +341,18 @@ STOP after reporting. Wait for my explicit instruction.
 
 ---
 
-# Phase 8 — Retention approval and product switch
+# Phase 8 — Sale approval (with equipment) and product switch
 
-**Goal:** Controlled Retention decisions and product changes (SDD §10.3, 10.4).
+**Goal:** Controlled sale decisions — every sale, New and Retention (D-37) — and product changes (SDD §10.3, 10.4).
 
 **Scope**
-- Team Leader approval queue (own team only); Super Admin fallback; no self-approval.
-- Approve/reject with reason; `sale_approvals` history; `approved_at`.
-- Rejection → "return required" task; return recorded by the Stock Officer (D-35).
+- Team Leader / Outdoor Supervisor approval queue for every sale of their team (D-37); Super Admin fallback; no self-approval.
+- Approve with the equipment given (quantities, deducted from the team stock in the same transaction, refused if short) or reject with reason; approve/reject only; `sale_approvals` history; `approved_at`.
+- Rejected New sale: the customer's phone and Index are released when the customer has no other sale (D-37).
 - Product switch form and RPC: FTTA ↔ FTTH only, identity match, new equipment issued from team stock, old equipment returned via the Stock Officer; never a sale.
 - In-app notifications table and bell (Retention awaiting review, rejection, transfer awaiting acknowledgement).
 
-**Acceptance gate (UAT-06, 12, 34, 35, 36)**
+**Acceptance gate (UAT-06, 08, 12, 22, 34, 35, 36)**
 - Self-approval and cross-team approval denied (UI and API).
 - Switch identity mismatch rejected; same-product switch blocked.
 - Switches excluded from sale counts.

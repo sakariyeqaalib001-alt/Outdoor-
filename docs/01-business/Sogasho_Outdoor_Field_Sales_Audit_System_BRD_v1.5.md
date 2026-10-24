@@ -33,7 +33,7 @@ Prepared for **Sogasho ISP**
 | 1.2 | 19 Oct 2026 | Applied business inputs (`inputs.pdf`, 19 Oct 2026) and four confirmations. Closed D-02 (Index = 8-digit customer account number), D-04 (products and prices maintained by Super Admin in Settings), D-08 (flat base salary set by Super Admin, no pro-rating), D-19 (Best Agent / Hall of Fame / Champion streak titles), D-21 (no legacy data; system starts fresh) and D-29 (16 branches listed; districts per city maintained by Super Admin; Area free text; teams set by Super Admin). Added monthly performance bands (target 20, baseline 15). Legacy import requirements (FR-MIG) retired. Still open: D-10, D-20, D-27, D-28. |
 | 1.3 | 19 Oct 2026 | Applied final inputs: D-10 closed (stock item spelled **PDCOM**); D-20 closed (OTP provider **Telesom**); D-28 agent count closed (**46 agents: 7 permanent, 39 temporary**, expected for the next 2 years). Still open: D-27 (KoboToolbox forms) and the data-retention part of D-28. Telesom credentials are kept in server environment settings for the pilot; no in-app SMS configuration page in v1 (§3.2). |
 | 1.4 | 19 Oct 2026 | Added sales-month control (Approved D-30, Option A): the sale date and month are set by the server clock in EAT; agents cannot pick, backdate or future-date a month; the device clock is ignored; a sale submitted after midnight belongs to the new month with no month-move correction; My Sales uses a month selector (current month default, past months read-only) instead of per-month tabs; months lock when payroll is finalized. New FR-SALE-17…21, BR-22, UAT-42…46. |
-| 1.5 | 20–24 Oct 2026 | Owner decision (D-36, 24 Oct): Retention names may differ slightly (close match, rule in DECISIONS); the agent records **months paid (1–12)** and amount collected = recharge × months + installation fee; the free-month offer applies to any plan — the customer pays 2 months of the plan, and 2 × recharge must reach the free-month amount ($50) (FR-SALE-01, 12, FR-FREE-02, 04, BR-17). Owner decision (D-35, 22 Oct): **no serial numbers** — stock is counted by quantity per item; the Stock Officer sends quantities to each team, the team's Team Leader/Supervisor (or Super Admin) accepts, and each sale by the team deducts the items the agent picks from the team's accepted stock; returns are recorded by the Stock Officer only (FR-SALE-08, FR-STK-03, 06, 08, 09, 10, FR-REF-08, FR-SW-02, UAT-08, 22, 35; replaces D-12). Owner input (D-34, 22 Oct): each product has **plans** (e.g. FTTH → SO-Home) with monthly recharge, installation fee, speeds and data; the price belongs to the plan, same in all cities; the owner's 18 plans are loaded (FR-CONF-01, 05, FR-SALE-14, BR-16, §6.3.1). Owner input (D-33, 22 Oct): customer mobile prefixes 063 and 065; week starts Saturday (FR-SALE-04). Owner decision (D-32, 21 Oct): **every user** — temporary agents, permanent agents and staff — receives an SMS code at sign-in; staff still sign in with email + password, and every user record holds a mobile number (FR-AUTH-02, 03, 05, FR-NOT-02, FR-USER-08). Owner clarification (D-31): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen per sale (new FR-SALE-22); Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). FR-USER-07, FR-STK-08, FR-STK-10, §5, §10.1 and glossary updated. |
+| 1.5 | 20–24 Oct 2026 | Owner decision (D-37, 24 Oct): **every sale (New and Retention) needs approval** by the agent's Team Leader / Outdoor Supervisor (Super Admin fallback; no self-approval); the **Supervisor records the equipment given at approval**, deducted from the team stock then; a rejected New sale releases the customer's phone and Index when the customer has no other sale; approvers can only approve or reject (FR-SALE-07, 08, FR-STK-03, BR-02, §5, §8.2, UAT-05, 06, 08, 22, 36). Owner decision (D-36, 24 Oct): Retention names may differ slightly (close match, rule in DECISIONS); the agent records **months paid (1–12)** and amount collected = recharge × months + installation fee; the free-month offer applies to any plan — the customer pays 2 months of the plan, and 2 × recharge must reach the free-month amount ($50) (FR-SALE-01, 12, FR-FREE-02, 04, BR-17). Owner decision (D-35, 22 Oct): **no serial numbers** — stock is counted by quantity per item; the Stock Officer sends quantities to each team, the team's Team Leader/Supervisor (or Super Admin) accepts, and each sale by the team deducts the items the agent picks from the team's accepted stock; returns are recorded by the Stock Officer only (FR-SALE-08, FR-STK-03, 06, 08, 09, 10, FR-REF-08, FR-SW-02, UAT-08, 22, 35; replaces D-12). Owner input (D-34, 22 Oct): each product has **plans** (e.g. FTTH → SO-Home) with monthly recharge, installation fee, speeds and data; the price belongs to the plan, same in all cities; the owner's 18 plans are loaded (FR-CONF-01, 05, FR-SALE-14, BR-16, §6.3.1). Owner input (D-33, 22 Oct): customer mobile prefixes 063 and 065; week starts Saturday (FR-SALE-04). Owner decision (D-32, 21 Oct): **every user** — temporary agents, permanent agents and staff — receives an SMS code at sign-in; staff still sign in with email + password, and every user record holds a mobile number (FR-AUTH-02, 03, 05, FR-NOT-02, FR-USER-08). Owner clarification (D-31): Outdoor agents belong to the Outdoor Department and have **no home branch**; a sale's **Branch** is where the money collected for that sale is handed in, chosen per sale (new FR-SALE-22); Outdoor equipment flows **Central Store → Team Leader/Supervisor custody → Agent custody** — branches hold no Outdoor stock (replaces the D-11 chain). FR-USER-07, FR-STK-08, FR-STK-10, §5, §10.1 and glossary updated. |
 
 ## Approval
 
@@ -188,11 +188,11 @@ Permissions are enforced server-side and by database Row Level Security (RLS); h
 
 1. Super Admin configures cities, branches, districts, products, prices, customer types, stock items, base salary, performance bands, users, teams, permissions and targets.
 2. The system starts with no legacy data (D-21). Before go-live, the Stock Officer records all opening stock (quantities) as receipts.
-3. Stock Officer records stock received into Central Store and hands it to Outdoor Team Leaders/Supervisors, who hand it to their agents; each receiver acknowledges receipt. Branches hold no Outdoor stock (D-31).
+3. Stock Officer records stock received into Central Store and issues it to Outdoor Supervisors (Team Leaders), who accept it into their team's stock. Branches hold no Outdoor stock (D-31, D-35).
 4. Agent signs in (temporary: phone + password + OTP; permanent: email + password + OTP, D-32). First login forces a password change.
-5. Agent registers a sale. The system validates required fields, catalog price, customer identity, same-month rule and the equipment picked, available in the team's stock.
-6. New sales that pass validation are **Approved** automatically. Retention sales are **Pending** until the agent's Team Leader (or Super Admin) decides.
-7. Equipment issue is recorded in the same transaction as the sale, deducting the picked quantities from the team's stock (D-35).
+5. Agent registers a sale. The system validates required fields, catalog price, customer identity and the same-month rule.
+6. Every sale (New and Retention) is **Pending** until the agent's Team Leader / Outdoor Supervisor (or Super Admin) approves or rejects it (D-37).
+7. At approval the Supervisor records the equipment given to the customer; it is deducted from the team's stock in the same transaction as the approval (D-35, D-37).
 8. Duplicate attempts and rule hits create audit events and notify Super Admin; cases are investigated and closed with a disposition.
 9. In the month after the sale, the Follow-up Team records Active, Expire or Not Reached.
 10. Refunds (Super Admin approval) and product switches create linked records and stock returns.
@@ -289,8 +289,8 @@ Names tidied with the owner (capital letters, stray spaces); the second LTE "SO!
 | FR-SALE-04 | Phone Number shall be normalized to E.164 (`+252…`); agents may type it with or without `+252` or a leading `0`. Allowed mobile prefixes are configurable (initially 063 and 065, D-33). Normalized phone is globally unique across all customers, including expired customers. (Approved D-01, D-03) |
 | FR-SALE-05 | Index Number is the customer's unique service account number, used when the customer recharges and when checking whether the service is active. It must be **exactly 8 digits** (example: `50091293`) and is globally unique. (Approved D-02) |
 | FR-SALE-06 | Customer Type shall be New or Retention. |
-| FR-SALE-07 | Retention registration shall require Team Leader/Supervisor approval before it is Approved/eligible. |
-| FR-SALE-08 | Stock Given shall list WiFi Router, PDCOM and CALIX with a quantity each (usually 1). The quantities are deducted from the selling team's accepted stock; no serial numbers (Approved D-10, D-35). |
+| FR-SALE-07 | **Every sale** (New and Retention) shall require approval by the agent's Team Leader / Outdoor Supervisor (Super Admin as fallback; never the seller) before it is Approved/eligible. The approver can only approve or reject (with a reason); a rejected New sale releases the customer's phone and Index if the customer has no other sale. (Approved D-14, D-37) |
+| FR-SALE-08 | Stock Given (WiFi Router, PDCOM, CALIX, with a quantity each) is recorded by the Team Leader / Outdoor Supervisor **when approving** the sale and deducted from the team's accepted stock at that moment; approval is refused if the team's stock is short. The agent does not enter equipment. No serial numbers. (Approved D-10, D-35, D-37) |
 | FR-SALE-09 | The system shall store submitting agent (from the authenticated session, never from client input), submission time, status, approval history and change history. |
 | FR-SALE-10 | The system shall display a clear validation message when a duplicate or invalid record is rejected. |
 | FR-SALE-11 | **New sale:** if the phone or Index already exists on any customer, submission is blocked, a duplicate-attempt event is logged and Super Admin is notified. (Approved D-01) |
@@ -403,7 +403,7 @@ Names tidied with the owner (capital letters, stray spaces); the second LTE "SO!
 |---|---|
 | FR-STK-01 | The system records stock received from the Stock Officer into Central Store. |
 | FR-STK-02 | Stock items: **WiFi Router, PDCOM, CALIX**. "PDCOM" is the confirmed spelling (Approved D-10). Display names editable in Settings. |
-| FR-STK-03 | A New or Retention sale deducts the equipment picked (item and quantity) from the selling team's accepted stock in the same transaction; refused if the team's stock is short. Retention stock is deducted at submission; if the Retention is rejected, the Stock Officer records a return. (Approved D-11, D-14, D-35) |
+| FR-STK-03 | Equipment for a sale is recorded by the Supervisor at approval and deducted from the selling team's accepted stock in the same transaction as the approval; refused if the team's stock is short. If an approved sale is later reversed, the Stock Officer records any return. (Approved D-11, D-14, D-35, D-37) |
 | FR-STK-04 | Stock report compares received, transferred, issued, returned, adjusted and current balance per item and location. |
 | FR-STK-05 | No location balance may go negative. |
 | FR-STK-06 | Each movement records item, quantity, from/to location, linked sale/switch/refund/transfer, user, timestamp and movement type. Movements cannot be changed or deleted. (D-35) |
@@ -469,7 +469,7 @@ A duplicate attempt is blocked immediately and logged; it is not treated as prov
 | Concurrent submission protection | Database constraints guarantee two simultaneous submissions cannot create duplicates. | Must |
 | Duplicate attempt alert | A durable audit event is written even though the submission is rejected; Super Admin notified. | Must |
 | Same-month rule | One non-reversed sale per customer per month. | Must |
-| Retention approval | Pending until Team Leader decision; no self-approval. | Must |
+| Sale approval | Every sale pending until the Team Leader / Supervisor decides; equipment recorded at approval; no self-approval (D-37). | Must |
 | Team stock | Equipment is issued only from the selling team's accepted stock; no balance below zero (D-35). | Must |
 | Stock reconciliation | Opening + receipts + returns ± approved adjustments − issues − transfers out = closing, per location. | Must |
 | Refund traceability | Approval creates a linked reversal; original sale remains. | Must |
@@ -505,7 +505,7 @@ A duplicate attempt is blocked immediately and logged; it is not treated as prov
 | Rule | Business rule |
 |---|---|
 | BR-01 | Normalized phone and Index Number are each globally unique across all customers, including expired ones. Old values after a change remain reserved. (D-01) |
-| BR-02 | Retention requires Team Leader/Supervisor approval; Super Admin may approve as fallback; no self-approval. (D-14) |
+| BR-02 | Every sale (New and Retention) requires Team Leader / Outdoor Supervisor approval; Super Admin may approve as fallback; no self-approval. (D-14, D-37) |
 | BR-03 | Refunds require Super Admin approval. |
 | BR-04 | City defaults from the agent's assignment; only Team Leader/Super Admin may override. |
 | BR-05 | Grand Total = FTTA + FTTH + FTTB + LTE units. |
@@ -531,7 +531,7 @@ A duplicate attempt is blocked immediately and logged; it is not treated as prov
 
 A sale is **eligible** for a month when all of the following are true:
 
-1. Status is **Approved** (New: approved automatically on successful validation; Retention: approved by Team Leader or Super Admin).
+1. Status is **Approved** (every sale, New and Retention, approved by the Team Leader / Outdoor Supervisor or Super Admin — D-37).
 2. It has not been reversed by an approved refund (subject to FR-REF-07 timing).
 3. It is not linked to an audit case in **Confirmed Issue** state.
 4. It is a sale, not a product switch.
@@ -666,10 +666,10 @@ Every figure states whether it counts **submitted** or **eligible** sales.
 | UAT-02 | Permanent user signs in with email, password and OTP (D-32). | Login succeeds only after the SMS code. | 3, 4 |
 | UAT-03 | New sale with an already-registered phone (any format). | Blocked; clear error; durable audit event; Super Admin notified. | 7, 9 |
 | UAT-04 | New sale with duplicate Index Number. | Blocked; event references the matching customer. | 7, 9 |
-| UAT-05 | Retention submitted. | Pending; excluded from eligible metrics and payroll. | 7 |
-| UAT-06 | Team Leader approves own team's Retention. | Approved; approver/time recorded; becomes eligible. | 8 |
+| UAT-05 | Sale submitted (New or Retention). | Pending; excluded from eligible metrics and payroll until approved (D-37). | 7 |
+| UAT-06 | Team Leader approves own team's sale and records the equipment given. | Approved; approver/time recorded; team stock decreases; becomes eligible. | 8 |
 | UAT-07 | Refund submitted. | Cannot be finalized without Super Admin decision. | 12 |
-| UAT-08 | Sale using one WiFi Router from a team holding routers. | Team stock decreases by one in the same transaction as the sale. | 7 |
+| UAT-08 | Approval recording one WiFi Router from a team holding routers. | Team stock decreases by one in the same transaction as the approval. | 8 |
 | UAT-09 | Issue equipment not in the agent's custody. | Blocked; no negative balance. | 7 |
 | UAT-10 | Payroll where product sum differs from New + Retention. | Line flagged; finalization blocked. | 16 |
 | UAT-11 | Payroll at 0, 14, 15, 16, 20, 30 eligible units. | Incentive $0, $0, $0, $5, $25, $75. | 16 |
@@ -683,7 +683,7 @@ Every figure states whether it counts **submitted** or **eligible** sales.
 | UAT-19 | Sale with "Pay 2 months, get 1 free" at $50. | Flagged free-month; revenue $50; 1 unit. | 7 |
 | UAT-20 | Retention for an existing customer. | Sale links to existing customer; no new customer created. | 7 |
 | UAT-21 | New sale using phone of an expired customer. | Blocked as duplicate. | 7 |
-| UAT-22 | Sale using more equipment than the team holds. | Blocked; nothing is deducted. | 7 |
+| UAT-22 | Approval recording more equipment than the team holds. | Blocked; nothing is deducted; sale stays pending. | 8 |
 | UAT-23 | Refund approved after the month is finalized. | Finalized run unchanged; negative adjustment in next run. | 16 |
 | UAT-24 | Follow-up item not completed by end of M+1. | Shown as Not Reviewed on overdue list. | 13 |
 | UAT-25 | Unauthorized user requests a leave attachment. | Access denied; no public URL exists. | 17 |
@@ -697,7 +697,7 @@ Every figure states whether it counts **submitted** or **eligible** sales.
 | UAT-33 | 5 wrong passwords / excessive OTP requests. | Account locked 15 min / OTP rate-limited. | 3 |
 | UAT-34 | Product switch FTTA → FTTH. | Recorded; not counted as sale or incentive; equipment swapped in stock. | 8 |
 | UAT-35 | Retention rejected after equipment issued. | Return required; the Stock Officer records the return and the stock is back in Central. | 8 |
-| UAT-36 | Agent tries to approve own Retention. | Denied. | 8 |
+| UAT-36 | Agent (or Team Leader) tries to approve own sale. | Denied. | 8 |
 | UAT-37 | Index Number entered as 7 digits, 9 digits or with letters. | Rejected with a clear message; 8 digits accepted. | 7 |
 | UAT-38 | Agents finish the month with 14, 15, 19 and 20 eligible units. | Bands: Underperforming, Baseline, Baseline, Target met. | 14 |
 | UAT-39 | Same agent is #1 for 1, 3, 4 and 5 consecutive frozen months, then not #1. | Best Agent; Hall of Fame at 3; Champion at 4 and 5; streak resets the next month. | 19 |
@@ -769,6 +769,7 @@ Closed in v1.2 from business inputs (`inputs.pdf`, 19 Oct 2026) and confirmation
 | D-19 | Best Agent = #1 of the month; Hall of Fame = Best Agent 3 consecutive months; Champion = Best Agent 4 consecutive months | 6.13, 8.1 |
 | D-21 | No legacy data; system starts as brand new | 3.2, 6.17 |
 | D-29 | 16 branches supplied (§6.2.1); districts per city maintained by Super Admin; Area free text; teams created by Super Admin | 6.2, 6.4 |
+| D-37 | Every sale needs Team Leader / Supervisor approval (Super Admin fallback, no self-approval); Supervisor records equipment at approval; rejected New sale releases phone/Index; approve or reject only — owner, 24 Oct 2026 | 6.4, 6.12 |
 | D-36 | Retention names: close match; months paid 1–12, amount = recharge × months + installation; free month on any plan (2 months, 2 × recharge ≥ $50 setting) — owner, 24 Oct 2026 | 6.4, 6.11 |
 | D-35 | No serial numbers: stock by quantity; Stock Officer sends to teams, TL/Supervisor (or Super Admin) accepts, sales deduct from team stock; returns by Stock Officer — owner, 22 Oct 2026 | 6.12 |
 | D-34 | Products have plans; price (recharge + installation) per plan, same in all cities; owner's 18 plans loaded — owner, 22 Oct 2026 | 6.3, 6.4 |
@@ -865,7 +866,7 @@ The provisional default may be used for design but **the named phase may not be 
 | FR-CONF-01, 03, 05 | 9 | 5 | 18 |
 | FR-CONF-02, 04, 06, 07 | 14 | 14 (band settings: 5) | 26, 38 |
 | FR-SALE-01…06, 08…22 | 10, 22.4 | 7 (FR-SALE-21 lock: 16) | 03–05, 08, 09, 19–22, 30, 32, 37, 42–46 |
-| FR-SALE-07 | 10.3 | 8 | 06, 36 |
+| FR-SALE-07 | 10.3 | 8 | 05, 06, 36 |
 | FR-REF-01…08 | 10.5 | 12 | 07, 17, 23 |
 | FR-AUD-01…03 | 11 | 7 (event log), 9 | 03, 04 |
 | FR-AUD-04…08 | 11 | 9 (hold effect: 16) | 31 |
@@ -875,7 +876,7 @@ The provisional default may be used for design but **the named phase may not be 
 | FR-SW-01…06 | 10.4 | 8 | 12, 34 |
 | FR-FREE-01…04 | 10.2 | 7 | 19 |
 | FR-STK-01, 02, 04…10 | 12 | 6 | 08, 09, 22 |
-| FR-STK-03 | 12 | 7 | 08, 35 |
+| FR-STK-03 | 12 | 8 | 08, 22, 35 |
 | FR-PERF-01…04 | 14.4 | 19 | 27, 39 |
 | FR-REP-01…05 | 14 | 10 (dashboard), 15 | 18, 28 |
 | FR-KOB-01…05 | 17.2 | 18 | 15 |

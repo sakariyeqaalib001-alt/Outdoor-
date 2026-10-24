@@ -26,7 +26,7 @@ Supabase → "Outdoor" → **SQL Editor** → **New query** → paste the whole 
 | | Stock Officer → Super Admin | **Request adjustment** (lost, damaged, miscount, with reason) → Super Admin **Approves** or **Rejects**. Nobody approves their own request |
 | **Report & history** | Everyone with stock access | Report for chosen dates: opening, received, in, out, issued, returned, adjusted, closing. Movement history: every movement, who and when — never changed or deleted |
 
-Sales (Phase 7) take the items the agent picks from the **team's** accepted stock. A sale is refused if the team does not have enough.
+When the Supervisor approves a sale (Phase 8), the equipment they record is taken from the **team's** accepted stock. Approval is refused if the team does not have enough (D-37).
 
 ## 3. Things to test
 

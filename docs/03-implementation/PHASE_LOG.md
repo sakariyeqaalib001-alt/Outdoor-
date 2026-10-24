@@ -381,17 +381,19 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 **Date:** 24 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/sales.md`).
 
+**Owner decision during testing (D-37, 24 Oct 2026):** every sale — New and Retention — waits for the agent's Team Leader / Outdoor Supervisor (Super Admin fallback, no self-approval); the Supervisor records the equipment at approval (Phase 8), so the agent no longer enters equipment; a rejected New sale releases the customer's numbers; approve or reject only. Migration `20261024120000_sales_all_need_approval.sql` replaces `create_sale` (all sales pending; equipment in the request ignored; no stock moves at registration); the equipment card is removed from the form. BRD FR-SALE-07, 08, FR-STK-03, BR-02, §5, §8.2, UAT-05/06/08/22/36, SDD §10.2–10.3, Roadmap Phase 8 and CLAUDE.md updated.
+
 **Owner decisions before building (D-36, 24 Oct 2026):** Retention name check = close match (rule in DECISIONS, `app.names_match`); months paid 1–12 with amount = recharge × months + installation fee; free month on any plan (2 months, allowed when 2 × recharge ≥ the $50 setting). BRD FR-SALE-01, 12, FR-FREE-02, 04, BR-17 and SDD §10.1–10.2 updated.
 
 **Scope delivered (BRD §6.4 FR-SALE-01…06, 08…20, 22; §6.11 FR-FREE-01…04; §7 duplicate controls; SDD §10.1, 10.2, 10.6, 11.1)**
 - Migration `20261024090000_sales.sql`:
   - `customers`, `customer_identifiers` (phone E.164 and 8-digit Index; each value unique for ever — current and former; one current value per kind), `sales` (1 row = 1 unit; agent from the session; `submitted_at` from the database clock; `sale_month` generated from it in EAT; price snapshot from the plan; months paid; free month; amount check constraint; one approved/pending sale per customer per month by partial unique index; unique `client_request_id`), `sale_items` (append-only).
-  - `public.create_sale(p)`: permission, idempotency, validation (name, phone + allowed prefixes, 8-digit Index, city default + override only with `sales.override_city`, district of the city, area, branch, plan with a price today, months, free month), identity resolution (New / Retention, close-match names, former numbers), same-month rule, writes in a sub-transaction so a race on a unique index becomes a duplicate result, stock issue from the team (`app.issue_stock`, D-35). Duplicates write a durable `audit_events` row (DUP_PHONE, DUP_INDEX, IDENTITY_CONFLICT, SAME_MONTH) and return a result instead of raising, so the event survives. New → approved; Retention → pending_approval.
+  - `public.create_sale(p)`: permission, idempotency, validation (name, phone + allowed prefixes, 8-digit Index, city default + override only with `sales.override_city`, district of the city, area, branch, plan with a price today, months, free month), identity resolution (New / Retention, close-match names, former numbers), same-month rule, writes in a sub-transaction so a race on a unique index becomes a duplicate result. (As first built, the sale also took equipment from the team stock and New sales were approved at once — changed by D-37: every sale is pending; equipment at approval.) Duplicates write a durable `audit_events` row (DUP_PHONE, DUP_INDEX, IDENTITY_CONFLICT, SAME_MONTH) and return a result instead of raising, so the event survives. Every sale → pending_approval (D-37).
   - `public.change_customer_identifier` (Super Admin, reason, old value kept and reserved).
   - RLS: sales by `sales.read` scope; customers and identifiers by `customers.read` scope (`app.can_read_customer`); no direct writes for any API role; change history on every new table.
-- Screens: **Sales** (My Sales with month selector, read-only past months, agent selector for Team Leaders / Super Admin, totals), **New sale** (mobile-first form, no date field, draft autosaved on the device with its request id, month warning for an old draft, price/amount preview, team stock available), **sale detail**, **Free-month compensation** list, **Customers** (search; Super Admin changes phone / Index). Menu items enabled (`COMPLETED_PHASE = 7`).
+- Screens: **Sales** (My Sales with month selector, read-only past months, agent selector for Team Leaders / Super Admin, totals), **New sale** (mobile-first form, no date field, draft autosaved on the device with its request id, month warning for an old draft, price/amount preview; no equipment — D-37), **sale detail**, **Free-month compensation** list, **Customers** (search; Super Admin changes phone / Index). Menu items enabled (`COMPLETED_PHASE = 7`).
 
-**Not in scope:** Retention approval screen and product switch (Phase 8); Super Admin notifications of duplicates (Phase 9 — the audit events are already durable); payroll-month locking (Phase 16, FR-SALE-21).
+**Not in scope:** the approval screen with equipment and the release of rejected numbers (Phase 8, D-37), product switch (Phase 8); Super Admin notifications of duplicates (Phase 9 — the audit events are already durable); payroll-month locking (Phase 16, FR-SALE-21).
 
 **BRD check**
 
@@ -403,8 +405,8 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 | FR-SALE-04 phone E.164, prefixes 063/065, unique | ✅ |
 | FR-SALE-05 Index exactly 8 digits, unique | ✅ |
 | FR-SALE-06 New / Retention | ✅ |
-| FR-SALE-07 Retention needs approval | ✅ stored as pending; approval ➡ Phase 8 |
-| FR-SALE-08 equipment quantities from team stock | ✅ same transaction |
+| FR-SALE-07 every sale needs approval (D-37) | ✅ every sale stored as pending; approval screen ➡ Phase 8 |
+| FR-SALE-08 equipment recorded by the Supervisor at approval (D-37) | ➡ Phase 8 (stock function `app.issue_stock` ready since Phase 6) |
 | FR-SALE-09 agent from session, time, status, history | ✅ approval history ➡ Phase 8 |
 | FR-SALE-10 clear messages | ✅ every error and duplicate rule has a message (unit test) |
 | FR-SALE-11 New duplicate blocked + durable event | ✅ notification ➡ Phase 9 |
@@ -428,7 +430,7 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — the SMS code goes to the owner's phone); CI on GitHub (after upload).
 
-**Acceptance gate (UAT-03, 04, 05, 08, 09, 19, 20, 21, 22, 30, 32, 37, 42, 43, 44, 45)**
+**Acceptance gate (UAT-03, 04, 05, 09, 19, 20, 21, 30, 32, 37, 42, 43, 44, 45; UAT-08 and 22 moved to Phase 8 by D-37)**
 
 | Criterion | Result |
 |---|---|
@@ -438,11 +440,12 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 | Free-month sale: flag, revenue, 1 unit | ✅ |
 | Past or future date in the request → server time | ✅ |
 
-**Manual steps for the owner** — `docs/06-operations/sales.md`: paste `supabase/sql-editor/20261024090000_sales.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; add districts; run the tests in section 4.
+**Manual steps for the owner** — `docs/06-operations/sales.md`: paste `supabase/sql-editor/20261024090000_sales.sql` (done on both sites) and then `20261024120000_sales_all_need_approval.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; add districts; run the tests in section 4.
 
 **Risks / open items**
 - Super Admin is not yet *notified* of duplicate attempts (Phase 9); the events are recorded and visible in `audit_events`.
-- Every seller who gives equipment must be in a team (D-35).
+- Until Phase 8 is built, sales stay "Waiting for approval" (no approval screen yet) and no equipment is recorded.
+- Supervisors will approve roughly 700–900 sales a month; approvals after the payroll cutoff move units to the approval month (D-37).
 - The close-match rule may accept two genuinely different people with very similar names on the same phone and Index; phone and Index must still both match.
 
 **Next prompt (not executed):**
