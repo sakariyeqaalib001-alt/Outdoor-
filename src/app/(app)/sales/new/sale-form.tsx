@@ -15,7 +15,8 @@ import { amountCollected, freeMonthQualifies, isValidIndex, MONTHS_PAID_MAX, typ
 import { submitSale } from "@/server/sales/actions";
 import type { SaleFormData } from "@/server/sales/queries";
 
-const DRAFT_KEY = "sogasho.outdoor.saleDraft.v1";
+/** One draft per signed-in user on this device, so a draft never carries over to another account. */
+const draftKey = (userId: string) => `sogasho.outdoor.saleDraft.v2.${userId}`;
 
 type Values = {
   customerType: CustomerType;
@@ -33,8 +34,14 @@ type Values = {
 };
 type Draft = { requestId: string; startedMonth: string; values: Values };
 
+/** The sale's city: always the seller's own city, unless they may change it (FR-SALE-03). */
+function startingCity(data: SaleFormData): string {
+  if (data.myCity) return data.myCity;
+  return data.canOverrideCity ? data.cities[0]?.id ?? "" : "";
+}
+
 function newDraft(data: SaleFormData, currentMonth: string): Draft {
-  const cityId = data.myCity ?? data.cities[0]?.id ?? "";
+  const cityId = startingCity(data);
   return {
     requestId: crypto.randomUUID(),
     startedMonth: currentMonth,
@@ -57,10 +64,18 @@ function newDraft(data: SaleFormData, currentMonth: string): Draft {
 
 function loadDraft(data: SaleFormData, currentMonth: string): Draft {
   try {
-    const raw = window.localStorage.getItem(DRAFT_KEY);
+    window.localStorage.removeItem("sogasho.outdoor.saleDraft.v1"); // old device-wide draft (before per-user drafts)
+    const raw = window.localStorage.getItem(draftKey(data.userId));
     if (raw) {
       const draft = JSON.parse(raw) as Draft;
-      if (draft?.requestId && draft.values) return draft;
+      if (draft?.requestId && draft.values) {
+        // A seller who may not change the city always gets their own city (and a district of it).
+        if (!data.canOverrideCity && draft.values.cityId !== startingCity(data)) {
+          const cityId = startingCity(data);
+          draft.values = { ...draft.values, cityId, districtId: "", branchId: data.branches.find((b) => b.city_id === cityId)?.id ?? "" };
+        }
+        return draft;
+      }
     }
   } catch {
     // Storage unavailable (private mode): start a fresh form.
@@ -82,11 +97,11 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      window.localStorage.setItem(draftKey(data.userId), JSON.stringify(draft));
     } catch {
       // Not saved on this device; the form still works.
     }
-  }, [draft]);
+  }, [draft, data.userId]);
 
   const set = (patch: Partial<Values>) => setDraft((d) => ({ ...d, values: { ...d.values, ...patch } }));
 
@@ -136,7 +151,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
         return;
       }
       try {
-        window.localStorage.removeItem(DRAFT_KEY);
+        window.localStorage.removeItem(draftKey(data.userId));
       } catch {
         // ignore
       }
@@ -214,7 +229,11 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </NativeSelect>
-              {!data.canOverrideCity ? <p id="city-hint" className="text-xs text-muted-foreground">{t("sales.cityLocked")}</p> : null}
+              {!data.canOverrideCity && !data.myCity ? (
+                <p id="city-hint" className="text-xs text-destructive" role="alert">{t("sales.errors.city")}</p>
+              ) : !data.canOverrideCity ? (
+                <p id="city-hint" className="text-xs text-muted-foreground">{t("sales.cityLocked")}</p>
+              ) : null}
             </div>
             <div className="space-y-1">
               <Label htmlFor="districtId">{t("sales.district")}</Label>

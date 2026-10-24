@@ -26,6 +26,7 @@ export type PlanOption = {
   installation: number;
 };
 export type SaleFormData = {
+  userId: string;
   myCity: string | null;
   canOverrideCity: boolean;
   cities: Option[];
@@ -69,6 +70,7 @@ export async function getSaleFormData(canOverrideCity: boolean): Promise<SaleFor
     }));
 
   return {
+    userId: ids?.userId ?? "",
     myCity: (me.data as { city_id: string | null } | null)?.city_id ?? null,
     canOverrideCity,
     cities: (cities.data ?? []) as Option[],
