@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20–22 Oct 2026 | D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20–24 Oct 2026 | D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -434,7 +434,9 @@ if customer_type = RETENTION:
 then: one active sale per customer per sale_month (partial unique index)
 ```
 
-Name comparison rule (case/space-insensitive match, threshold) is documented in `DECISIONS.md` and tested.
+Name comparison rule (D-36, `app.names_match`): names are lower-cased and stripped of everything but letters; they match when equal, equal without spaces ("Abdi Rahman" = "Abdirahman"), equal with words in any order, or within an edit distance of 1 per 5 letters (minimum 1: "Mohamed" ≈ "Mohammed"). Tested in `tests/db/sales.test.ts`.
+
+As built (Phase 7): a Retention where only one number is known links the customer only if the customer's other number is not yet recorded; a former (replaced) number is refused (`IDENTITY_CONFLICT`, field `former_number`).
 
 ## 10.2 New sale flow (including free-month, D-09)
 
@@ -454,8 +456,9 @@ flowchart TD
     K --> L
 ```
 
-- Price: server selects the `plan_prices` row in force for the chosen plan at submission (`public.plan_price`, D-34); client-sent price is ignored. `amount_collected = unit_price × months_paid`.
-- Free-month option: `free_month = true` when the agent selects "Pay 2 months, get 1 free"; `amount_collected` must equal `app_settings.free_month_amount` (default $50); counts as 1 unit.
+- Price: server selects the `plan_prices` row in force for the chosen plan at submission (D-34); client-sent price is ignored.
+- Months paid 1–12 (D-36): `amount_collected = unit_price × months_paid + installation_fee` (database check constraint).
+- Free-month option (D-36): `free_month = true` when the agent selects "Pay 2 months, get 1 free" — any plan; `months_paid` is 2 and `2 × unit_price` must be at least `app_settings.free_month_amount` (default $50); counts as 1 unit.
 - `agent_id` always from the session.
 - **Sale date and month (D-30):** the form has no date field. `submitted_at` is set by the database (`default now()`, column not writable by application roles); `sale_month = app.business_month(submitted_at)`. Any date in the request payload is ignored. The device clock is never used. Option A: no feature exists to move a sale to another month.
 

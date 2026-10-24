@@ -374,3 +374,76 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 **Next prompt (not executed):**
 > Proceed with Phase 7 only: sales registration. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 7, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 7 — Sales registration
+
+**Date:** 24 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/sales.md`).
+
+**Owner decisions before building (D-36, 24 Oct 2026):** Retention name check = close match (rule in DECISIONS, `app.names_match`); months paid 1–12 with amount = recharge × months + installation fee; free month on any plan (2 months, allowed when 2 × recharge ≥ the $50 setting). BRD FR-SALE-01, 12, FR-FREE-02, 04, BR-17 and SDD §10.1–10.2 updated.
+
+**Scope delivered (BRD §6.4 FR-SALE-01…06, 08…20, 22; §6.11 FR-FREE-01…04; §7 duplicate controls; SDD §10.1, 10.2, 10.6, 11.1)**
+- Migration `20261024090000_sales.sql`:
+  - `customers`, `customer_identifiers` (phone E.164 and 8-digit Index; each value unique for ever — current and former; one current value per kind), `sales` (1 row = 1 unit; agent from the session; `submitted_at` from the database clock; `sale_month` generated from it in EAT; price snapshot from the plan; months paid; free month; amount check constraint; one approved/pending sale per customer per month by partial unique index; unique `client_request_id`), `sale_items` (append-only).
+  - `public.create_sale(p)`: permission, idempotency, validation (name, phone + allowed prefixes, 8-digit Index, city default + override only with `sales.override_city`, district of the city, area, branch, plan with a price today, months, free month), identity resolution (New / Retention, close-match names, former numbers), same-month rule, writes in a sub-transaction so a race on a unique index becomes a duplicate result, stock issue from the team (`app.issue_stock`, D-35). Duplicates write a durable `audit_events` row (DUP_PHONE, DUP_INDEX, IDENTITY_CONFLICT, SAME_MONTH) and return a result instead of raising, so the event survives. New → approved; Retention → pending_approval.
+  - `public.change_customer_identifier` (Super Admin, reason, old value kept and reserved).
+  - RLS: sales by `sales.read` scope; customers and identifiers by `customers.read` scope (`app.can_read_customer`); no direct writes for any API role; change history on every new table.
+- Screens: **Sales** (My Sales with month selector, read-only past months, agent selector for Team Leaders / Super Admin, totals), **New sale** (mobile-first form, no date field, draft autosaved on the device with its request id, month warning for an old draft, price/amount preview, team stock available), **sale detail**, **Free-month compensation** list, **Customers** (search; Super Admin changes phone / Index). Menu items enabled (`COMPLETED_PHASE = 7`).
+
+**Not in scope:** Retention approval screen and product switch (Phase 8); Super Admin notifications of duplicates (Phase 9 — the audit events are already durable); payroll-month locking (Phase 16, FR-SALE-21).
+
+**BRD check**
+
+| Requirement | Result |
+|---|---|
+| FR-SALE-01 form fields | ✅ incl. plan and months paid (D-36) |
+| FR-SALE-02 district by city; area free text | ✅ |
+| FR-SALE-03 city default, override only Team Leader / Super Admin | ✅ `sales.override_city` |
+| FR-SALE-04 phone E.164, prefixes 063/065, unique | ✅ |
+| FR-SALE-05 Index exactly 8 digits, unique | ✅ |
+| FR-SALE-06 New / Retention | ✅ |
+| FR-SALE-07 Retention needs approval | ✅ stored as pending; approval ➡ Phase 8 |
+| FR-SALE-08 equipment quantities from team stock | ✅ same transaction |
+| FR-SALE-09 agent from session, time, status, history | ✅ approval history ➡ Phase 8 |
+| FR-SALE-10 clear messages | ✅ every error and duplicate rule has a message (unit test) |
+| FR-SALE-11 New duplicate blocked + durable event | ✅ notification ➡ Phase 9 |
+| FR-SALE-12 Retention link / create / conflict | ✅ close-match names (D-36) |
+| FR-SALE-13 one non-reversed sale per month | ✅ |
+| FR-SALE-14 product + plan, price from catalog | ✅ |
+| FR-SALE-15 draft autosave, idempotent | ✅ |
+| FR-SALE-16 identity change by Super Admin with reason | ✅ old value reserved |
+| FR-SALE-17…19 no date field; server time; after-midnight rule; old-draft warning | ✅ |
+| FR-SALE-20 My Sales month selector, past months read-only | ✅ |
+| FR-SALE-21 finalized months locked | ➡ Phase 16 |
+| FR-SALE-22 branch per sale | ✅ |
+| FR-FREE-01…04 | ✅ (D-36) |
+
+**Commands run (24 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 331 tests (37 new: sales database tests for every Phase 7 UAT case, name-matching cases, sales messages); build adds `/sales`, `/sales/new`, `/sales/[id]`, `/free-month`, `/customers` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261024090000_sales.sql` and refreshed `supabase/fresh-project/all_changes_in_order.sql` |
+
+Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — the SMS code goes to the owner's phone); CI on GitHub (after upload).
+
+**Acceptance gate (UAT-03, 04, 05, 08, 09, 19, 20, 21, 22, 30, 32, 37, 42, 43, 44, 45)**
+
+| Criterion | Result |
+|---|---|
+| All listed UAT cases pass in automated tests | ✅ each has a database test (UAT-42/43: dates and agent in the request ignored; UAT-44: 31 Oct 23:59 EAT → October, 1 Nov 00:10 → November; UAT-45: no update/delete/insert on sales for any role) |
+| Two simultaneous New sales with the same phone → one succeeds, one audit event | ⚠️ enforced by the unique index and the sub-transaction handler that turns the race into a DUP result; a true two-session race was **not** run (the PGlite test database has one connection) |
+| Agent ID from the session only | ✅ test sends another agent's id — ignored |
+| Free-month sale: flag, revenue, 1 unit | ✅ |
+| Past or future date in the request → server time | ✅ |
+
+**Manual steps for the owner** — `docs/06-operations/sales.md`: paste `supabase/sql-editor/20261024090000_sales.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; add districts; run the tests in section 4.
+
+**Risks / open items**
+- Super Admin is not yet *notified* of duplicate attempts (Phase 9); the events are recorded and visible in `audit_events`.
+- Every seller who gives equipment must be in a team (D-35).
+- The close-match rule may accept two genuinely different people with very similar names on the same phone and Index; phone and Index must still both match.
+
+**Next prompt (not executed):**
+> Proceed with Phase 8 only: Retention approval and product switch. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 8, run `npm run check`, update the logs, report the gate and stop.

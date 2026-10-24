@@ -292,7 +292,14 @@ describe("one-time test-data reset (supabase/maintenance/reset_stock_test_data.s
 
   it("refuses once any sale exists", async () => {
     const fresh = await createTestDatabase();
-    await fresh.exec("create table public.sales (id int); insert into public.sales values (1);");
+    // A stand-in sale row (foreign keys switched off for this insert only).
+    await fresh.exec(`
+      set session_replication_role = replica;
+      insert into public.sales (client_request_id, customer_id, customer_name, agent_id, customer_type, product_id, plan_id,
+        plan_price_id, unit_price, installation_fee, months_paid, amount_collected, city_id, district_id, area_text, branch_id, status)
+      values (gen_random_uuid(), gen_random_uuid(), 'X', gen_random_uuid(), 'new', gen_random_uuid(), gen_random_uuid(),
+        gen_random_uuid(), 25, 0, 1, 25, gen_random_uuid(), gen_random_uuid(), 'Area', gen_random_uuid(), 'approved');
+      set session_replication_role = origin;`);
     expect(await errorOf(fresh.exec(script))).toMatch(/Sales exist/);
     await fresh.close();
   });
