@@ -7,7 +7,7 @@ import { businessMonth } from "@/lib/dates";
 import { t } from "@/lib/i18n";
 import { monthStart, recentMonths } from "@/lib/sales";
 import { can, getAccess } from "@/server/auth/access";
-import { listSales, listSellers } from "@/server/sales/queries";
+import { listSales, listSellers, sellerNames } from "@/server/sales/queries";
 import { MonthFilter } from "../sales/month-filter";
 import { SalesTable, SalesTotals } from "../sales/sales-table";
 
@@ -30,7 +30,7 @@ async function FreeMonth({ searchParams }: { searchParams: Search }) {
     <div className="grid gap-4">
       <MonthFilter months={months} month={month} />
       <SalesTotals sales={sales} />
-      <SalesTable sales={sales} agentNames={sellers ? Object.fromEntries(sellers.map((s) => [s.id, s.name])) : undefined} />
+      <SalesTable sales={sales} agentNames={sellers ? await sellerNames(sales, sellers) : undefined} />
     </div>
   );
 }

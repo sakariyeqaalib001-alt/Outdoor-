@@ -212,3 +212,14 @@ export async function listCustomers(search: string): Promise<CustomerRow[]> {
     return { id: c.id, full_name: c.full_name, created_at: c.created_at, city: c.cities.name, phone: current("phone"), index: current("index"), sales: c.sales.length };
   });
 }
+
+/** Names of the people who made these sales (any role — e.g. a Super Admin who sold), as far as RLS allows. */
+export async function sellerNames(sales: { agent_id: string }[], known: Option[] = []): Promise<Record<string, string>> {
+  const names: Record<string, string> = Object.fromEntries(known.map((s) => [s.id, s.name]));
+  const missing = [...new Set(sales.map((s) => s.agent_id))].filter((id) => !names[id]);
+  if (missing.length) {
+    const { data } = await (await client()).from("user_profiles").select("id, full_name").in("id", missing);
+    for (const p of (data ?? []) as { id: string; full_name: string }[]) names[p.id] = p.full_name;
+  }
+  return names;
+}

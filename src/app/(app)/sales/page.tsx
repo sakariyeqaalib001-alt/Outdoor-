@@ -10,7 +10,7 @@ import { businessMonth } from "@/lib/dates";
 import { t } from "@/lib/i18n";
 import { monthStart, recentMonths } from "@/lib/sales";
 import { can, getAccess } from "@/server/auth/access";
-import { listSales, listSellers } from "@/server/sales/queries";
+import { listSales, listSellers, sellerNames } from "@/server/sales/queries";
 import { MonthFilter } from "./month-filter";
 import { SalesTable, SalesTotals } from "./sales-table";
 
@@ -30,7 +30,7 @@ async function MySales({ searchParams }: { searchParams: Search }) {
   const sellers = wide ? await listSellers() : undefined;
   const agent = wide && typeof params.agent === "string" && sellers?.some((s) => s.id === params.agent) ? params.agent : undefined;
   const sales = await listSales(monthStart(month), { agentId: agent });
-  const names = sellers ? Object.fromEntries(sellers.map((s) => [s.id, s.name])) : undefined;
+  const names = sellers ? await sellerNames(sales, sellers) : undefined;
   const isCurrent = month === current;
 
   return (
