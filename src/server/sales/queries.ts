@@ -94,15 +94,23 @@ export type SaleRow = {
   agent_id: string;
   product: string;
   plan: string;
+  branch: string;
+  index: string | null; // current Index Number; null when the viewer may not see customer identifiers
 };
 
 const SALE_COLUMNS =
-  "id, submitted_at, sale_month, customer_name, customer_type, status, free_month, months_paid, amount_collected, agent_id, products(code), plans(name)";
+  "id, submitted_at, sale_month, customer_name, customer_type, status, free_month, months_paid, amount_collected, agent_id, products(code), plans(name), branches(name), customers(customer_identifiers(kind, value, is_current))";
 
-type RawSale = Omit<SaleRow, "product" | "plan"> & { products: { code: string }; plans: { name: string } };
+type RawSale = Omit<SaleRow, "product" | "plan" | "branch" | "index"> & {
+  products: { code: string };
+  plans: { name: string };
+  branches: { name: string };
+  customers: { customer_identifiers: { kind: string; value: string; is_current: boolean }[] } | null;
+};
 const toRow = (r: RawSale): SaleRow => {
-  const { products, plans, ...rest } = r;
-  return { ...rest, amount_collected: Number(rest.amount_collected), product: products.code, plan: plans.name };
+  const { products, plans, branches, customers, ...rest } = r;
+  const index = customers?.customer_identifiers.find((i) => i.kind === "index" && i.is_current)?.value ?? null;
+  return { ...rest, amount_collected: Number(rest.amount_collected), product: products.code, plan: plans.name, branch: branches.name, index };
 };
 
 /** Sales of one month (sale_month = first day), optionally for one agent, optionally free-month only. */
@@ -145,7 +153,7 @@ export async function getSale(id: string): Promise<SaleDetail | null> {
   const supabase = await client();
   const { data } = await supabase
     .from("sales")
-    .select(`${SALE_COLUMNS}, unit_price, installation_fee, area_text, approved_at, customer_id, cities(name), districts(name), branches(name),
+    .select(`${SALE_COLUMNS}, unit_price, installation_fee, area_text, approved_at, customer_id, cities(name), districts(name),
       sale_items(quantity, stock_items(display_name))`)
     .eq("id", id)
     .maybeSingle();

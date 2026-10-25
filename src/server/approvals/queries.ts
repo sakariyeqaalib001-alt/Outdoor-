@@ -23,6 +23,7 @@ export type PendingRow = {
   detail: string; // "FTTH · SO-Home" or "FTTA → FTTH · SO-Home"
   customer_type: "new" | "retention" | null; // sales only
   amount: number | null; // sales only
+  own: boolean; // the caller's own (Super Admin may only reject — cancel — it, D-38)
 };
 export type StockItem = { id: string; name: string };
 
@@ -39,13 +40,11 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
       .from("sales")
       .select("id, submitted_at, customer_name, customer_type, agent_id, team_id, amount_collected, products(code), plans(name)")
       .eq("status", "pending_approval")
-      .neq("agent_id", me)
       .order("submitted_at"),
     supabase
       .from("product_switches")
       .select("id, submitted_at, customer_name, agent_id, team_id, from:products!product_switches_from_product_id_fkey(code), to:products!product_switches_to_product_id_fkey(code), plans(name)")
       .eq("status", "pending_approval")
-      .neq("agent_id", me)
       .order("submitted_at"),
     supabase.from("teams").select("id, name, team_leader_id"),
     supabase.from("stock_items").select("id, display_name").eq("is_active", true).order("sort_order"),
@@ -54,16 +53,22 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
   ]);
   const { data: access } = await supabase.rpc("my_access");
   const isSuperAdmin = ((access as { roles?: string[] } | null)?.roles ?? []).includes("super_admin");
+  // Safe diagnostics: error messages only (no customer data).
+  for (const [name, r] of Object.entries({ sales, switches, teams, items, report, locations })) {
+    if (r.error) console.error(`[approvals] ${name} query failed: ${r.error.message}`);
+  }
   const teamRows = (teams.data ?? []) as { id: string; name: string; team_leader_id: string | null }[];
   const teamName = Object.fromEntries(teamRows.map((tm) => [tm.id, tm.name]));
   const mine = new Set(teamRows.filter((tm) => tm.team_leader_id === me).map((tm) => tm.id));
   // A Team Leader decides only for the teams they lead (the database checks again).
-  const decidable = (team: string | null) => isSuperAdmin || (team !== null && mine.has(team));
+  // Own items: never approvable; a Super Admin may still reject (cancel) them.
+  const decidable = (team: string | null, agent: string) =>
+    agent === me ? isSuperAdmin : isSuperAdmin || (team !== null && mine.has(team));
 
   type RawSale = { id: string; submitted_at: string; customer_name: string; customer_type: string; agent_id: string; team_id: string | null; amount_collected: number; products: { code: string }; plans: { name: string } };
   type RawSwitch = { id: string; submitted_at: string; customer_name: string; agent_id: string; team_id: string | null; from: { code: string }; to: { code: string }; plans: { name: string } };
-  const saleRows = ((sales.data ?? []) as unknown as RawSale[]).filter((s) => decidable(s.team_id));
-  const switchRows = ((switches.data ?? []) as unknown as RawSwitch[]).filter((s) => decidable(s.team_id));
+  const saleRows = ((sales.data ?? []) as unknown as RawSale[]).filter((s) => decidable(s.team_id, s.agent_id));
+  const switchRows = ((switches.data ?? []) as unknown as RawSwitch[]).filter((s) => decidable(s.team_id, s.agent_id));
 
   const agentIds = [...new Set([...saleRows, ...switchRows].map((r) => r.agent_id))];
   const names: Record<string, string> = {};
@@ -76,12 +81,12 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
     ...saleRows.map((s) => ({
       kind: "sale" as const, id: s.id, submitted_at: s.submitted_at, customer_name: s.customer_name, agent_id: s.agent_id,
       agent: names[s.agent_id] ?? "—", team_id: s.team_id, team: s.team_id ? teamName[s.team_id] ?? null : null,
-      detail: `${s.products.code} · ${s.plans.name}`, customer_type: s.customer_type as "new" | "retention", amount: Number(s.amount_collected),
+      detail: `${s.products.code} · ${s.plans.name}`, customer_type: s.customer_type as "new" | "retention", amount: Number(s.amount_collected), own: s.agent_id === me,
     })),
     ...switchRows.map((s) => ({
       kind: "switch" as const, id: s.id, submitted_at: s.submitted_at, customer_name: s.customer_name, agent_id: s.agent_id,
       agent: names[s.agent_id] ?? "—", team_id: s.team_id, team: s.team_id ? teamName[s.team_id] ?? null : null,
-      detail: `${s.from.code} → ${s.to.code} · ${s.plans.name}`, customer_type: null, amount: null,
+      detail: `${s.from.code} → ${s.to.code} · ${s.plans.name}`, customer_type: null, amount: null, own: s.agent_id === me,
     })),
   ].sort((a, b) => a.submitted_at.localeCompare(b.submitted_at));
 

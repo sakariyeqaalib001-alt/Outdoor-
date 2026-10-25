@@ -52,8 +52,10 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
           <TableRow>
             <TableHead>{t("sales.when")}</TableHead>
             <TableHead>{t("sales.customer")}</TableHead>
+            <TableHead>{t("sales.index")}</TableHead>
             <TableHead>{t("sales.plan")}</TableHead>
             <TableHead>{t("sales.type")}</TableHead>
+            <TableHead>{t("sales.branch")}</TableHead>
             {agentNames ? <TableHead>{t("sales.agent")}</TableHead> : null}
             <TableHead className="text-right">{t("sales.amount")}</TableHead>
             <TableHead>{t("sales.status")}</TableHead>
@@ -62,7 +64,7 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
         <TableBody>
           {sales.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={agentNames ? 7 : 6} className="py-10 text-center text-muted-foreground">{t("sales.noSales")}</TableCell>
+              <TableCell colSpan={agentNames ? 9 : 8} className="py-10 text-center text-muted-foreground">{t("sales.noSales")}</TableCell>
             </TableRow>
           ) : (
             sales.map((s) => (
@@ -73,11 +75,13 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
                   </Link>
                 </TableCell>
                 <TableCell>{s.customer_name}</TableCell>
+                <TableCell className="font-mono text-sm tabular-nums">{s.index ?? "—"}</TableCell>
                 <TableCell className="whitespace-nowrap">
                   {s.product} · {s.plan}
                   {s.free_month ? <Badge variant="secondary" className="ml-2">{t("sales.freeMonthBadge")}</Badge> : null}
                 </TableCell>
                 <TableCell>{t(`sales.types.${s.customer_type}`)}</TableCell>
+                <TableCell>{s.branch}</TableCell>
                 {agentNames ? <TableCell>{agentNames[s.agent_id] ?? "—"}</TableCell> : null}
                 <TableCell className="text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
                 <TableCell><SaleStatusBadge status={s.status} /></TableCell>

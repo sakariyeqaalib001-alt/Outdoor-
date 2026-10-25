@@ -61,7 +61,8 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
           </div>
         </div>
 
-        <fieldset className="grid gap-3 sm:grid-cols-3">
+        {row.own ? <p className="text-sm text-muted-foreground">{t("approvals.ownOnlyReject")}</p> : null}
+        <fieldset className="grid gap-3 sm:grid-cols-3" hidden={row.own}>
           <legend className="mb-1 text-sm font-semibold">{t("approvals.equipment")}</legend>
           {items.map((item) => {
             const id = `q-${row.id}-${item.id}`;
@@ -86,7 +87,9 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
         <FormMessage error={result?.error} />
         <div className="flex flex-wrap justify-end gap-2">
           <Button type="button" variant="outline" disabled={pending} onClick={() => setRejecting(true)} className="h-11 md:h-9">{t("approvals.reject")}</Button>
-          <Button type="button" disabled={pending} onClick={() => run(true)} className="h-11 md:h-9">{t("approvals.approve")}</Button>
+          {row.own ? null : (
+            <Button type="button" disabled={pending} onClick={() => run(true)} className="h-11 md:h-9">{t("approvals.approve")}</Button>
+          )}
         </div>
       </CardContent>
 

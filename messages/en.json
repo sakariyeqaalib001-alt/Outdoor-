@@ -649,7 +649,8 @@
     "confirm": "Reject",
     "cancel": "Cancel",
     "approved": "Approved. The equipment was taken from the team's stock.",
-    "rejected": "Rejected. The agent was notified."
+    "rejected": "Rejected. The agent was notified.",
+    "ownOnlyReject": "This is your own — you can only reject (cancel) it. Nobody approves their own sale."
   },
   "switches": {
     "title": "product switch",
