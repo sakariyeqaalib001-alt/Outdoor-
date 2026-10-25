@@ -47,7 +47,8 @@ export function SalesTotals({ sales }: { sales: SaleRow[] }) {
 export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames?: Record<string, string> }) {
   return (
     <div className="overflow-x-auto rounded-xl border bg-white">
-      <Table>
+      {/* Equal 48 px between every column; spare width goes after the last column (owner, 25 Oct 2026). */}
+      <Table className="w-auto [&_td]:px-6 [&_th]:px-6">
         <TableHeader>
           <TableRow>
             <TableHead>{t("sales.when")}</TableHead>
@@ -57,8 +58,8 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
             <TableHead>{t("sales.type")}</TableHead>
             <TableHead>{t("sales.branch")}</TableHead>
             {agentNames ? <TableHead>{t("sales.agent")}</TableHead> : null}
-            <TableHead className="pr-24 text-right">{t("sales.amount")}</TableHead>
-            <TableHead className="pl-16">{t("sales.status")}</TableHead>
+            <TableHead className="text-right">{t("sales.amount")}</TableHead>
+            <TableHead>{t("sales.status")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,8 +84,8 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
                 <TableCell>{t(`sales.types.${s.customer_type}`)}</TableCell>
                 <TableCell>{s.branch}</TableCell>
                 {agentNames ? <TableCell>{agentNames[s.agent_id] ?? "—"}</TableCell> : null}
-                <TableCell className="pr-24 text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
-                <TableCell className="pl-16"><SaleStatusBadge status={s.status} /></TableCell>
+                <TableCell className="text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
+                <TableCell><SaleStatusBadge status={s.status} /></TableCell>
               </TableRow>
             ))
           )}
