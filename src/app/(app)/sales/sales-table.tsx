@@ -57,8 +57,8 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
             <TableHead>{t("sales.type")}</TableHead>
             <TableHead>{t("sales.branch")}</TableHead>
             {agentNames ? <TableHead>{t("sales.agent")}</TableHead> : null}
-            <TableHead className="text-right">{t("sales.amount")}</TableHead>
-            <TableHead>{t("sales.status")}</TableHead>
+            <TableHead className="pr-8 text-right">{t("sales.amount")}</TableHead>
+            <TableHead className="pl-2">{t("sales.status")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,8 +83,8 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
                 <TableCell>{t(`sales.types.${s.customer_type}`)}</TableCell>
                 <TableCell>{s.branch}</TableCell>
                 {agentNames ? <TableCell>{agentNames[s.agent_id] ?? "—"}</TableCell> : null}
-                <TableCell className="text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
-                <TableCell><SaleStatusBadge status={s.status} /></TableCell>
+                <TableCell className="pr-8 text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
+                <TableCell className="pl-2"><SaleStatusBadge status={s.status} /></TableCell>
               </TableRow>
             ))
           )}
