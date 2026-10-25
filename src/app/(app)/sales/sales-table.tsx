@@ -44,11 +44,23 @@ export function SalesTotals({ sales }: { sales: SaleRow[] }) {
   );
 }
 
+/**
+ * Column shares of the full width (like a spreadsheet), sized to each column's usual content so the
+ * spacing looks even and the table fills the card (owner, 25 Oct 2026). Below 1100 px it scrolls sideways.
+ */
+const WIDTHS_WITH_AGENT = ["13%", "13%", "11%", "13%", "7%", "9%", "12%", "9%", "13%"];
+const WIDTHS = ["14%", "15%", "12%", "15%", "8%", "10%", "11%", "15%"];
+
 export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames?: Record<string, string> }) {
+  const widths = agentNames ? WIDTHS_WITH_AGENT : WIDTHS;
   return (
     <div className="overflow-x-auto rounded-xl border bg-white">
-      {/* Equal 48 px between every column; spare width goes after the last column (owner, 25 Oct 2026). */}
-      <Table className="w-auto [&_td]:px-6 [&_th]:px-6">
+      <Table className="min-w-[1100px] table-fixed [&_td]:px-4 [&_th]:px-4">
+        <colgroup>
+          {widths.map((w, i) => (
+            <col key={i} style={{ width: w }} />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow>
             <TableHead>{t("sales.when")}</TableHead>
@@ -58,7 +70,7 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
             <TableHead>{t("sales.type")}</TableHead>
             <TableHead>{t("sales.branch")}</TableHead>
             {agentNames ? <TableHead>{t("sales.agent")}</TableHead> : null}
-            <TableHead className="text-right">{t("sales.amount")}</TableHead>
+            <TableHead className="!pr-12 text-right">{t("sales.amount")}</TableHead>
             <TableHead>{t("sales.status")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -75,16 +87,16 @@ export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames
                     {formatBusinessDateTime(new Date(s.submitted_at))}
                   </Link>
                 </TableCell>
-                <TableCell>{s.customer_name}</TableCell>
+                <TableCell className="truncate" title={s.customer_name}>{s.customer_name}</TableCell>
                 <TableCell className="font-mono text-sm tabular-nums">{s.index ?? "—"}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="truncate">
                   {s.product} · {s.plan}
                   {s.free_month ? <Badge variant="secondary" className="ml-2">{t("sales.freeMonthBadge")}</Badge> : null}
                 </TableCell>
                 <TableCell>{t(`sales.types.${s.customer_type}`)}</TableCell>
                 <TableCell>{s.branch}</TableCell>
-                {agentNames ? <TableCell>{agentNames[s.agent_id] ?? "—"}</TableCell> : null}
-                <TableCell className="text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
+                {agentNames ? <TableCell className="truncate" title={agentNames[s.agent_id]}>{agentNames[s.agent_id] ?? "—"}</TableCell> : null}
+                <TableCell className="!pr-12 text-right tabular-nums">{formatUSD(s.amount_collected)}</TableCell>
                 <TableCell><SaleStatusBadge status={s.status} /></TableCell>
               </TableRow>
             ))
