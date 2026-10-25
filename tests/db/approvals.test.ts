@@ -23,6 +23,8 @@ let ftth: string;
 let fttb: string;
 let router: string;
 let pdcom: string;
+let calix: string;
+let lteFamily: string; // LTE · SO!-Family
 
 type Result = { status: string; sale_id?: string; switch_id?: string; field?: string; rule?: string; existing?: boolean };
 const call = (user: string, sql: string, params: unknown[] = []) => as(db, "authenticated", user, () => db.query(sql, params));
@@ -80,8 +82,10 @@ beforeAll(async () => {
   fttb = await id("select id from public.products where code = 'FTTB'");
   router = await id("select id from public.stock_items where code = 'WIFI_ROUTER'");
   pdcom = await id("select id from public.stock_items where code = 'PDCOM'");
+  calix = await id("select id from public.stock_items where code = 'CALIX'");
+  lteFamily = await plan("LTE", "SO!-Family");
   locA = await id("select id from public.stock_locations where team_id = $1", [teamA]);
-  await db.query("insert into public.stock_movements (movement_type, item_id, quantity, to_location_id) values ('transfer_in', $1, 3, $3), ('transfer_in', $2, 1, $3)", [router, pdcom, locA]);
+  await db.query("insert into public.stock_movements (movement_type, item_id, quantity, to_location_id) values ('transfer_in', $1, 10, $3), ('transfer_in', $2, 1, $3)", [router, pdcom, locA]);
 }, 60_000);
 
 describe("who registers sales (D-38)", () => {
@@ -111,10 +115,29 @@ describe("approving a sale with the equipment given (FR-SALE-07/08, D-37; UAT-06
     expect(await status("sales", sale)).toBe("pending_approval");
   });
 
-  it("refuses more equipment than the team holds — nothing deducted, still pending", async () => {
-    const before = [await balance(router), await balance(pdcom)];
-    expect(await errorOf(approve(TL, sale, lines([router, 1], [pdcom, 2])))).toMatch(/INSUFFICIENT_STOCK/);
-    expect([await balance(router), await balance(pdcom)]).toEqual(before);
+  it("refuses equipment the team does not hold — nothing deducted, still pending", async () => {
+    const ftthSale = (await sell(AG, { plan_id: ftthHome })).sale_id!;
+    const before = [await balance(pdcom), await balance(calix)];
+    expect(await errorOf(approve(TL, ftthSale, lines([calix, 1])))).toMatch(/INSUFFICIENT_STOCK/);
+    expect([await balance(pdcom), await balance(calix)]).toEqual(before);
+    expect(await status("sales", ftthSale)).toBe("pending_approval");
+    await reject(TL, ftthSale, "Test clean-up");
+  });
+
+  it("allows exactly one device of the product's kind (D-39)", async () => {
+    // FTTA: one WiFi Router — nothing else, not none, not two.
+    expect(await errorOf(approve(TL, sale))).toMatch(/EQUIPMENT_REQUIRED/);
+    expect(await errorOf(approve(TL, sale, lines([pdcom, 1])))).toMatch(/EQUIPMENT_NOT_ALLOWED/);
+    expect(await errorOf(approve(TL, sale, lines([router, 2])))).toMatch(/EQUIPMENT_ONE/);
+    expect(await errorOf(approve(TL, sale, lines([router, 1], [pdcom, 1])))).toMatch(/EQUIPMENT_ONE/);
+    // FTTH / FTTB: PDCOM or CALIX, never a router. LTE: no equipment.
+    const ftth = (await sell(AG, { plan_id: ftthHome })).sale_id!;
+    expect(await errorOf(approve(TL, ftth, lines([router, 1])))).toMatch(/EQUIPMENT_NOT_ALLOWED/);
+    await reject(TL, ftth, "Test clean-up");
+    const lte = (await sell(AG, { plan_id: lteFamily })).sale_id!;
+    expect(await errorOf(approve(TL, lte, lines([router, 1])))).toMatch(/EQUIPMENT_NOT_ALLOWED/);
+    await approve(TL, lte);
+    expect(await status("sales", lte)).toBe("approved");
     expect(await status("sales", sale)).toBe("pending_approval");
   });
 
@@ -137,16 +160,17 @@ describe("approving a sale with the equipment given (FR-SALE-07/08, D-37; UAT-06
     expect((await notes(TL, "sale_pending")).map((n) => n.entity_id)).not.toContain(own);
     expect(await errorOf(approve(TL, own))).toMatch(/SELF_APPROVAL/);
     expect(await errorOf(reject(TL, own, "Cancel my own"))).toMatch(/SELF_APPROVAL/);
-    await approve(SA, own);
+    await approve(SA, own, lines([router, 1])); // from the team the Team Leader leads
     expect(await status("sales", own)).toBe("approved");
   });
 
-  it("of a seller without a team: Super Admin decides; equipment cannot be given", async () => {
+  it("of a seller without a team: Super Admin decides; equipment cannot be given (LTE needs none)", async () => {
     const s = (await sell(LONE)).sale_id!;
     expect((await notes(SA, "sale_pending")).map((n) => n.entity_id)).toContain(s);
     expect(await errorOf(approve(SA, s, lines([router, 1])))).toMatch(/NO_TEAM_STOCK/);
-    await approve(SA, s);
-    expect(await status("sales", s)).toBe("approved");
+    const lte = (await sell(LONE, { plan_id: lteFamily })).sale_id!;
+    await approve(SA, lte);
+    expect(await status("sales", lte)).toBe("approved");
   });
 
   it("shows the decision history to the agent but not to other teams", async () => {
@@ -179,7 +203,7 @@ describe("rejecting a sale (D-37)", () => {
     const p = phone();
     const i = index();
     const first = (await sell(AG, { phone: p, index: i })).sale_id!;
-    await approve(TL, first);
+    await approve(TL, first, lines([router, 1]));
     await db.query("update public.sales set submitted_at = submitted_at - interval '40 days' where id = $1", [first]);
     const retention = (await sell(AG, { phone: p, index: i, customer_type: "retention" })).sale_id!;
     await reject(TL, retention, "Not renewing after all");
@@ -195,7 +219,7 @@ describe("product switch (FR-SW-01…06, D-16, D-38; UAT-12, 34)", () => {
     p = phone();
     i = index();
     const s = (await sell(AG, { phone: p, index: i, full_name: "Ayaan Cali", plan_id: fttaBasic })).sale_id!;
-    await approve(TL, s);
+    await approve(TL, s, lines([router, 1]));
   });
 
   const base = () => ({ full_name: "Ayaan Cali", phone: p, index: i, from_product_id: ftta, to_product_id: ftth, to_plan_id: ftthHome });
@@ -223,10 +247,11 @@ describe("product switch (FR-SW-01…06, D-16, D-38; UAT-12, 34)", () => {
     expect(await errorOf(switchTo(AG, base()))).toMatch(/SWITCH_PENDING/);
     expect(await errorOf(call(AG, "select public.approve_switch($1)", [r.switch_id]))).toMatch(/not allowed/);
 
-    const before = await balance(router);
-    await call(TL, "select public.approve_switch($1, $2::jsonb)", [r.switch_id, lines([router, 1])]);
+    expect(await errorOf(call(TL, "select public.approve_switch($1, $2::jsonb)", [r.switch_id, lines([router, 1])]))).toMatch(/EQUIPMENT_NOT_ALLOWED/);
+    const before = await balance(pdcom);
+    await call(TL, "select public.approve_switch($1, $2::jsonb)", [r.switch_id, lines([pdcom, 1])]);
     expect(await status("product_switches", r.switch_id!)).toBe("approved");
-    expect(await balance(router)).toBe(before - 1);
+    expect(await balance(pdcom)).toBe(before - 1);
     const product = (await db.query<{ p: string }>("select app.current_product(customer_id) as p from public.product_switches where id = $1", [r.switch_id])).rows[0].p;
     expect(product).toBe(ftth);
     expect((await db.query<{ n: number }>("select count(*)::int as n from public.sales")).rows[0].n).toBe(salesBefore);

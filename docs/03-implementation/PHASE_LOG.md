@@ -459,6 +459,8 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 **Date:** 25 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/approvals.md`).
 
+**Owner decision during testing (D-39, 25 Oct 2026):** exactly one device per approval, by product — FTTA: WiFi Router; FTTH / FTTB: PDCOM or CALIX; LTE: none; switches by the new product. Migration `20261025120000_product_equipment.sql` (`product_equipment`, `app.check_equipment`, approve_sale / approve_switch replaced); the Approvals screen shows only the allowed devices as a single choice. Also during testing: Index and Branch columns and even column spacing on the sales list; Super Admin can reject (cancel) their own sale from Approvals.
+
 **Owner decisions before building (D-38, 25 Oct 2026):** Super Admins do not register sales or switches; product switch goes to the Supervisor like a sale (new equipment recorded at approval); the agent picks the new plan, no payment; From Product must be the customer's current product. Applied with D-37 (every sale waits; equipment at approval; rejected New sale releases numbers; approve or reject only).
 
 **Scope delivered (BRD §6.4 FR-SALE-07/08, §6.10 FR-SW-01…06, §6.16 FR-NOT-03; SDD §10.3, §10.4, §18)**
@@ -503,7 +505,7 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); CI
 | Switches excluded from sale counts (UAT-34) | ✅ |
 | Rejected New sale: no stock moved; numbers released (UAT-35 as reworded by D-37) | ✅ |
 
-**Manual steps for the owner** — `docs/06-operations/approvals.md`: paste `supabase/sql-editor/20261025090000_approvals_switches.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; run the tests in section 3.
+**Manual steps for the owner** — `docs/06-operations/approvals.md`: paste `supabase/sql-editor/20261025090000_approvals_switches.sql` (done on both sites) and then `20261025120000_product_equipment.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; run the tests in section 3.
 
 **Risks / open items**
 - Sales and switches by sellers without a team can only be decided by Super Admin, and no equipment can be given on them.

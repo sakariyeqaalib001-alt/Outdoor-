@@ -29,7 +29,7 @@ describe("sales helpers (D-36)", () => {
 });
 
 describe("sales messages", () => {
-  const migration = ["20261024090000_sales.sql", "20261025090000_approvals_switches.sql"]
+  const migration = ["20261024090000_sales.sql", "20261025090000_approvals_switches.sql", "20261025120000_product_equipment.sql"]
     .map((f) => readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations", f), "utf8"))
     .join("\n");
 

@@ -24,6 +24,7 @@ export type PendingRow = {
   customer_type: "new" | "retention" | null; // sales only
   amount: number | null; // sales only
   own: boolean; // the caller's own (Super Admin may only reject — cancel — it, D-38)
+  allowed: string[]; // stock items allowed for this product — exactly one is given at approval (D-39); empty = none
 };
 export type StockItem = { id: string; name: string };
 
@@ -35,26 +36,27 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
   const ids = await getSessionId(supabase);
   const me = ids?.userId ?? "";
   const today = businessToday();
-  const [sales, switches, teams, items, report, locations] = await Promise.all([
+  const [sales, switches, teams, items, report, locations, rules] = await Promise.all([
     supabase
       .from("sales")
-      .select("id, submitted_at, customer_name, customer_type, agent_id, team_id, amount_collected, products(code), plans(name)")
+      .select("id, submitted_at, customer_name, customer_type, agent_id, team_id, amount_collected, product_id, products(code), plans(name)")
       .eq("status", "pending_approval")
       .order("submitted_at"),
     supabase
       .from("product_switches")
-      .select("id, submitted_at, customer_name, agent_id, team_id, from:products!product_switches_from_product_id_fkey(code), to:products!product_switches_to_product_id_fkey(code), plans(name)")
+      .select("id, submitted_at, customer_name, agent_id, team_id, to_product_id, from:products!product_switches_from_product_id_fkey(code), to:products!product_switches_to_product_id_fkey(code), plans(name)")
       .eq("status", "pending_approval")
       .order("submitted_at"),
     supabase.from("teams").select("id, name, team_leader_id"),
     supabase.from("stock_items").select("id, display_name").eq("is_active", true).order("sort_order"),
     supabase.rpc("stock_report", { p_from: today, p_to: today }),
     supabase.from("stock_locations").select("id, team_id").not("team_id", "is", null),
+    supabase.from("product_equipment").select("product_id, stock_item_id"),
   ]);
   const { data: access } = await supabase.rpc("my_access");
   const isSuperAdmin = ((access as { roles?: string[] } | null)?.roles ?? []).includes("super_admin");
   // Safe diagnostics: error messages only (no customer data).
-  for (const [name, r] of Object.entries({ sales, switches, teams, items, report, locations })) {
+  for (const [name, r] of Object.entries({ sales, switches, teams, items, report, locations, rules })) {
     if (r.error) console.error(`[approvals] ${name} query failed: ${r.error.message}`);
   }
   const teamRows = (teams.data ?? []) as { id: string; name: string; team_leader_id: string | null }[];
@@ -65,8 +67,10 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
   const decidable = (team: string | null, agent: string) =>
     agent === me ? isSuperAdmin : isSuperAdmin || (team !== null && mine.has(team));
 
-  type RawSale = { id: string; submitted_at: string; customer_name: string; customer_type: string; agent_id: string; team_id: string | null; amount_collected: number; products: { code: string }; plans: { name: string } };
-  type RawSwitch = { id: string; submitted_at: string; customer_name: string; agent_id: string; team_id: string | null; from: { code: string }; to: { code: string }; plans: { name: string } };
+  type RawSale = { id: string; submitted_at: string; customer_name: string; customer_type: string; agent_id: string; team_id: string | null; amount_collected: number; product_id: string; products: { code: string }; plans: { name: string } };
+  type RawSwitch = { id: string; submitted_at: string; customer_name: string; agent_id: string; team_id: string | null; to_product_id: string; from: { code: string }; to: { code: string }; plans: { name: string } };
+  const allowedFor = (product: string) =>
+    ((rules.data ?? []) as { product_id: string; stock_item_id: string }[]).filter((r) => r.product_id === product).map((r) => r.stock_item_id);
   const saleRows = ((sales.data ?? []) as unknown as RawSale[]).filter((s) => decidable(s.team_id, s.agent_id));
   const switchRows = ((switches.data ?? []) as unknown as RawSwitch[]).filter((s) => decidable(s.team_id, s.agent_id));
 
@@ -81,12 +85,12 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
     ...saleRows.map((s) => ({
       kind: "sale" as const, id: s.id, submitted_at: s.submitted_at, customer_name: s.customer_name, agent_id: s.agent_id,
       agent: names[s.agent_id] ?? "—", team_id: s.team_id, team: s.team_id ? teamName[s.team_id] ?? null : null,
-      detail: `${s.products.code} · ${s.plans.name}`, customer_type: s.customer_type as "new" | "retention", amount: Number(s.amount_collected), own: s.agent_id === me,
+      detail: `${s.products.code} · ${s.plans.name}`, customer_type: s.customer_type as "new" | "retention", amount: Number(s.amount_collected), own: s.agent_id === me, allowed: allowedFor(s.product_id),
     })),
     ...switchRows.map((s) => ({
       kind: "switch" as const, id: s.id, submitted_at: s.submitted_at, customer_name: s.customer_name, agent_id: s.agent_id,
       agent: names[s.agent_id] ?? "—", team_id: s.team_id, team: s.team_id ? teamName[s.team_id] ?? null : null,
-      detail: `${s.from.code} → ${s.to.code} · ${s.plans.name}`, customer_type: null, amount: null, own: s.agent_id === me,
+      detail: `${s.from.code} → ${s.to.code} · ${s.plans.name}`, customer_type: null, amount: null, own: s.agent_id === me, allowed: allowedFor(s.to_product_id),
     })),
   ].sort((a, b) => a.submitted_at.localeCompare(b.submitted_at));
 

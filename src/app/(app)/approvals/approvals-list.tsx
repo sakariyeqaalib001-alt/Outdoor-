@@ -16,7 +16,8 @@ import type { PendingRow, StockItem } from "@/server/approvals/queries";
 
 /** One pending sale or switch: equipment boxes + Approve, or Reject with a reason (D-37, D-38). */
 function PendingCard({ row, items, available }: { row: PendingRow; items: StockItem[]; available: Record<string, number> | undefined }) {
-  const [quantities, setQuantities] = useState<Record<string, string>>({});
+  // Exactly one allowed device (D-39); preselected when the product allows only one kind.
+  const [device, setDevice] = useState<string>(row.allowed.length === 1 ? row.allowed[0] : "");
   const [result, setResult] = useState<ActionResult>();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
@@ -24,9 +25,7 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
 
   const run = (approve: boolean) =>
     start(async () => {
-      const chosen = items
-        .map((i) => ({ item_id: i.id, quantity: Number(quantities[i.id] || 0) }))
-        .filter((i) => Number.isInteger(i.quantity) && i.quantity > 0);
+      const chosen = approve && device ? [{ item_id: device, quantity: 1 }] : [];
       const r = await decide(row.kind, row.id, approve, chosen, reason);
       setResult(r);
       if (r.ok) setRejecting(false);
@@ -62,27 +61,31 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
         </div>
 
         {row.own ? <p className="text-sm text-muted-foreground">{t("approvals.ownOnlyReject")}</p> : null}
-        <fieldset className="grid gap-3 sm:grid-cols-3" hidden={row.own}>
-          <legend className="mb-1 text-sm font-semibold">{t("approvals.equipment")}</legend>
-          {items.map((item) => {
-            const id = `q-${row.id}-${item.id}`;
-            return (
-              <div key={item.id} className="space-y-1">
-                <Label htmlFor={id}>{item.name}</Label>
-                <Input
-                  id={id}
-                  inputMode="numeric"
-                  placeholder="0"
-                  disabled={!row.team_id || pending}
-                  value={quantities[item.id] ?? ""}
-                  onChange={(e) => setQuantities({ ...quantities, [item.id]: e.target.value.replace(/\D/g, "").slice(0, 3) })}
-                  className="h-11 tabular-nums md:h-9"
-                />
-                {row.team_id ? <p className="text-xs text-muted-foreground">{t("approvals.available", { count: available?.[item.id] ?? 0 })}</p> : null}
-              </div>
-            );
-          })}
-        </fieldset>
+        {row.own ? null : row.allowed.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("approvals.noEquipment")}</p>
+        ) : (
+          <fieldset className="grid gap-2">
+            <legend className="mb-1 text-sm font-semibold">{t("approvals.deviceGiven")}</legend>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {items.filter((i) => row.allowed.includes(i.id)).map((item) => (
+                <label key={item.id} className="flex min-h-11 items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name={`device-${row.id}`}
+                    value={item.id}
+                    checked={device === item.id}
+                    disabled={!row.team_id || pending}
+                    onChange={() => setDevice(item.id)}
+                    className="size-5 accent-[#047B95]"
+                  />
+                  <span className="font-semibold">{item.name}</span>
+                  {row.team_id ? <span className="text-xs text-muted-foreground">{t("approvals.available", { count: available?.[item.id] ?? 0 })}</span> : null}
+                </label>
+              ))}
+            </div>
+            {!row.team_id ? <p className="text-xs text-destructive">{t("sales.errors.noTeam")}</p> : null}
+          </fieldset>
+        )}
 
         <FormMessage error={result?.error} />
         <div className="flex flex-wrap justify-end gap-2">

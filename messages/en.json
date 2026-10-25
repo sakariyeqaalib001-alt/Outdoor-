@@ -592,7 +592,10 @@
       "switchProducts": "A switch is only between FTTA and FTTH.",
       "sameProduct": "Choose a different product to switch to.",
       "switchPending": "This customer already has a switch waiting for approval.",
-      "switchStale": "The customer's product changed since this switch was submitted. Reject it and submit a new one."
+      "switchStale": "The customer's product changed since this switch was submitted. Reject it and submit a new one.",
+      "equipmentRequired": "Choose the device given to the customer.",
+      "equipmentNotAllowed": "That device is not given with this product (FTTA: WiFi Router; FTTH / FTTB: PDCOM or CALIX; LTE: none).",
+      "equipmentOne": "Exactly one device is given per sale."
     },
     "dup": {
       "phone": "Blocked: this phone number is already registered to a customer. The attempt was recorded for review.",
@@ -630,7 +633,7 @@
   },
   "approvals": {
     "title": "approvals",
-    "intro": "Sales and product switches waiting for your decision. Record the equipment you gave the customer, then approve — it is taken from the team's stock. Or reject with a reason (D-37).",
+    "intro": "Sales and product switches waiting for your decision. Choose the device you gave the customer — FTTA: WiFi Router; FTTH / FTTB: PDCOM or CALIX; LTE: none — then approve; it is taken from the team's stock. Or reject with a reason (D-37, D-39).",
     "none": "Nothing is waiting for your decision.",
     "sale": "Sale",
     "switch": "Product switch",
@@ -650,7 +653,9 @@
     "cancel": "Cancel",
     "approved": "Approved. The equipment was taken from the team's stock.",
     "rejected": "Rejected. The agent was notified.",
-    "ownOnlyReject": "This is your own — you can only reject (cancel) it. Nobody approves their own sale."
+    "ownOnlyReject": "This is your own — you can only reject (cancel) it. Nobody approves their own sale.",
+    "deviceGiven": "Device given to the customer (one)",
+    "noEquipment": "No equipment for this product (LTE)."
   },
   "switches": {
     "title": "product switch",

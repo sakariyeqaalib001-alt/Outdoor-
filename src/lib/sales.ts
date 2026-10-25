@@ -41,6 +41,9 @@ export const SALE_ERRORS: Record<string, MessageKey> = {
   SAME_PRODUCT: "sales.errors.sameProduct",
   SWITCH_PENDING: "sales.errors.switchPending",
   SWITCH_STALE: "sales.errors.switchStale",
+  EQUIPMENT_REQUIRED: "sales.errors.equipmentRequired",
+  EQUIPMENT_NOT_ALLOWED: "sales.errors.equipmentNotAllowed",
+  EQUIPMENT_ONE: "sales.errors.equipmentOne",
 };
 
 /** Duplicate results (status "duplicate") → message keys, by rule and field. */
