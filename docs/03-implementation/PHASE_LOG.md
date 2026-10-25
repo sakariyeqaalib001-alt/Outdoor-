@@ -379,7 +379,9 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 ## Phase 7 — Sales registration
 
-**Date:** 24 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/sales.md`).
+**Date:** 24–25 Oct 2026 · **Status:** ✅ Accepted by the owner on 25 Oct 2026 — owner-tested on both sites (sales saved as "Waiting for approval", duplicate blocking, own city and districts); both SQL files applied to "Outdoor" and "Outdoor Training"; CI green (incl. real-Supabase pgTAP). Fixes during testing: drafts kept per user and the seller's own city always used (8d86484); seller name shown for any role (4e0a2c4).
+
+**Open for Phase 8:** a Super Admin's own sale needs another Super Admin to approve it (no self-approval) — decide whether Super Admins sell, or a second Super Admin exists.
 
 **Owner decision during testing (D-37, 24 Oct 2026):** every sale — New and Retention — waits for the agent's Team Leader / Outdoor Supervisor (Super Admin fallback, no self-approval); the Supervisor records the equipment at approval (Phase 8), so the agent no longer enters equipment; a rejected New sale releases the customer's numbers; approve or reject only. Migration `20261024120000_sales_all_need_approval.sql` replaces `create_sale` (all sales pending; equipment in the request ignored; no stock moves at registration); the equipment card is removed from the form. BRD FR-SALE-07, 08, FR-STK-03, BR-02, §5, §8.2, UAT-05/06/08/22/36, SDD §10.2–10.3, Roadmap Phase 8 and CLAUDE.md updated.
 
