@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20–24 Oct 2026 | D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20–25 Oct 2026 | D-38 (25 Oct) and Phase 8 (migration `20261025090000_approvals_switches`): approve_sale / reject_sale, releasable identifiers, product switches with approval, approvals history, notifications; §10.3, §10.4, §18 updated. D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -468,14 +468,15 @@ flowchart TD
 ```
 
 - Reviewer cannot be the submitting agent (check in RPC and RLS).
+- As built (Phase 8): `approve_sale(id, items)` / `reject_sale(id, reason)`; `app.check_decider`: `retention.review` permission, leader of the sale's team or Super Admin; never approves one's own (a Super Admin may reject — cancel — their own); history in `approvals`. Rejecting a New sale releases the customer's identifiers (`released_at`) when the customer has no other sale or switch; released numbers may be registered again; replaced numbers stay reserved.
 - Applies to every sale, New and Retention (D-37). Equipment is chosen by the approver and deducted at approval (`sale_items` written then); nothing moves at submission. The approver cannot change the sale — approve or reject only.
 - Approval time drives the payroll counting month (§14.1).
 
 ## 10.4 Product switch (D-16)
 
 - Allowed only FTTA ↔ FTTH; check constraint `from_product_id <> to_product_id`.
-- Name, phone and Index must match the existing customer.
-- One RPC: insert `product_switches`, issue the new equipment from the team's stock; the old equipment is returned via the Stock Officer (D-35).
+- Name (close match, D-36), current phone and current Index must match one existing customer; From Product must be `app.current_product` (latest approved sale or switch); otherwise `SWITCH_MISMATCH` audit event and a mismatch result (UAT-12).
+- `create_switch` saves it as pending (one pending switch per customer; agent picks the new plan; no payment — D-38). `approve_switch(id, items)` by the Team Leader / Supervisor (Super Admin fallback; never one's own) issues the new equipment from the switch's team stock; `reject_switch(id, reason)`. The old equipment is returned via the Stock Officer (D-35). Super Admins do not register switches.
 - Never creates a sale; excluded from all unit/revenue metrics.
 
 ## 10.5 Refund (D-15)
@@ -746,10 +747,10 @@ Timeouts, bounded retries only for idempotent calls, safe error summaries, visib
 |---|---|---|
 | Duplicate attempt / new audit case | Super Admin | In-app + email |
 | Case assigned | Assigned Auditor | In-app + email |
-| Retention awaiting review | Agent's Team Leader | In-app |
+| Sale or switch awaiting decision | Agent's Team Leader (Super Admin when the seller has no team leader or is the leader) | In-app (built Phase 8) |
+| Sale or switch approved / rejected (with reason) | Agent | In-app (built Phase 8) |
 | Refund awaiting approval | Super Admin | In-app |
-| Stock transfer awaiting acknowledgement | Receiving agent | In-app |
-| Retention rejected — return required | Agent | In-app |
+| Stock issued, awaiting acceptance | Receiving Outdoor Supervisor | In-app (built Phase 8) |
 | Integration failure | Super Admin | In-app + email |
 | OTP | Every user at sign-in (D-32) | SMS |
 

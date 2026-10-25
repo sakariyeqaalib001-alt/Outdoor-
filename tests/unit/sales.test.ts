@@ -29,7 +29,9 @@ describe("sales helpers (D-36)", () => {
 });
 
 describe("sales messages", () => {
-  const migration = readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations/20261024090000_sales.sql"), "utf8");
+  const migration = ["20261024090000_sales.sql", "20261025090000_approvals_switches.sql"]
+    .map((f) => readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations", f), "utf8"))
+    .join("\n");
 
   it("have a readable message for every error the sales functions can raise", () => {
     const codes = new Set([...migration.matchAll(/raise exception '([A-Z_]+)'/g)].map((m) => m[1]));

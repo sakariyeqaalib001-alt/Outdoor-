@@ -37,7 +37,7 @@ async function MySales({ searchParams }: { searchParams: Search }) {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <MonthFilter months={months} month={month} sellers={sellers} agent={agent} />
-        {isCurrent && can(access, "sales.create") ? (
+        {isCurrent && can(access, "sales.create") && !access.roles.includes("super_admin") ? (
           <Button asChild className="h-11 md:h-9">
             <Link href="/sales/new"><Plus aria-hidden="true" />{t("sales.newSale")}</Link>
           </Button>

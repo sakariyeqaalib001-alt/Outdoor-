@@ -12,6 +12,7 @@ import { formatBusinessDateTime, formatMonthLabel } from "@/lib/dates";
 import { t, type MessageKey } from "@/lib/i18n";
 import { formatUSD } from "@/lib/money";
 import { monthKeyOf } from "@/lib/sales";
+import { listDecisions } from "@/server/approvals/queries";
 import { getSale } from "@/server/sales/queries";
 import { SaleStatusBadge } from "../sales-table";
 
@@ -34,6 +35,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   const sale = UUID.test(id) ? await getSale(id) : null;
   if (!sale) return <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("sales.notFound")}</p>;
   const saved = typeof query.saved === "string" ? SAVED[query.saved] : undefined;
+  const decisions = await listDecisions("sales", sale.id);
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-4">
@@ -63,6 +65,16 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
             <Row label={t("sales.submittedAt")}>{formatBusinessDateTime(new Date(sale.submitted_at))}</Row>
             <Row label={t("sales.saleMonth")}>{formatMonthLabel(monthKeyOf(sale.sale_month))}</Row>
             {sale.approved_at ? <Row label={t("sales.approvedAt")}>{formatBusinessDateTime(new Date(sale.approved_at))}</Row> : null}
+            {decisions.length ? (
+              <Row label={t("sales.decisions")}>
+                {decisions.map((d) => (
+                  <span key={d.decided_at} className="block">
+                    {d.decision === "approved" ? t("sales.decisionApproved", { by: d.by ?? "—" }) : t("sales.decisionRejected", { by: d.by ?? "—", reason: d.reason ?? "" })}
+                    <span className="block text-xs font-normal text-muted-foreground">{formatBusinessDateTime(new Date(d.decided_at))}</span>
+                  </span>
+                ))}
+              </Row>
+            ) : null}
           </dl>
         </CardContent>
       </Card>

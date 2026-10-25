@@ -585,7 +585,14 @@
       "freeMonth": "The free month is not available for this plan.",
       "stock": "Your team does not have enough of this equipment. Ask your Supervisor.",
       "noTeam": "You are not in a team, so you cannot give equipment. Ask the Super Admin.",
-      "identifierTaken": "That number already belongs to a customer (or used to)."
+      "identifierTaken": "That number already belongs to a customer (or used to).",
+      "superAdmin": "Super Admins do not register sales or switches (D-38). Use an agent or Team Leader account.",
+      "selfApproval": "You cannot decide your own sale or switch.",
+      "alreadyDecided": "This was already decided.",
+      "switchProducts": "A switch is only between FTTA and FTTH.",
+      "sameProduct": "Choose a different product to switch to.",
+      "switchPending": "This customer already has a switch waiting for approval.",
+      "switchStale": "The customer's product changed since this switch was submitted. Reject it and submit a new one."
     },
     "dup": {
       "phone": "Blocked: this phone number is already registered to a customer. The attempt was recorded for review.",
@@ -595,7 +602,10 @@
       "name": "Blocked: the name does not match the customer registered with this phone and Index. The attempt was recorded for review.",
       "former": "Blocked: this number was replaced on the customer's record. Use the current number. The attempt was recorded for review.",
       "conflict": "Blocked: the phone and Index belong to different customers. The attempt was recorded for review."
-    }
+    },
+    "decisions": "Decisions",
+    "decisionApproved": "Approved by {by}",
+    "decisionRejected": "Rejected by {by}: {reason}"
   },
   "customers": {
     "title": "customers",
@@ -617,5 +627,77 @@
     "save": "Save",
     "saving": "Saving…",
     "close": "Close"
+  },
+  "approvals": {
+    "title": "approvals",
+    "intro": "Sales and product switches waiting for your decision. Record the equipment you gave the customer, then approve — it is taken from the team's stock. Or reject with a reason (D-37).",
+    "none": "Nothing is waiting for your decision.",
+    "sale": "Sale",
+    "switch": "Product switch",
+    "agent": "Agent",
+    "team": "Team",
+    "noTeam": "No team",
+    "customer": "Customer",
+    "what": "What",
+    "submitted": "Submitted",
+    "equipment": "Equipment given",
+    "available": "{count} in team",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectTitle": "reject",
+    "reason": "Reason (shown to the agent)",
+    "confirm": "Reject",
+    "cancel": "Cancel",
+    "approved": "Approved. The equipment was taken from the team's stock.",
+    "rejected": "Rejected. The agent was notified."
+  },
+  "switches": {
+    "title": "product switch",
+    "intro": "Switch an existing customer between FTTA and FTTH. Name, phone and Index must match the customer, and \"From\" must be their current product. The switch waits for your Team Leader, who records the new equipment. A switch is never a sale (D-16).",
+    "newTitle": "new switch",
+    "fullName": "Customer name",
+    "phone": "Phone number",
+    "index": "Index Number",
+    "from": "From product",
+    "to": "To product",
+    "plan": "New plan",
+    "city": "City",
+    "branch": "Branch",
+    "choose": "Choose…",
+    "submit": "Submit switch",
+    "submitting": "Submitting…",
+    "saved": "Switch saved. It now waits for Team Leader approval.",
+    "mine": "my switches",
+    "none": "No switches yet.",
+    "when": "Submitted",
+    "customer": "Customer",
+    "change": "Change",
+    "status": "Status",
+    "statuses": {
+      "pending_approval": "Waiting for approval",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "mismatch": {
+      "identity": "Rejected: the phone and Index do not belong to the same existing customer. Check them and try again.",
+      "name": "Rejected: the name does not match the customer registered with this phone and Index.",
+      "product": "Rejected: \"From product\" is not the customer's current product."
+    }
+  },
+  "notifications": {
+    "title": "notifications",
+    "bell": "Notifications",
+    "unread": "{count} unread",
+    "none": "No notifications.",
+    "markAll": "Mark all as read",
+    "kinds": {
+      "sale_pending": "{agent} registered a sale for {customer} — waiting for your approval.",
+      "sale_approved": "Your sale for {customer} was approved.",
+      "sale_rejected": "Your sale for {customer} was rejected: {reason}",
+      "switch_pending": "{agent} submitted a product switch for {customer} — waiting for your approval.",
+      "switch_approved": "Your product switch for {customer} was approved.",
+      "switch_rejected": "Your product switch for {customer} was rejected: {reason}",
+      "stock_to_accept": "Stock was issued to your team — check it arrived and accept it."
+    }
   }
 }

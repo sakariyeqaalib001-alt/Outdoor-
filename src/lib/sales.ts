@@ -34,6 +34,13 @@ export const SALE_ERRORS: Record<string, MessageKey> = {
   REASON_REQUIRED: "stock.errors.reason",
   IDENTIFIER_TAKEN: "sales.errors.identifierTaken",
   NOT_FOUND: "users.errors.genericError",
+  SUPER_ADMIN_NO_SALES: "sales.errors.superAdmin",
+  SELF_APPROVAL: "sales.errors.selfApproval",
+  ALREADY_DECIDED: "sales.errors.alreadyDecided",
+  SWITCH_PRODUCTS: "sales.errors.switchProducts",
+  SAME_PRODUCT: "sales.errors.sameProduct",
+  SWITCH_PENDING: "sales.errors.switchPending",
+  SWITCH_STALE: "sales.errors.switchStale",
 };
 
 /** Duplicate results (status "duplicate") → message keys, by rule and field. */

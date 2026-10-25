@@ -96,7 +96,7 @@ export const navigation: NavGroup[] = [
 ];
 
 /** Highest roadmap phase that has been built (menu items up to this phase are clickable). Update when a phase is built. */
-export const COMPLETED_PHASE = 7;
+export const COMPLETED_PHASE = 8;
 
 export function isAvailable(item: NavItem): boolean {
   return item.phase === undefined || item.phase <= COMPLETED_PHASE;

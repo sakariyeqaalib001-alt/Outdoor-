@@ -452,3 +452,62 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 **Next prompt (not executed):**
 > Proceed with Phase 8 only: Retention approval and product switch. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 8, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 8 — Sale approval with equipment, product switch, notifications
+
+**Date:** 25 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/approvals.md`).
+
+**Owner decisions before building (D-38, 25 Oct 2026):** Super Admins do not register sales or switches; product switch goes to the Supervisor like a sale (new equipment recorded at approval); the agent picks the new plan, no payment; From Product must be the customer's current product. Applied with D-37 (every sale waits; equipment at approval; rejected New sale releases numbers; approve or reject only).
+
+**Scope delivered (BRD §6.4 FR-SALE-07/08, §6.10 FR-SW-01…06, §6.16 FR-NOT-03; SDD §10.3, §10.4, §18)**
+- Migration `20261025090000_approvals_switches.sql`:
+  - `customer_identifiers`: `released_at` / `released_by`; uniqueness now over live (not released) values; `create_sale` (replaced) ignores released numbers and refuses Super Admins; `change_customer_identifier` (replaced) likewise.
+  - `approve_sale(id, items)` — Team Leader of the sale's team or Super Admin (`app.check_decider`), never one's own; equipment deducted from the sale's team stock in the same transaction (`app.issue_from_team`), refused if short; `reject_sale(id, reason)` — releases a New customer's identifiers when the customer has no other sale or switch; a Super Admin may cancel their own sale. History in `approvals` (append-only).
+  - `product_switches` + `switch_items`; `create_switch` (identity match incl. close-match name, From Product = `app.current_product`, FTTA ↔ FTTH only, new plan, one pending per customer, idempotent; mismatches write a durable `SWITCH_MISMATCH` event), `approve_switch` / `reject_switch` (same approver rules; equipment at approval; stale check).
+  - `notifications` (in-app): sale/switch awaiting decision → the team's leader (Super Admin when none or when the seller is the leader); approved/rejected → the agent; stock issued → the receiving Supervisor. `mark_notifications_read`.
+  - RLS: switches by `sales.read` scope; approvals follow the sale/switch; notifications only the owner's; no direct writes; change history on every new table.
+- Screens: **Approvals** (cards with equipment boxes and team stock available, Approve / Reject with reason), **Product switch** (form + my switches), **Notifications** page and a **bell** with the unread count in the top bar; sale detail shows the decision history; "New sale" hidden for Super Admins. Menu items enabled (`COMPLETED_PHASE = 8`).
+
+**BRD check**
+
+| Requirement | Result |
+|---|---|
+| FR-SALE-07 every sale approved by the Team Leader / Supervisor; Super Admin fallback; no self-approval | ✅ |
+| FR-SALE-08 equipment recorded at approval, deducted from the team stock | ✅ |
+| FR-SALE-09 approval history | ✅ `approvals`, shown on the sale |
+| FR-STK-03 deduction in the same transaction as the approval | ✅ |
+| FR-SW-01…03 switch form, identity match | ✅ (D-38: current product, new plan) |
+| FR-SW-04 one linked record; new equipment at approval; old via Stock Officer | ✅ |
+| FR-SW-05 FTTA ↔ FTTH only | ✅ |
+| FR-SW-06 never a sale | ✅ test: sales count unchanged |
+| FR-NOT-03 approvers notified in-app | ✅ (refund approvals arrive with Phase 12; email/duplicate alerts with Phase 9) |
+
+**Commands run (25 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 350 tests (20 new: approval, rejection and release, switch, notification database tests; notification texts); build adds `/approvals`, `/switches`, `/notifications` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261025090000_approvals_switches.sql` and refreshed the new-project file |
+
+Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); CI on GitHub (after upload).
+
+**Acceptance gate (UAT-06, 08, 12, 22, 34, 35, 36)**
+
+| Criterion | Result |
+|---|---|
+| Self-approval and cross-team approval denied (UI and API) | ✅ database tests (agent, other team's leader, Team Leader's own sale, anonymous); the Approvals list shows only decidable items |
+| Equipment at approval; refused when the team is short (UAT-08, 22) | ✅ |
+| Switch identity mismatch rejected; same-product switch blocked (UAT-12) | ✅ incl. durable SWITCH_MISMATCH events |
+| Switches excluded from sale counts (UAT-34) | ✅ |
+| Rejected New sale: no stock moved; numbers released (UAT-35 as reworded by D-37) | ✅ |
+
+**Manual steps for the owner** — `docs/06-operations/approvals.md`: paste `supabase/sql-editor/20261025090000_approvals_switches.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; run the tests in section 3.
+
+**Risks / open items**
+- Sales and switches by sellers without a team can only be decided by Super Admin, and no equipment can be given on them.
+- Email copies of notifications, duplicate-attempt alerts and audit cases arrive in Phase 9.
+
+**Next prompt (not executed):**
+> Proceed with Phase 9 only: duplicate detection, audit cases and alerts. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 9, run `npm run check`, update the logs, report the gate and stop.

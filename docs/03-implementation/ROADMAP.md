@@ -349,7 +349,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Team Leader / Outdoor Supervisor approval queue for every sale of their team (D-37); Super Admin fallback; no self-approval.
 - Approve with the equipment given (quantities, deducted from the team stock in the same transaction, refused if short) or reject with reason; approve/reject only; `sale_approvals` history; `approved_at`.
 - Rejected New sale: the customer's phone and Index are released when the customer has no other sale (D-37).
-- Product switch form and RPC: FTTA ↔ FTTH only, identity match, new equipment issued from team stock, old equipment returned via the Stock Officer; never a sale.
+- Product switch form and RPC: FTTA ↔ FTTH only, identity match, From Product = current product, new plan, approved by the Supervisor who records the new equipment (D-38); old equipment returned via the Stock Officer; never a sale. Super Admins do not register sales or switches (D-38).
 - In-app notifications table and bell (Retention awaiting review, rejection, transfer awaiting acknowledgement).
 
 **Acceptance gate (UAT-06, 08, 12, 22, 34, 35, 36)**
