@@ -457,7 +457,7 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in — 
 
 ## Phase 8 — Sale approval with equipment, product switch, notifications
 
-**Date:** 25 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/approvals.md`).
+**Date:** 25 Oct 2026 · **Status:** ✅ Accepted by the owner on 25 Oct 2026 — owner-tested on both sites (approvals with one device by product, Team Leader self-approval of own sales, rejection, switches, notifications); all Phase 8 SQL files applied to "Outdoor" and "Outdoor Training"; CI green (incl. real-Supabase pgTAP).
 
 **Owner decision during testing (D-40, 25 Oct 2026):** Team Leaders approve their own sales with a device from their own team; their own switches (and, Phase 12, refunds) still go to Super Admin. Migration `20261025150000_team_leader_self_approval.sql` (`app.check_decider` allows the leader's own sale; new `app.check_switch_decider` / `app.switch_approvers_for` keep switches strict; approve_switch / reject_switch replaced, D-39 check kept). Accepted risk recorded; a self-approval review is planned for Phase 9.
 
