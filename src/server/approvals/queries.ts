@@ -23,7 +23,7 @@ export type PendingRow = {
   detail: string; // "FTTH · SO-Home" or "FTTA → FTTH · SO-Home"
   customer_type: "new" | "retention" | null; // sales only
   amount: number | null; // sales only
-  own: boolean; // the caller's own (Super Admin may only reject — cancel — it, D-38)
+  own: boolean; // a Super Admin's own item: reject (cancel) only (D-38). A Team Leader's own is fully decidable (D-40)
   allowed: string[]; // stock items allowed for this product — exactly one is given at approval (D-39); empty = none
 };
 export type StockItem = { id: string; name: string };
@@ -63,16 +63,19 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
   const teamName = Object.fromEntries(teamRows.map((tm) => [tm.id, tm.name]));
   const mine = new Set(teamRows.filter((tm) => tm.team_leader_id === me).map((tm) => tm.id));
   // A Team Leader decides only for the teams they lead (the database checks again).
-  // Own items: never approvable; a Super Admin may still reject (cancel) them.
-  const decidable = (team: string | null, agent: string) =>
-    agent === me ? isSuperAdmin : isSuperAdmin || (team !== null && mine.has(team));
+  // A Team Leader decides their team's items, their own included (D-40). A Super Admin's own item can only be
+  // rejected (cancelled).
+  const leads = (team: string | null) => team !== null && mine.has(team);
+  const decidable = (team: string | null) => isSuperAdmin || leads(team);
+  const rejectOnly = (team: string | null, agent: string) => agent === me && !leads(team);
 
   type RawSale = { id: string; submitted_at: string; customer_name: string; customer_type: string; agent_id: string; team_id: string | null; amount_collected: number; product_id: string; products: { code: string }; plans: { name: string } };
   type RawSwitch = { id: string; submitted_at: string; customer_name: string; agent_id: string; team_id: string | null; to_product_id: string; from: { code: string }; to: { code: string }; plans: { name: string } };
   const allowedFor = (product: string) =>
     ((rules.data ?? []) as { product_id: string; stock_item_id: string }[]).filter((r) => r.product_id === product).map((r) => r.stock_item_id);
-  const saleRows = ((sales.data ?? []) as unknown as RawSale[]).filter((s) => decidable(s.team_id, s.agent_id));
-  const switchRows = ((switches.data ?? []) as unknown as RawSwitch[]).filter((s) => decidable(s.team_id, s.agent_id));
+  const saleRows = ((sales.data ?? []) as unknown as RawSale[]).filter((s) => decidable(s.team_id));
+  // Switches: nobody decides their own (a Team Leader's own goes to Super Admin, D-40).
+  const switchRows = ((switches.data ?? []) as unknown as RawSwitch[]).filter((s) => (s.agent_id === me ? isSuperAdmin : decidable(s.team_id)));
 
   const agentIds = [...new Set([...saleRows, ...switchRows].map((r) => r.agent_id))];
   const names: Record<string, string> = {};
@@ -85,7 +88,7 @@ export async function listPending(): Promise<{ rows: PendingRow[]; items: StockI
     ...saleRows.map((s) => ({
       kind: "sale" as const, id: s.id, submitted_at: s.submitted_at, customer_name: s.customer_name, agent_id: s.agent_id,
       agent: names[s.agent_id] ?? "—", team_id: s.team_id, team: s.team_id ? teamName[s.team_id] ?? null : null,
-      detail: `${s.products.code} · ${s.plans.name}`, customer_type: s.customer_type as "new" | "retention", amount: Number(s.amount_collected), own: s.agent_id === me, allowed: allowedFor(s.product_id),
+      detail: `${s.products.code} · ${s.plans.name}`, customer_type: s.customer_type as "new" | "retention", amount: Number(s.amount_collected), own: rejectOnly(s.team_id, s.agent_id), allowed: allowedFor(s.product_id),
     })),
     ...switchRows.map((s) => ({
       kind: "switch" as const, id: s.id, submitted_at: s.submitted_at, customer_name: s.customer_name, agent_id: s.agent_id,

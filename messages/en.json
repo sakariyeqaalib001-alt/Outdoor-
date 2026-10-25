@@ -633,7 +633,7 @@
   },
   "approvals": {
     "title": "approvals",
-    "intro": "Sales and product switches waiting for your decision. Choose the device you gave the customer — FTTA: WiFi Router; FTTH / FTTB: PDCOM or CALIX; LTE: none — then approve; it is taken from the team's stock. Or reject with a reason (D-37, D-39).",
+    "intro": "Sales and product switches waiting for your decision — your team's, including your own (D-40). Choose the device you gave the customer — FTTA: WiFi Router; FTTH / FTTB: PDCOM or CALIX; LTE: none — then approve; it is taken from the team's stock. Or reject with a reason.",
     "none": "Nothing is waiting for your decision.",
     "sale": "Sale",
     "switch": "Product switch",
@@ -653,7 +653,7 @@
     "cancel": "Cancel",
     "approved": "Approved. The equipment was taken from the team's stock.",
     "rejected": "Rejected. The agent was notified.",
-    "ownOnlyReject": "This is your own — you can only reject (cancel) it. Nobody approves their own sale.",
+    "ownOnlyReject": "This is your own — as Super Admin you can only reject (cancel) it.",
     "deviceGiven": "Device given to the customer (one)",
     "noEquipment": "No equipment for this product (LTE)."
   },

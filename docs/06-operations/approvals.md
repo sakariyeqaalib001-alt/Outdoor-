@@ -6,7 +6,8 @@
 |---|---|---|
 | **Outdoor** | `supabase/sql-editor/20261025090000_approvals_switches.sql` | "Applied 20261025090000_approvals_switches successfully" |
 | **Outdoor** | then `supabase/sql-editor/20261025120000_product_equipment.sql` (D-39) | "Applied 20261025120000_product_equipment successfully" |
-| **Outdoor Training** | the same two files, same order | the same messages |
+| **Outdoor** | then `supabase/sql-editor/20261025150000_team_leader_self_approval.sql` (D-40) | "Applied 20261025150000_team_leader_self_approval successfully" |
+| **Outdoor Training** | the same three files, same order | the same messages |
 
 Then restart the training site (stop it, `npm.cmd run training:build`, `npm.cmd run training:start`).
 
@@ -16,7 +17,8 @@ Then restart the training site (stop it, `npm.cmd run training:build`, `npm.cmd 
 |---|---|---|
 | Agent | **Sales → New sale** | Registers the sale → "Waiting for approval". The Team Leader gets a notification (bell at the top right) |
 | Team Leader / Outdoor Supervisor | **Approvals** | Sees the sales and switches of the teams they lead. Chooses the **one** device given (D-39): **FTTA → WiFi Router; FTTH / FTTB → PDCOM or CALIX; LTE → none** (the team's stock is shown), then **Approve** — the device is taken from the team then. Or **Reject** with a reason |
-| Super Admin | **Approvals** | Fallback for every team; decides Team Leaders' own sales; does **not** register sales or switches |
+| Team Leader / Outdoor Supervisor | **Sales → New sale**, then **Approvals** | Registers their own sales and **approves them themselves**, with the device from their own team (D-40). Their own **switches** go to Super Admin |
+| Super Admin | **Approvals** | Fallback for every team; decides Team Leaders' own switches; does **not** register sales or switches |
 | Agent | **Product switch** | FTTA ↔ FTTH for an existing customer: name, phone and Index must match, "From" must be the current product, choose the new plan. Waits for the Team Leader, who records the new equipment. Never a sale |
 | Everyone | **Bell / Notifications** | New items waiting for you, your sale/switch approved or rejected (with the reason), stock issued to your team |
 

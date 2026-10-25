@@ -154,14 +154,25 @@ describe("approving a sale with the equipment given (FR-SALE-07/08, D-37; UAT-06
     expect(await errorOf(approve(TL, sale))).toMatch(/ALREADY_DECIDED/);
   });
 
-  it("of a Team Leader's own sale goes to Super Admin; the Team Leader cannot approve it", async () => {
+  it("of a Team Leader's own sale: the Team Leader approves it with a device from their own team (D-40)", async () => {
     const own = (await sell(TL)).sale_id!;
-    expect((await notes(SA, "sale_pending")).map((n) => n.entity_id)).toContain(own);
-    expect((await notes(TL, "sale_pending")).map((n) => n.entity_id)).not.toContain(own);
-    expect(await errorOf(approve(TL, own))).toMatch(/SELF_APPROVAL/);
-    expect(await errorOf(reject(TL, own, "Cancel my own"))).toMatch(/SELF_APPROVAL/);
-    await approve(SA, own, lines([router, 1])); // from the team the Team Leader leads
+    expect((await notes(TL, "sale_pending")).map((n) => n.entity_id)).toContain(own);
+    expect((await notes(SA, "sale_pending")).map((n) => n.entity_id)).not.toContain(own);
+    const before = await balance(router);
+    await approve(TL, own, lines([router, 1]));
     expect(await status("sales", own)).toBe("approved");
+    expect(await balance(router)).toBe(before - 1);
+    expect((await db.query("select decided_by from public.approvals where entity_id = $1", [own])).rows).toEqual([{ decided_by: TL }]);
+    // ...and may cancel (reject) their own.
+    const another = (await sell(TL)).sale_id!;
+    await reject(TL, another, "Entered by mistake");
+    expect(await status("sales", another)).toBe("rejected");
+  });
+
+  it("never lets an agent approve, nor a Team Leader approve another team's leader's own sale", async () => {
+    const tl2own = (await sell(TL2)).sale_id!;
+    expect(await errorOf(approve(TL, tl2own, lines([router, 1])))).toMatch(/not allowed/);
+    expect(await errorOf(approve(AG2, tl2own, lines([router, 1])))).toMatch(/not allowed/);
   });
 
   it("of a seller without a team: Super Admin decides; equipment cannot be given (LTE needs none)", async () => {
@@ -293,5 +304,27 @@ describe("notifications (SDD §18)", () => {
     await call(AG, "select public.mark_notifications_read()");
     expect((await db.query("select 1 from public.notifications where user_id = $1 and read_at is null", [AG])).rows).toHaveLength(0);
     expect((await db.query("select 1 from public.notifications where user_id = $1 and read_at is null", [TL])).rows.length).toBeGreaterThan(0);
+  });
+});
+
+describe("Team Leader's own switch (D-40: still needs Super Admin)", () => {
+  it("cannot be approved by the Team Leader; Super Admin is notified and approves it", async () => {
+    const p = phone();
+    const i = index();
+    const s = (await sell(TL, { phone: p, index: i, full_name: "Leader Customer" })).sale_id!;
+    await approve(TL, s, lines([router, 1])); // own SALE: allowed (D-40)
+    const { rows } = await as(db, "authenticated", TL, () =>
+      db.query<{ r: Result }>("select public.create_switch($1::jsonb) as r", [JSON.stringify({
+        client_request_id: randomUUID(), branch_id: branch, full_name: "Leader Customer", phone: p, index: i,
+        from_product_id: ftta, to_product_id: ftth, to_plan_id: ftthHome,
+      })]));
+    const sw = rows[0].r.switch_id!;
+    expect((await notes(SA, "switch_pending")).map((n) => n.entity_id)).toContain(sw);
+    expect((await notes(TL, "switch_pending")).map((n) => n.entity_id)).not.toContain(sw);
+    await db.query("insert into public.stock_movements (movement_type, item_id, quantity, to_location_id) values ('transfer_in', $1, 1, $2)", [pdcom, locA]);
+    expect(await errorOf(call(TL, "select public.approve_switch($1, $2::jsonb)", [sw, lines([pdcom, 1])]))).toMatch(/SELF_APPROVAL/);
+    expect(await errorOf(call(TL, "select public.reject_switch($1, 'Cancel mine')", [sw]))).toMatch(/SELF_APPROVAL/);
+    await call(SA, "select public.approve_switch($1, $2::jsonb)", [sw, lines([pdcom, 1])]);
+    expect(await status("product_switches", sw)).toBe("approved");
   });
 });
