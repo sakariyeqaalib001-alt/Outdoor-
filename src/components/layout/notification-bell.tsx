@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { Bell } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { unreadCount } from "@/server/approvals/queries";
+import { deliverPendingEmails } from "@/server/email/deliver";
 
 /** Bell with the unread count, in the top bar (SDD §18). Rendered inside a Suspense boundary. */
 export async function NotificationBell() {
@@ -11,6 +13,8 @@ export async function NotificationBell() {
   } catch {
     return null;
   }
+  // Waiting alert emails also go out whenever anyone opens a page (the in-app bell is the main alert, D-41).
+  after(() => deliverPendingEmails().catch(() => undefined));
   const label = count > 0 ? `${t("notifications.bell")} — ${t("notifications.unread", { count })}` : t("notifications.bell");
   return (
     <Link href="/notifications" aria-label={label} className="relative inline-flex size-9 items-center justify-center rounded-md hover:bg-muted">

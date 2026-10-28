@@ -411,6 +411,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Production setup by Super Admin: prices, Hargeisa districts, teams, users (R-10).
 - Opening stock: Stock Officer enters the physical count as receipts (quantities), then sends to teams for acceptance; reconciliation report agrees with the count (R-11).
 - Production environment, secrets, backups + restore drill, monitoring, incident runbook, support owner.
+- Scheduled sender for queued alert emails (every 5 minutes, independent of users opening pages — D-41, T-25).
 - Agent training material (quick guide for sales form, custody, Index Number entry) and Team Leader guide (Retention approval, spotting returning customers registered as New).
 - Pilot UAT across Phases 3–10 workflows.
 

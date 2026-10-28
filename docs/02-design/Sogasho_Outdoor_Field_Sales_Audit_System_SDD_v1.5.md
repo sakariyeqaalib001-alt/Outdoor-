@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20–25 Oct 2026 | D-40 (25 Oct): Team Leaders approve their own sales (`app.check_decider`); own switches keep the no-self-approval rule (`app.check_switch_decider`, migration `20261025150000_team_leader_self_approval`). D-39 (25 Oct): `product_equipment` (allowed device per product) checked by `app.check_equipment` in approve_sale / approve_switch (migration `20261025120000_product_equipment`). D-38 (25 Oct) and Phase 8 (migration `20261025090000_approvals_switches`): approve_sale / reject_sale, releasable identifiers, product switches with approval, approvals history, notifications; §10.3, §10.4, §18 updated. D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20–26 Oct 2026 | D-41 / T-25 (26 Oct, Phase 9): audit rules, cases, links, history, email outbox (migration `20261026090000_audit_cases`); SELF_APPROVED rule; MULTI_AGENT_ATTEMPT on. D-40 (25 Oct): Team Leaders approve their own sales (`app.check_decider`); own switches keep the no-self-approval rule (`app.check_switch_decider`, migration `20261025150000_team_leader_self_approval`). D-39 (25 Oct): `product_equipment` (allowed device per product) checked by `app.check_equipment` in approve_sale / approve_switch (migration `20261025120000_product_equipment`). D-38 (25 Oct) and Phase 8 (migration `20261025090000_approvals_switches`): approve_sale / reject_sale, releasable identifiers, product switches with approval, approvals history, notifications; §10.3, §10.4, §18 updated. D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -522,9 +522,11 @@ A rejected submission must still leave an audit event. Design:
 | IDENTITY_CONFLICT | Retention with phone/Index of different customers or name mismatch | 7 | on |
 | SAME_MONTH | Second active sale for customer in month | 7 | on |
 | SWITCH_MISMATCH | Switch identity mismatch | 8 | on |
-| MULTI_AGENT_ATTEMPT | Same identifier attempted by ≥ 2 agents in 30 days | 9 | off until pilot review |
+| MULTI_AGENT_ATTEMPT | A customer's New sale and blocked attempts come from ≥ 2 agents in 30 days (Retention sales not counted; only the attempting agent is linked) | 9 | **on** (D-41) |
 | BURST | ≥ N sales by one agent in M minutes | 9 | off |
-| POST_APPROVAL_EDIT | Change to a sale after approval | 9 | on |
+| POST_APPROVAL_EDIT | Change to an approved sale itself (the system never does this) | 9 | on |
+| IDENTITY_CORRECTED | Super Admin corrected the phone / Index / name of a customer with an approved sale — event only, no case | 9 | on (D-41) |
+| SELF_APPROVED | A Team Leader approved their own sale (D-40) — event only, no case | 9 | on (D-41) |
 | HIGH_REFUND_RATE | Agent refund rate above threshold | 12 | off |
 | FOLLOWUP_SKEW | Follow-up outcomes concentrated for one agent | 13 | off |
 
@@ -537,7 +539,7 @@ Open → Under Review → Confirmed Issue → Resolved
                     ↘ False Positive  → Resolved
 ```
 
-- Events can be grouped into a case automatically (same identifier within 30 days) or manually.
+- Events can be grouped into a case automatically (same customer — or same agent — within 30 days; serialised with an advisory lock per customer/agent) or manually.
 - Only Super Admin or the assigned Auditor changes state; each change writes `audit_case_history` with a note.
 - Effects: Open/Under Review → linked agents' payroll lines **on hold**; Confirmed Issue → linked sales ineligible; False Positive → no effect.
 - No user can edit or delete events, cases or history.
@@ -736,7 +738,7 @@ interface SmsProvider {
 
 ## 17.3 Email
 
-Transactional email provider selected in Phase 0. Messages contain no phone/Index — only a link to the authenticated case/notification.
+Provider adapter (`EMAIL_PROVIDER` = brevo / resend; T-25): audit notifications are queued in `email_outbox` by a trigger and sent by the server with the secret key after the user's action, at most 5 attempts. Messages contain no phone/Index — only the rule, the case number and a link to the authenticated case.
 
 ## 17.4 Failure handling
 
@@ -746,8 +748,8 @@ Timeouts, bounded retries only for idempotent calls, safe error summaries, visib
 
 | Event | Recipient | Channel |
 |---|---|---|
-| Duplicate attempt / new audit case | Super Admin | In-app + email |
-| Case assigned | Assigned Auditor | In-app + email |
+| Duplicate attempt / new audit case | Super Admin | In-app + email (built Phase 9) |
+| Case assigned | Assigned Auditor | In-app + email (built Phase 9) |
 | Sale or switch awaiting decision | Agent's Team Leader (Super Admin when the seller has no team leader or is the leader) | In-app (built Phase 8) |
 | Sale or switch approved / rejected (with reason) | Agent | In-app (built Phase 8) |
 | Refund awaiting approval | Super Admin | In-app |

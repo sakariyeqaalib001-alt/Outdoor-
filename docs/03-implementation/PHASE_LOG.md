@@ -516,3 +516,68 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); CI
 
 **Next prompt (not executed):**
 > Proceed with Phase 9 only: duplicate detection, audit cases and alerts. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 9, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 9 — Duplicate detection, audit cases and alerts
+
+**Date:** 26 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/audit.md`). Email delivery **blocked on setup** (R-5): the owner creates the email account and puts the key in `.env.local`.
+
+**Owner refinements after reviewing the risks (D-41, 26 Oct 2026, before testing):** MULTI_AGENT_ATTEMPT counts New sales and blocked attempts only and holds only the attempting agent; Super Admin identity corrections are IDENTITY_CORRECTED events (no case, no hold); POST_APPROVAL_EDIT only for a change to an approved sale itself; queued emails also sent on any page view (scheduled sender in Phase 11); advisory lock per customer/agent when grouping events. Applied in the same (not yet pasted) migration.
+
+**Owner decisions before building (D-41, 26 Oct 2026):** MULTI_AGENT_ATTEMPT and POST_APPROVAL_EDIT on, BURST off; Team Leaders' self-approved sales (D-40) recorded as SELF_APPROVED events only (no case, no hold); cases changed by Super Admin and the assigned Auditor. Email: the owner has a work address but no control of sogasho.com DNS → provider adapter with Brevo (verified single sender) recommended (T-25).
+
+**Scope delivered (BRD §6.6 / §7 FR-AUD-01…08, FR-NOT-01/05; SDD §11, §17.3, §18)**
+- Migration `20261026090000_audit_cases.sql`:
+  - `audit_rules` (enable flag, can_disable, opens_case, thresholds; 9 rules seeded); `public.audit_rule_update` (settings.manage, core rules stay on, thresholds checked, logged).
+  - `audit_cases` (case number, state, outcome, assignee; identity columns immutable, no delete), `audit_case_links` and `audit_case_history` (append-only); change history on every new table.
+  - Automatic grouping (trigger on `audit_events`): same customer — or, without one, same agent — within 30 days joins the open/under-review case, else a new case; links the event, customer, agent and sale. Every active Super Admin (and the assignee) gets an `audit_alert` notification.
+  - Rules: MULTI_AGENT_ATTEMPT (New sales + blocked attempts by ≥ N agents in D days, once per window; only the attempting agent linked), BURST (≥ N sales in M minutes, once per window), POST_APPROVAL_EDIT (approved sale itself changed → case), IDENTITY_CORRECTED (identifier replaced or customer renamed after approval → event only), SELF_APPROVED (approval by the seller → event only).
+  - Case functions: `audit_case_set_status` (Open → Under Review → Confirmed Issue / False Positive → Resolved; note required; Super Admin or assigned Auditor only), `audit_case_add_note`, `audit_case_assign` (Super Admin; active Auditor / Super Admin; notifies + emails the assignee), `audit_case_create` (Super Admin, optionally about a sale).
+  - Effects for Phase 10/16: `app.agent_audit_hold(agent)`, `app.sale_audit_state(sale)` → confirmed_issue / on_hold / null.
+  - `email_outbox` (no API access except the server); queued by a trigger from audit notifications, no phone/Index; agents' internal addresses skipped. `email_outbox_summary()` for Super Admin.
+  - Notification kinds `audit_alert`, `audit_case_assigned`.
+- App: email adapter `src/server/email/provider.ts` (brevo / resend / log) and sender `deliver.ts` (secret key, T-25; run after sales, switches, identifier changes and case actions, and by "Send emails now"). Screens **Audit → Cases / Events / Rules**, case page (rule explanation, attempted values, matching customer, agents with hold flag, linked sales with ineligible/on-hold flag, history, actions), **Open audit case** and audit flag on the sale page, notification texts and links. Menu: `COMPLETED_PHASE = 9`. Training site now passes `PORT=3001` so email links point at it.
+
+**BRD check**
+
+| Requirement | Result |
+|---|---|
+| FR-AUD-01 duplicate phone / Index never a separate customer | ✅ (Phase 7, unchanged) |
+| FR-AUD-02 durable event + Super Admin notified | ✅ in-app; email queued — sends once the email account is set up |
+| FR-AUD-03 rule, attempted values, matching record, agent, date/time, case status | ✅ Events tab and case page |
+| FR-AUD-04 states Open → Under Review → Confirmed Issue / False Positive → Resolved | ✅ enforced in the database |
+| FR-AUD-05 no edit/delete; only state, assignment, notes, with history | ✅ tests incl. the database owner |
+| FR-AUD-06 risk indicator; only a reviewer sets Confirmed Issue | ✅ |
+| FR-AUD-07 only Super Admin and the assigned Auditor change state | ✅ (unassigned Auditor, agent, Team Leader, anonymous denied) |
+| FR-AUD-08 Open / Under Review → hold; Confirmed Issue → ineligible | ✅ flags exposed; applied by eligibility (Phase 10) and payroll (Phase 16) |
+| FR-NOT-01/05 Super Admin alerted in-app + email, Auditor on assignment | ✅ in-app; email pending setup |
+
+**Commands run (26 Oct 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 386 tests (27 new audit database tests; 6 email adapter unit tests); build adds `/audit`, `/audit/events`, `/audit/rules`, `/audit/cases/[id]` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261026090000_audit_cases.sql` and refreshed the new-project file |
+
+Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); a real email send (needs the owner's email account); CI on GitHub (after upload).
+
+**Acceptance gate (UAT-03 alert part)**
+
+| Criterion | Result |
+|---|---|
+| Events link to source records and explain the rule | ✅ database tests (links to event, customer, agent, sale) + rule explanation on screen — owner test pending |
+| Cases and history cannot be edited or deleted | ✅ API and database-owner attempts refused (tests) |
+| False Positive leaves sales unaffected; Confirmed Issue marks them ineligible | ✅ tests (`app.sale_audit_state`) |
+| Email alert received on staging | ⛔ **BLOCKED — awaiting the email account (R-5)**: queue, adapter and sender built and unit-tested |
+
+**Manual steps for the owner** — `docs/06-operations/audit.md`: paste `supabase/sql-editor/20261026090000_audit_cases.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; set up Brevo (section 2) and put the three EMAIL lines in `.env.local`; run the tests in section 4.
+
+**Risks / open items**
+- Without DNS records for sogasho.com, alert emails may land in Spam until IT adds Brevo's records.
+- MULTI_AGENT_ATTEMPT is on from the start (D-41); Retention sales are not counted and only the attempting agent is held — a genuine mistaken attempt still holds that agent until the case is reviewed.
+- Simultaneous events for one customer are serialised by an advisory lock (worst case before: two cases instead of one); not proven under real parallel sessions, as PGlite has a single connection.
+- Emails go out only while the app is running (after actions and page views, or "Send emails now"); the in-app bell is the main alert; a scheduled sender is planned with hosting (Phase 11).
+
+**Next prompt (not executed):**
+> Proceed with Phase 10 only: eligibility service and operational dashboard. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 10, run `npm run check`, update the logs, report the gate and stop.

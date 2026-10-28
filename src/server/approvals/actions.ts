@@ -5,6 +5,7 @@ import { z } from "zod";
 import { t } from "@/lib/i18n";
 import { SALE_ERRORS } from "@/lib/sales";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendAlertEmailsLater } from "@/server/audit/actions";
 
 /**
  * Approvals and product switches (Phase 8, D-37, D-38). Each runs AS the signed-in user through a database
@@ -74,6 +75,7 @@ export async function submitSwitch(input: SwitchInput): Promise<ActionResult & {
   if (!supabase) return { error: t("auth.notConfigured") };
   const { data, error } = await supabase.rpc("create_switch", { p: parsed.data });
   if (error) return { error: dbError(error.message) };
+  await sendAlertEmailsLater(); // SWITCH_MISMATCH alerts (Phase 9)
   const result = data as { status: string; switch_id?: string; field?: keyof typeof MISMATCH };
   if (result.status === "mismatch") return { error: t(MISMATCH[result.field ?? "phone_or_index"] ?? MISMATCH.phone_or_index) };
   revalidatePath("/switches");

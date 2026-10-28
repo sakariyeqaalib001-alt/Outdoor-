@@ -13,6 +13,10 @@ import { t, type MessageKey } from "@/lib/i18n";
 import { formatUSD } from "@/lib/money";
 import { monthKeyOf } from "@/lib/sales";
 import { listDecisions } from "@/server/approvals/queries";
+import { saleAuditCases } from "@/server/audit/queries";
+import { can, getAccess } from "@/server/auth/access";
+import { CaseStatusBadge } from "../../audit/audit-ui";
+import { NewCaseButton } from "../../audit/case-forms";
 import { getSale } from "@/server/sales/queries";
 import { SaleStatusBadge } from "../sales-table";
 
@@ -35,7 +39,10 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   const sale = UUID.test(id) ? await getSale(id) : null;
   if (!sale) return <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("sales.notFound")}</p>;
   const saved = typeof query.saved === "string" ? SAVED[query.saved] : undefined;
-  const decisions = await listDecisions("sales", sale.id);
+  const [decisions, access] = await Promise.all([listDecisions("sales", sale.id), getAccess()]);
+  // Audit cases about this sale (Phase 9): visible to audit.read holders only (RLS); Super Admin may open one.
+  const auditCases = can(access, "audit.read") ? await saleAuditCases(sale.id) : [];
+  const canOpenCase = access.permissions["audit.manage"] === "all";
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-4">
@@ -75,9 +82,20 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
                 ))}
               </Row>
             ) : null}
+            {auditCases.length ? (
+              <Row label={t("audit.saleCases")}>
+                {auditCases.map((c) => (
+                  <Link key={c.id} href={`/audit/cases/${c.id}`} className="mr-3 inline-flex items-center gap-2 text-brand-link underline">
+                    {t("audit.caseNo", { no: String(c.case_no) })}
+                    <CaseStatusBadge status={c.outcome && c.status === "resolved" ? c.outcome : c.status} />
+                  </Link>
+                ))}
+              </Row>
+            ) : null}
           </dl>
         </CardContent>
       </Card>
+      {canOpenCase ? <NewCaseButton saleId={sale.id} label={t("audit.openCaseForSale")} /> : null}
       <Button asChild variant="outline" className="h-11 justify-self-start">
         <Link href={`/sales?month=${monthKeyOf(sale.sale_month)}`}><ArrowLeft aria-hidden="true" />{t("sales.back")}</Link>
       </Button>

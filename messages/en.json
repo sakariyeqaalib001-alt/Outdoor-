@@ -703,7 +703,188 @@
       "switch_pending": "{agent} submitted a product switch for {customer} — waiting for your approval.",
       "switch_approved": "Your product switch for {customer} was approved.",
       "switch_rejected": "Your product switch for {customer} was rejected: {reason}",
-      "stock_to_accept": "Stock was issued to your team — check it arrived and accept it."
+      "stock_to_accept": "Stock was issued to your team — check it arrived and accept it.",
+      "audit_alert": "Audit alert: {rule} (case #{caseNo}) — open the case to review it.",
+      "audit_case_assigned": "Audit case #{caseNo} was assigned to you."
+    }
+  },
+  "audit": {
+    "title": "audit",
+    "intro": "Duplicate attempts and other rule hits are grouped into cases. A case is a risk indicator, not proof of fraud: only a reviewer sets Confirmed Issue. Open and Under Review cases put the agent's pay on hold; Confirmed Issue makes the linked sales ineligible; False Positive has no effect.",
+    "eventsIntro": "Every rule hit, newest first. Events are kept for good and can never be changed or deleted.",
+    "rulesIntro": "Core duplicate rules are always on. Super Admin can switch the other rules on or off and change their limits; every change is recorded.",
+    "tabCases": "Cases",
+    "tabEvents": "Events",
+    "tabRules": "Rules",
+    "filterActive": "Open + under review",
+    "filterAll": "All",
+    "noCases": "No audit cases here.",
+    "noEvents": "No audit events yet.",
+    "case": "Case",
+    "caseNo": "Case #{no}",
+    "caseTitlePage": "audit case",
+    "rule": "Rule",
+    "status": "Status",
+    "assignedTo": "Assigned to",
+    "eventsCount": "Events",
+    "lastEvent": "Last event",
+    "openedAt": "Opened",
+    "outcome": "Outcome",
+    "effect": "Effect",
+    "effects": {
+      "hold": "Linked agents' pay is on hold while the case is open or under review.",
+      "confirmed": "Linked sales are ineligible (not counted for incentive).",
+      "none": "No effect on sales or pay."
+    },
+    "manualCase": "Opened by hand",
+    "system": "System",
+    "noCase": "No case (recorded for review only)",
+    "matchedCustomer": "Matching customer: {name}",
+    "openSale": "Open the sale",
+    "linkedTitle": "who and what",
+    "agents": "Agents",
+    "customers": "Customers",
+    "salesTitle": "linked sales",
+    "eventsTitle": "events",
+    "historyTitle": "history",
+    "onHold": "On hold",
+    "ineligible": "Ineligible",
+    "unassigned": "Not assigned",
+    "assignTo": "Assign to",
+    "assign": "Assign",
+    "note": "Note",
+    "noteRequired": "Note (required for every change)",
+    "addNote": "Add note",
+    "readOnly": "Only Super Admin or the Auditor assigned to this case can change it.",
+    "back": "Back to audit",
+    "newCase": "New case",
+    "newCaseTitle": "open an audit case",
+    "caseTitle": "Title",
+    "openCase": "Open case",
+    "openCaseForSale": "Open audit case",
+    "saleCases": "Audit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Case updated.",
+    "noteAdded": "Note added.",
+    "assignedSaved": "Assignment saved.",
+    "caseCreated": "Case opened.",
+    "ruleSaved": "Rule saved.",
+    "ruleOn": "On",
+    "ruleOff": "Off",
+    "ruleEnabled": "Switched on",
+    "ruleCore": "Always on",
+    "ruleEventOnly": "Event only — no case",
+    "moveTo": {
+      "open": "Reopen",
+      "under_review": "Start review",
+      "confirmed_issue": "Confirm issue",
+      "false_positive": "False positive",
+      "resolved": "Resolve"
+    },
+    "statuses": {
+      "open": "Open",
+      "under_review": "Under review",
+      "confirmed_issue": "Confirmed issue",
+      "false_positive": "False positive",
+      "resolved": "Resolved"
+    },
+    "severity": {
+      "info": "Info",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "history": {
+      "opened": "Case opened",
+      "status": "{from} → {to}",
+      "assigned": "Assigned to {name}",
+      "unassigned": "Unassigned",
+      "note": "Note",
+      "linked": "New event added"
+    },
+    "threshold": {
+      "agents": "Agents (at least)",
+      "days": "Within days",
+      "sales": "Sales (at least)",
+      "minutes": "Within minutes"
+    },
+    "fields": {
+      "full_name": "Name entered",
+      "phone": "Phone entered",
+      "index": "Index entered",
+      "customer_type": "Sale type",
+      "from_product": "From product",
+      "to_product": "To product",
+      "field": "What changed",
+      "old_value": "Old value",
+      "new_value": "New value",
+      "reason": "Reason",
+      "agents": "Different agents",
+      "agent_names": "Agents",
+      "days": "Days",
+      "sales": "Sales",
+      "minutes": "Minutes",
+      "changed": "Changed fields"
+    },
+    "rules": {
+      "DUP_PHONE": {
+        "name": "Duplicate phone number",
+        "explain": "A New sale used a phone number that already belongs to a customer. The sale was blocked."
+      },
+      "DUP_INDEX": {
+        "name": "Duplicate Index Number",
+        "explain": "A New sale used an Index Number that already belongs to a customer. The sale was blocked."
+      },
+      "IDENTITY_CONFLICT": {
+        "name": "Identity conflict",
+        "explain": "A Retention sale used a phone and Index of different customers, or a name that does not match. The sale was blocked."
+      },
+      "SAME_MONTH": {
+        "name": "Second sale in the same month",
+        "explain": "A sale was attempted for a customer who already has a sale this month. The sale was blocked."
+      },
+      "SWITCH_MISMATCH": {
+        "name": "Product switch mismatch",
+        "explain": "A product switch used details that do not match one existing customer and product. The switch was blocked."
+      },
+      "MULTI_AGENT_ATTEMPT": {
+        "name": "Several agents, same customer",
+        "explain": "A customer registered as New by one agent was tried again by a different agent within a short period. Normal Retention sales are not counted; only the agent who made the attempt is put on hold."
+      },
+      "BURST": {
+        "name": "Too many sales too fast",
+        "explain": "One agent registered many sales within a few minutes."
+      },
+      "POST_APPROVAL_EDIT": {
+        "name": "Edit after approval",
+        "explain": "An approved sale itself was changed after approval. The system never does this, so it is a red flag."
+      },
+      "IDENTITY_CORRECTED": {
+        "name": "Customer details corrected",
+        "explain": "Super Admin corrected the phone, Index or name of a customer with an approved sale, with a reason. Recorded for review only: no case, no hold."
+      },
+      "SELF_APPROVED": {
+        "name": "Self-approved sale",
+        "explain": "A Team Leader approved their own sale (allowed, D-40). Recorded for review only: no case, no hold."
+      }
+    },
+    "email": {
+      "summary": "Alert emails — waiting: {pending} · failed: {failed} · sent: {sent}",
+      "sendNow": "Send emails now",
+      "notConfigured": "Email is not set up yet on this site — alerts stay in the app and the emails wait in the queue.",
+      "sentResult": "Sent {sent}, failed {failed}."
+    },
+    "errors": {
+      "note": "Write a note of at least 3 characters.",
+      "transition": "That step is not allowed from the case's current state. Refresh the page.",
+      "resolved": "This case is resolved and can no longer be assigned.",
+      "assignee": "Choose an active Auditor or Super Admin.",
+      "title": "Write a title of at least 3 characters.",
+      "ruleRequired": "This core rule is always on.",
+      "threshold": "Check the numbers — they are outside the allowed range.",
+      "notFound": "Case not found.",
+      "forbidden": "You don't have access to this action."
     }
   }
 }

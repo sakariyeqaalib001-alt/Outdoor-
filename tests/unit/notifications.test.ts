@@ -4,16 +4,16 @@ import { describe, expect, it } from "vitest";
 import { NOTIFICATION_KINDS, notificationLink, notificationText } from "@/lib/notifications";
 
 describe("notifications (SDD §18)", () => {
-  it("cover exactly the kinds the database allows", () => {
-    const migration = readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations/20261025090000_approvals_switches.sql"), "utf8");
-    const check = migration.match(/kind\s+text not null check \(kind in \(([^)]+)\)\)/);
+  it("cover exactly the kinds the database allows (latest constraint: Phase 9)", () => {
+    const migration = readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations/20261026090000_audit_cases.sql"), "utf8");
+    const check = migration.match(/notifications_kind_check check \(kind in \(([^)]+)\)\)/);
     const kinds = [...(check?.[1] ?? "").matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
     expect(kinds).toEqual([...NOTIFICATION_KINDS].sort());
   });
 
   it("have a readable text and a link for every kind", () => {
     for (const kind of NOTIFICATION_KINDS) {
-      const text = notificationText(kind, { agent: "Ayaan", customer: "Hodan", reason: "Wrong name" });
+      const text = notificationText(kind, { agent: "Ayaan", customer: "Hodan", reason: "Wrong name", rule_name: "Duplicate phone number", case_no: "7" });
       expect(text, kind).not.toMatch(/^notifications\./);
       expect(text.length).toBeGreaterThan(10);
       expect(notificationLink(kind, "abc")).toMatch(/^\//);

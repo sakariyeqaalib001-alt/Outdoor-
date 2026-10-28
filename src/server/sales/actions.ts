@@ -5,6 +5,7 @@ import { z } from "zod";
 import { t } from "@/lib/i18n";
 import { duplicateMessage, MONTHS_PAID_MAX, SALE_ERRORS } from "@/lib/sales";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendAlertEmailsLater } from "@/server/audit/actions";
 
 /**
  * Sales registration (Phase 7). The form's values go to public.create_sale, which runs AS the signed-in
@@ -45,6 +46,7 @@ export async function submitSale(input: SaleInput): Promise<SubmitResult> {
 
   const { data, error } = await supabase.rpc("create_sale", { p: parsed.data });
   if (error) return { ok: false, error: dbError(error.message) };
+  await sendAlertEmailsLater(); // duplicate attempts and other rule hits email Super Admin (Phase 9)
   const result = data as { status: string; sale_id?: string; sale_month?: string; sale_status?: string; existing?: boolean; rule?: string; field?: string };
   if (result.status === "duplicate") {
     return { ok: false, duplicate: true, error: t(duplicateMessage(result.rule ?? "", result.field ?? "")) };
@@ -66,6 +68,7 @@ export async function changeIdentifier(_prev: IdentityResult, formData: FormData
   const p = parsed.data;
   const { error } = await supabase.rpc("change_customer_identifier", { p_customer: p.customerId, p_kind: p.kind, p_value: p.value, p_reason: p.reason });
   if (error) return { error: dbError(error.message) };
+  await sendAlertEmailsLater(); // POST_APPROVAL_EDIT (Phase 9)
   revalidatePath("/customers");
   return { ok: true, message: t("sales.identityChanged") };
 }

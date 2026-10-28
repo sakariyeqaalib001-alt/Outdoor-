@@ -45,7 +45,8 @@ function trainingEnv() {
   }
   // Names only — never print the values.
   console.log(`Training settings loaded: ${Object.keys(values).sort().join(", ")}`);
-  return { ...process.env, ...values, NEXT_PUBLIC_APP_ENVIRONMENT: "training", NEXT_DIST_DIR: ".next-training" };
+  // PORT: email links point at the training site (src/server/email/provider.ts appLink).
+  return { ...process.env, ...values, NEXT_PUBLIC_APP_ENVIRONMENT: "training", NEXT_DIST_DIR: ".next-training", PORT: String(TRAINING_PORT) };
 }
 
 function run(args, env) {
