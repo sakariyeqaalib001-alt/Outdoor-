@@ -521,7 +521,7 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); CI
 
 ## Phase 9 — Duplicate detection, audit cases and alerts
 
-**Date:** 26 Oct 2026 · **Status:** Built — awaiting the owner's test on "Outdoor" (steps in `docs/06-operations/audit.md`). Email delivery **blocked on setup** (R-5): the owner creates the email account and puts the key in `.env.local`.
+**Date:** 26 Oct 2026 · **Status:** ✅ Accepted by the owner on 28 Oct 2026 — owner-tested on both sites; Phase 9 SQL file applied to "Outdoor" and "Outdoor Training"; CI green (incl. real-Supabase pgTAP) on commit 7e6f4f3. The "email received on staging" item stays open until the email account is set up (R-5); in-app alerts are the main channel (D-41).
 
 **Owner refinements after reviewing the risks (D-41, 26 Oct 2026, before testing):** MULTI_AGENT_ATTEMPT counts New sales and blocked attempts only and holds only the attempting agent; Super Admin identity corrections are IDENTITY_CORRECTED events (no case, no hold); POST_APPROVAL_EDIT only for a change to an approved sale itself; queued emails also sent on any page view (scheduled sender in Phase 11); advisory lock per customer/agent when grouping events. Applied in the same (not yet pasted) migration.
 

@@ -13,8 +13,8 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | FR-SALE-01…06, 08…22 | 10, 22.4 | 7 (FR-SALE-21 lock: 16) | 03–05, 08, 09, 19–22, 30, 32, 37, 42–46 | Accepted (Phase 7) — FR-SALE-21 lock in Phase 16 |
 | FR-SALE-07 | 10.3 | 8 | 05, 06, 36 | Accepted (Phase 8) — approval with one device by product (D-39); Team Leaders approve own sales (D-40) |
 | FR-REF-01…08 | 10.5 | 12 | 07, 17, 23 | Not started |
-| FR-AUD-01…03 | 11 | 7 (event log), 9 | 03, 04 | Built (Phase 9) — events grouped into cases, rule explained, Super Admin alerted in-app + email; owner test pending |
-| FR-AUD-04…08 | 11 | 9 (hold effect: 16) | 31 | Built (Phase 9, D-41) — case states, Super Admin / assigned Auditor only, notes, no edit/delete; hold and ineligible flags exposed (`app.agent_audit_hold`, `app.sale_audit_state`); payroll use in Phase 16; owner test pending |
+| FR-AUD-01…03 | 11 | 7 (event log), 9 | 03, 04 | Built (Phase 9) — events grouped into cases, rule explained, Super Admin alerted in-app + email (email sending waits for the account, R-5) — Accepted (Phase 9) |
+| FR-AUD-04…08 | 11 | 9 (hold effect: 16) | 31 | Built (Phase 9, D-41) — case states, Super Admin / assigned Auditor only, notes, no edit/delete; hold and ineligible flags exposed (`app.agent_audit_hold`, `app.sale_audit_state`); payroll use in Phase 16 — Accepted (Phase 9) |
 | FR-FUP-01…07 | 13 | 13 | 13, 24 | Not started |
 | FR-LEAVE-01…08 | 16 | 17 | 25 | Not started |
 | FR-PAY-01…15 | 15 | 16 | 10, 11, 23, 31, 40, 41 | Not started |
