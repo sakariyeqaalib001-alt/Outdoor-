@@ -415,6 +415,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Scheduled sender for queued alert emails (every 5 minutes, independent of users opening pages — D-41, T-25).
 - Agent training material (quick guide for sales form, custody, Index Number entry) and Team Leader guide (Retention approval, spotting returning customers registered as New).
 - Pilot UAT across Phases 3–10 workflows.
+- Status (D-43, 4 Nov 2026): readiness checks, opening-stock reconciliation, email sender endpoint, health check, runbook, guides and UAT list built; hosting and the production database not chosen yet — production items wait for them.
 
 **Acceptance gate (pilot UAT)**
 - All readiness checks pass in production.

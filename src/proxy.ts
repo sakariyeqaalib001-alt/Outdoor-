@@ -75,7 +75,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except Next.js internals, static brand files, icons, manifest and the service worker.
-    "/((?!_next/static|_next/image|brand/|favicon.ico|manifest.webmanifest|sw.js).*)",
+    // Everything except Next.js internals, static brand files, icons, manifest, the service worker, the health
+    // check and the scheduled email sender (which checks its own secret, Phase 11).
+    "/((?!_next/static|_next/image|brand/|favicon.ico|manifest.webmanifest|sw.js|api/health|api/cron/).*)",
   ],
 };

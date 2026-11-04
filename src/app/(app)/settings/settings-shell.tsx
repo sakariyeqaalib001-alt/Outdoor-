@@ -27,6 +27,7 @@ export function SettingsShell({ children }: { children: ReactNode }) {
             { href: "/settings/districts", label: "settings.tabDistricts" },
             { href: "/settings/lists", label: "settings.tabLists" },
             { href: "/settings/holidays", label: "settings.tabHolidays" },
+            { href: "/settings/readiness", label: "settings.tabReadiness" },
           ]}
         />
         <Suspense fallback={<Skeleton className="h-96 w-full" />}>

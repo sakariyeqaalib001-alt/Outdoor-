@@ -555,7 +555,8 @@
       "invalidDates": "The end date must be on or after the start date.",
       "planInactive": "This plan (or its product) is inactive. Activate it before adding a price.",
       "invalidPlan": "Check the speeds: download and upload must be at least 1 Mbps."
-    }
+    },
+    "tabReadiness": "Pilot readiness"
   },
   "products": {
     "title": "products & plans",
@@ -1124,6 +1125,122 @@
       "threshold": "Check the numbers — they are outside the allowed range.",
       "notFound": "Case not found.",
       "forbidden": "You don't have access to this action."
+    }
+  },
+  "readiness": {
+    "title": "pilot readiness",
+    "noCities": "No cities yet.",
+    "city": "City",
+    "check": "Check",
+    "pass": "Passed",
+    "fail": "Not ready",
+    "advice": "Advice",
+    "adviceTag": "advice",
+    "summaryTitle": "go-live checks — {city}",
+    "summary": "{passed} of {total} required checks pass.",
+    "ready": "Ready: every required check passes and opening stock reconciles.",
+    "notReady": "Not ready yet: fix the items marked with a red cross.",
+    "checkedAt": "Checked {time}",
+    "dataTitle": "setup in the system",
+    "stockTitle": "opening stock",
+    "stockBody": "Compare “Received” with the Stock Officer's physical count. Difference must be 0: received + adjustments = Central Store + teams + on the way + faulty + issued + removed.",
+    "stock": {
+      "item": "Item",
+      "received": "Received",
+      "adjusted": "Adjustments",
+      "central": "Central Store",
+      "teams": "Teams",
+      "transit": "On the way",
+      "faulty": "Faulty",
+      "issued": "Issued",
+      "removed": "Removed",
+      "difference": "Difference"
+    },
+    "envTitle": "server settings",
+    "envBody": "Checked on the server this page runs on. On your computer and the training site some are expected to fail; on production all must pass. Values are never shown.",
+    "env": {
+      "notTraining": {
+        "label": "Not the training site",
+        "hint": "Production must not be built as the training copy."
+      },
+      "secretKey": {
+        "label": "Supabase secret key set",
+        "hint": "Needed for SMS codes, user accounts and emails (server only)."
+      },
+      "sms": {
+        "label": "Telesom SMS set up",
+        "hint": "SMS_PROVIDER=telesom with the Telesom user name, password and key."
+      },
+      "email": {
+        "label": "Email alerts set up",
+        "hint": "Brevo or Resend with a key and sender. Optional: the bell works without it."
+      },
+      "baseUrl": {
+        "label": "Web address set (https)",
+        "hint": "APP_BASE_URL, e.g. https://outdoor.sogasho.com, used in email links."
+      },
+      "cronSecret": {
+        "label": "Email sender secret set",
+        "hint": "CRON_SECRET (32+ characters) protects the every-5-minutes email sender."
+      }
+    },
+    "checks": {
+      "products_priced": {
+        "label": "Every product has a price",
+        "hint": "Each active product needs at least one active plan with a price in force today ({n} missing)."
+      },
+      "city_districts": {
+        "label": "Districts entered",
+        "hint": "Active districts in this city: {n} (Settings → Districts)."
+      },
+      "city_teams": {
+        "label": "Teams created",
+        "hint": "Active teams in this city: {n} (Users → Teams)."
+      },
+      "teams_ready": {
+        "label": "Every team has a Team Leader and stock",
+        "hint": "Each team needs an active Team Leader and its team stock ({n} not ready)."
+      },
+      "city_agents": {
+        "label": "Sales Agents created",
+        "hint": "Active Sales Agents in this city: {n}."
+      },
+      "agents_ready": {
+        "label": "Every agent has a city and a team",
+        "hint": "Each active agent must be in an active team of their city ({n} not ready)."
+      },
+      "settings": {
+        "label": "Payroll and performance settings",
+        "hint": "Base salary, incentive, payroll cutoff, target and baseline, free-month amount and week start set; baseline below target."
+      },
+      "otp_enabled": {
+        "label": "SMS code at sign-in is on",
+        "hint": "Settings → General → SMS code (D-32)."
+      },
+      "super_admins": {
+        "label": "Two Super Admins",
+        "hint": "{n} active. A second one can stand in when you are away."
+      },
+      "stock_officer": {
+        "label": "Stock Officer account",
+        "hint": "Active Stock Officers to enter the opening stock: {n}."
+      },
+      "opening_stock_received": {
+        "label": "Opening stock received",
+        "hint": "Every device received into the Central Store ({n} not received)."
+      },
+      "deliveries_accepted": {
+        "label": "Deliveries accepted",
+        "hint": "Deliveries to teams still waiting for the Team Leader to accept: {n}."
+      },
+      "teams_have_stock": {
+        "label": "Every team has stock",
+        "hint": "Teams with no devices cannot approve FTTA, FTTH or FTTB sales ({n} empty)."
+      },
+      "no_test_data": {
+        "label": "No test data",
+        "hint": "Accounts or customers that look like tests ({n}). Production starts clean (D-21)."
+      }
     }
   }
 }

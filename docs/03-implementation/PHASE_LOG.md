@@ -644,3 +644,62 @@ Not yet run: the owner's test on "Outdoor" (the browser pane needs the owner to 
 
 **Next prompt (not executed):**
 > Proceed with Phase 11 only: pilot readiness. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 11, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 11 — Pilot readiness
+
+**Date:** 4 Nov 2026 · **Status:** ⛔ **BLOCKED — awaiting D-43** (hosting and the production database). Everything that does not need them is built and tested.
+
+**Owner answers before building (D-43, 4 Nov 2026):** hosting — not decided yet; production database — not decided yet; web address — outdoor.sogasho.com later; support owner — the business owner.
+
+**Scope delivered (Roadmap Phase 11; SDD §19, §26.3; R-10, R-11)**
+- Migration `20261104090000_readiness.sql`: `app.readiness_report(city)` — 14 checks (required: products priced, districts, teams, teams with active leader and stock, agents, agents with city and team, Settings values incl. baseline < target, SMS code on, Stock Officer, opening stock received, deliveries accepted, no test data; advice: two Super Admins, every team holds stock); `app.opening_stock_summary()` — per device received, adjustments, Central / teams / faulty, in transit, issued, removed, **difference (must be 0)**; public wrappers (readiness: settings.manage; opening stock: settings.manage or stock.read all).
+- App: **Settings → Pilot readiness** (city selector, pass / fail / advice with names of what is missing, opening stock table, server-setting checks that never show values); `GET /api/cron/send-emails` (Bearer `CRON_SECRET`, ≥ 32 characters, constant-time compare) for the 5-minute email sender; `GET /api/health` for uptime monitoring; both excluded from the sign-in proxy. `CRON_SECRET` added to `.env.example`.
+- SQL Editor check file `supabase/checks/readiness.sql`.
+- Documents: `docs/06-operations/pilot-readiness.md` (checks, opening stock procedure, production database and hosting steps, backups and restore drill, monitoring, go-live sign-off), `docs/06-operations/incident-runbook.md`, `docs/07-training/agent-quick-guide.md`, `docs/07-training/team-leader-guide.md`, `docs/04-quality/pilot-uat.md` (26 scenarios across Phases 3–10).
+
+**Roadmap scope check**
+
+| Item | Result |
+|---|---|
+| Automated readiness checks (admin page + script) | ✅ page + SQL Editor file (no secret-key script: the SQL Editor runs it with the owner's own access) |
+| Production setup by Super Admin (prices, districts, teams, users — R-10) | ✅ checked by the page; ⛔ entry on production waits for the production project |
+| Opening stock entered, sent, accepted; reconciliation agrees with the count (R-11) | ✅ reconciliation built and tested; ⛔ on production waits for the project |
+| Production environment, secrets, backups + restore drill, monitoring, runbook, support owner | ◐ steps, runbook, health check and support owner done; ⛔ environment, secrets, backups and drill wait for D-43 |
+| Scheduled email sender every 5 minutes | ◐ endpoint built and tested; the host's schedule is added with hosting |
+| Agent and Team Leader guides | ✅ |
+| Pilot UAT across Phases 3–10 | ✅ list ready; ⛔ run on production |
+
+**Commands run (4 Nov 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 440 tests (8 new readiness database tests, 5 new unit tests for the email sender and server-setting checks); build adds `/settings/readiness`, `/api/cron/send-emails`, `/api/health` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261104090000_readiness.sql` and refreshed the new-project file |
+| Browser (dev server, signed out) | `/api/health` → 200 `{"status":"ok"}`; `/api/cron/send-emails` with a wrong secret → 401; `/settings/readiness` → redirect to sign-in |
+
+Not yet run: the readiness page on staging (needs the SQL paste and the owner's sign-in); anything on production.
+
+**Acceptance gate (pilot UAT)**
+
+| Criterion | Result |
+|---|---|
+| All readiness checks pass in production | ⛔ BLOCKED — no production project yet (D-43); checks proven on test data (fail when unprepared, pass when set up) |
+| Opening stock reconciles with the Stock Officer's count | ⛔ BLOCKED — reconciliation proven by tests (receive → send → accept → issue keeps difference 0) |
+| Restore drill succeeded | ⛔ BLOCKED — needs a paid production project with backups |
+| Business owner signs pilot go-live | ⛔ after the above |
+| Owner test on the training site (4 Nov 2026) | ✅ SQL pasted on Outdoor and Outdoor Training; Settings → Pilot readiness: all setup checks pass after one agent was added to a team; opening stock reconciles (difference 0 for WiFi Router, PDCOM, CALIX); server settings fail only where expected for a non-production site |
+
+**Owner accepted Phase 11 as built on 4 Nov 2026**; the production items above stay blocked until D-43 is decided.
+
+**Manual steps for the owner now:** paste `supabase/sql-editor/20261104090000_readiness.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; open **Settings → Pilot readiness** on staging (most checks will fail there — staging holds test data and no Telesom/https settings; that is expected). **When ready:** choose hosting and the production database, then follow `docs/06-operations/pilot-readiness.md` §4–8.
+
+**Risks / open items**
+- The pilot cannot start until hosting and a production database exist (D-43).
+- Until the host's schedule exists, emails still go out only while someone uses the app.
+- Supabase Free (if chosen) has no automatic backups and pauses idle projects — not suitable for real data.
+- Creating the first production account means pointing `.env.local` at production briefly; switch it back to staging straight after.
+
+**Next prompt (not executed):** once the gate is passed and the pilot has started —
+> Proceed with Phase 12 only: refunds. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 12, run `npm run check`, update the logs, report the gate and stop.
