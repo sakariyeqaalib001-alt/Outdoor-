@@ -23,7 +23,7 @@ Status: **Not started** · **In progress** · **Built** (code done, tests pass) 
 | FR-STK-01, 02, 04…10 | 12 | 6 | 08, 09, 22 | Accepted (Phase 6) — quantities, stock issued to Outdoor Supervisors with acceptance (D-35) |
 | FR-STK-03 | 12 | 8 | 08, 22, 35 | Accepted (Phase 8) — equipment deducted from the team stock at approval |
 | FR-PERF-01…04 | 14.4 | 19 | 27, 39 | Not started |
-| FR-REP-01…05 | 14 | 10 (dashboard), 15 | 18, 28 | In progress — Phase 10 dashboard built: filters by city, branch, product, agent and period (today, week from Saturday, month, previous month, year to date, custom), drill-down to the sales behind a figure (FR-REP-03), EAT dates (FR-REP-05); exports in Phase 15 |
+| FR-REP-01…05 | 14 | 10 (dashboard), 15 | 18, 28 | In progress — Phase 10 dashboard accepted 4 Nov 2026: filters by city, branch, product, agent and period (today, week from Saturday, month, previous month, year to date, custom), drill-down to the sales behind a figure (FR-REP-03), EAT dates (FR-REP-05); exports in Phase 15 |
 | FR-KOB-01…05 | 17.2 | 18 | 15 | Not started |
 | FR-NOT-01, 03, 05 | 18 | 9 (alerts), 8 (approvals) | 03 | In progress — in-app notifications built (Phase 8); duplicate/case alerts and email in Phase 9 |
 | FR-NOT-02, 04 | 17.1 | 3 | 01, 33 | Accepted (Phase 3) — real Telesom SMS confirmed |

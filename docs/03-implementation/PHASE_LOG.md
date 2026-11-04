@@ -586,7 +586,7 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); a 
 
 ## Phase 10 — Eligibility service and operational dashboard
 
-**Date:** 3 Nov 2026 · **Status:** Built — owner-tested on 4 Nov 2026 ("everything is well aligned"); awaiting CI on GitHub before acceptance.
+**Date:** 3 Nov 2026 · **Status:** ✅ Accepted by the owner on 4 Nov 2026 — owner-tested on both sites; Phase 10 SQL file applied to "Outdoor" and "Outdoor Training"; CI green (incl. real-Supabase pgTAP) on commit a03698c.
 
 **Owner decisions before building (D-42, 30 Oct – 3 Nov 2026):** the owner's dashboard prompt, cards PDF and mock-up were reviewed line by line first. Products FTTA, FTTH, FTTB (the owner's "FTTP") and LTE each separately; no city or branch targets — a city's target is (active Sales Agents + all active Team Leaders) × the target units in Settings until Phase 14; nobody sells outside their own city; Sales Manager = Super Admin; Stock Officer sees the stock part only; main cards Eligible, waiting-for-approval as Submitted; revenue = amount collected; month views use the eligible rule, today / week (from Saturday) / custom range count approved sales by submission date; views under Dashboard in the existing sidebar; agent bands shown now; on-screen reports only; owner's stock cards (received / issued to customers per device). The mock-up guided layout only (brand kit colours and Signika kept; "Think · Do · Share", "illustrative" labels and % change on all-time figures left out).
 
