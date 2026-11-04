@@ -691,7 +691,7 @@ Not yet run: the readiness page on staging (needs the SQL paste and the owner's 
 | Business owner signs pilot go-live | ⛔ after the above |
 | Owner test on the training site (4 Nov 2026) | ✅ SQL pasted on Outdoor and Outdoor Training; Settings → Pilot readiness: all setup checks pass after one agent was added to a team; opening stock reconciles (difference 0 for WiFi Router, PDCOM, CALIX); server settings fail only where expected for a non-production site |
 
-**Owner accepted Phase 11 as built on 4 Nov 2026**; the production items above stay blocked until D-43 is decided.
+**Owner accepted Phase 11 as built on 4 Nov 2026 (commit 55e3c73, CI green)**; the production items above stay blocked until D-43 is decided.
 
 **Manual steps for the owner now:** paste `supabase/sql-editor/20261104090000_readiness.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; open **Settings → Pilot readiness** on staging (most checks will fail there — staging holds test data and no Telesom/https settings; that is expected). **When ready:** choose hosting and the production database, then follow `docs/06-operations/pilot-readiness.md` §4–8.
 
