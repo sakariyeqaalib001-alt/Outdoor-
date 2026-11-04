@@ -581,3 +581,66 @@ Not yet run: the owner's test on "Outdoor" (the browser pane cannot sign in); a 
 
 **Next prompt (not executed):**
 > Proceed with Phase 10 only: eligibility service and operational dashboard. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 10, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 10 — Eligibility service and operational dashboard
+
+**Date:** 3 Nov 2026 · **Status:** Built — owner-tested on 4 Nov 2026 ("everything is well aligned"); awaiting CI on GitHub before acceptance.
+
+**Owner decisions before building (D-42, 30 Oct – 3 Nov 2026):** the owner's dashboard prompt, cards PDF and mock-up were reviewed line by line first. Products FTTA, FTTH, FTTB (the owner's "FTTP") and LTE each separately; no city or branch targets — a city's target is (active Sales Agents + all active Team Leaders) × the target units in Settings until Phase 14; nobody sells outside their own city; Sales Manager = Super Admin; Stock Officer sees the stock part only; main cards Eligible, waiting-for-approval as Submitted; revenue = amount collected; month views use the eligible rule, today / week (from Saturday) / custom range count approved sales by submission date; views under Dashboard in the existing sidebar; agent bands shown now; on-screen reports only; owner's stock cards (received / issued to customers per device). The mock-up guided layout only (brand kit colours and Signika kept; "Think · Do · Share", "illustrative" labels and % change on all-time figures left out).
+
+**Scope delivered (BRD §8.2, §9.1, §9.3; SDD §14.1–14.2; FR-REP-01, 03, 05; FR-CONF-07 display)**
+- Migration `20261103090000_dashboard.sql`:
+  - `app.eligible_sale_facts()` / `app.eligible_sales(month)` — the one eligible-sale definition (approved, not reversed, not Confirmed issue, a sale; counting month with the payroll cutoff from Settings; `on_hold` from open cases on the sale or its agent). Not callable through the API.
+  - `app.dashboard_period` (today, week, month, previous month, year to date, custom ≤ 366 days, EAT), `app.scope_users` (scope from `dashboard.read`, worked out once), filters checked (`FILTER_INVALID`, `PERIOD_INVALID`).
+  - Read functions: `dashboard_context`, `dashboard_figures` (buckets overall / month / last_month / period / submitted_month / submitted_period / pending; by city, branch, product, agent), `dashboard_trend`, `dashboard_people`, `dashboard_agents`, `dashboard_sales_list` (drill-down), `dashboard_stock` (received company-wide for stock.read all; issued to customers by location scope and filters), `dashboard_audit` (audit.read).
+  - `sales.override_city` removed from Team Leaders; `dashboard.read` removed from Stock Officers; index `sales_status_month_idx`.
+- App: views **Sales Overview** (`/`), **Branch Performance**, **Technology Sales**, **Sales Trends**, **Performance Reports**, **Operations** and the drill-down list `/dashboard/sales`; shared filter bar (GET form, shareable links), tabs, "How these figures are counted", freshness time, loading / empty / error states; charts on Recharts 3.10.1 in brand-kit colours (`productColors`, `segmentColors`, `bandColors` in `src/lib/brand.ts`); sidebar group **Dashboard**; `COMPLETED_PHASE = 10`; Stock Officers land on Operations.
+
+**BRD check (§9.1, §9.3)**
+
+| Requirement | Result |
+|---|---|
+| Daily, month-to-date and overall views | ✅ Today, This week, This month, Previous month, Year to date, Custom range; overall cards |
+| Units, units per product, revenue | ✅ Overview + Technology Sales (FTTA, FTTH, FTTB, LTE) |
+| Performance by city and branch | ✅ Branch Performance (4 cities × 8 indicators, 16 branches) |
+| New and Retention, overall and this month | ✅ |
+| Monthly sales and revenue trend | ✅ Sales Trends (12 months) |
+| Agent target progress and bands (count and list) | ✅ shown from eligible sales with the Settings target (individual targets: Phase 14) |
+| Top product and branch | ✅ quick insights; Best Agent / Hall of Fame / Champion — Phase 19 |
+| Audit: duplicate attempts, open cases, cases older than 7 days | ✅ Operations |
+| Stock: received, issued, balance and variance by location | ◐ received and issued per device on Operations (owner's cards); balance and variance by location stay on the Stock page (Phase 6 report), linked from Operations |
+| Follow-up completion | ⏳ Phase 13 |
+| Every figure Submitted or Eligible | ✅ labels + definitions on every view |
+| §9.3 filters show period and scope; drill-down; definitions; empty/loading/error; freshness; phone | ✅ (phone layout checked in code — owner test pending) |
+
+**Commands run (3 Nov 2026, local)**
+
+| Command | Result |
+|---|---|
+| `npm run check` (lint, typecheck, tests, build) | Pass — 427 tests (30 new dashboard database tests, 11 dashboard unit tests); build adds `/dashboard/branches`, `/technology`, `/trends`, `/reports`, `/operations`, `/sales` |
+| `npm run db:sql-editor` | Generated `supabase/sql-editor/20261103090000_dashboard.sql` and refreshed the new-project file |
+| `npm install --save-exact recharts@3.10.1 react-is@19.3.0` | Added; `npm audit` findings are all in the existing `shadcn` CLI dependencies, none from Recharts |
+
+Not yet run: the owner's test on "Outdoor" (the browser pane needs the owner to sign in, and staging needs the SQL first); CI on GitHub (after upload).
+
+**Acceptance gate**
+
+| Criterion | Result |
+|---|---|
+| Dashboard totals reconcile with hand-checked fixture data | ✅ database tests: this month / last month / overall, revenue, New + Retention, products and cities add up, branches, agents, filters, periods |
+| Each eligibility condition proven by a test | ✅ pending / rejected / reversed out; Confirmed issue out; on hold flagged and counted; cutoff 3rd 23:59:59 vs 4th 00:00 EAT; cutoff day from Settings; switches never in sales |
+| Scope: no user sees data outside permission | ✅ database tests: agent own, Team Leader team, Finance / Auditor / Super Admin all, Stock Officer refused, inactive and anonymous refused, internal functions not callable, stock and audit figures by permission — owner UI test pending |
+
+**Manual steps for the owner** — `docs/06-operations/dashboard.md`: paste `supabase/sql-editor/20261103090000_dashboard.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; restart `npm.cmd run dev`; run the tests in section 4.
+
+**Risks / open items**
+- City target uses today's people for the current month; a person who joins or leaves mid-month changes the target at once (individual, dated targets come in Phase 14).
+- Branch figures under a city may not add up to the city total (a branch is where money is handed in).
+- A month total and a date range over the same days can differ slightly (approvals after month end count by the cutoff rule).
+- Trends and rankings look thin until sales build up (no old data, D-21).
+- Figures are worked out on every page view (no caching); fine at the expected volume (~150 sales/day), to be checked in the Phase 20 load test.
+
+**Next prompt (not executed):**
+> Proceed with Phase 11 only: pilot readiness. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 11, run `npm run check`, update the logs, report the gate and stop.

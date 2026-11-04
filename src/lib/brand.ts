@@ -117,6 +117,23 @@ export const statusColors: Record<StatusKey, { bg: string; fg: string }> = {
   onHold: { bg: palette.blue700, fg: palette.white },
 };
 
+/**
+ * Dashboard chart colours (Phase 10). Brand-kit colours only; every series also has a text label,
+ * so colour is never the only way to tell them apart.
+ */
+export const productColors: Record<string, string> = {
+  FTTA: palette.green700,
+  FTTH: palette.purple500,
+  FTTB: palette.orange500,
+  LTE: palette.blue500,
+};
+export const segmentColors = { new: palette.green700, retention: palette.blue500 } as const;
+export const cityColors = [palette.green700, palette.purple500, palette.orange500, palette.blue500, palette.pink500, palette.green300];
+/** Target achievement bands: met / baseline / under (text labels always shown beside them). */
+export const bandColors = { met: palette.green700, baseline: palette.orange300, under: palette.orange700 } as const;
+export const chartGrid = palette.gray200;
+export const chartAxis = palette.gray700;
+
 /** Text/background pairs used by the UI that must meet WCAG AA (4.5:1). */
 export const textPairs: Array<{ name: string; fg: string; bg: string }> = [
   { name: "body text on card", fg: palette.gray900, bg: palette.white },

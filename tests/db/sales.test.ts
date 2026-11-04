@@ -141,9 +141,10 @@ describe("a New sale (FR-SALE-01…05, 14, 17)", () => {
 });
 
 describe("city of a sale (FR-SALE-03, BR-04)", () => {
-  it("defaults to the agent's city; agents cannot change it, Team Leaders can", async () => {
+  it("defaults to the seller's city; nobody may sell in another city (D-42)", async () => {
     expect(await errorOf(sell(AG, saleInput({ city_id: burco, district_id: districtB })))).toMatch(/CITY_OVERRIDE/);
-    const r = await sell(TL, saleInput({ city_id: burco, district_id: districtB }));
+    expect(await errorOf(sell(TL, saleInput({ city_id: burco, district_id: districtB })))).toMatch(/CITY_OVERRIDE/);
+    const r = await sell(TL, saleInput());
     expect(r.status).toBe("ok");
     expect(await errorOf(sell(LONE, saleInput()))).toMatch(/CITY_REQUIRED/);
   });

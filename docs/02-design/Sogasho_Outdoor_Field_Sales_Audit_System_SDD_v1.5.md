@@ -22,7 +22,7 @@
 | 1.2 | 19 Oct 2026 | Applied business inputs of 19 Oct 2026 (BRD v1.5): Index Number = exactly 8 digits; products and prices maintained by Super Admin (no seed price list); 16 branches seeded; districts per city maintained by Super Admin; `areas` table removed (Area is free text); no legacy import (§19 retired, `import_batches` removed, opening stock via receipts); flat base salary from Settings with no pro-rating; recognition titles Best Agent / Hall of Fame / Champion based on consecutive months as #1, with frozen `monthly_rankings`; monthly performance bands (target 20, baseline 15). |
 | 1.3 | 19 Oct 2026 | Stock item code `PDCOM` (D-10); SMS/OTP provider Telesom with a `telesom` adapter (D-20); sizing set to 46 agents (7 permanent, 39 temporary) with load test at 3× (D-28). Data-retention periods remain open. Telesom credentials held only in environment settings (no in-app configuration page for the pilot), §17.1. |
 | 1.4 | 19 Oct 2026 | Sales-month control (D-30, Option A): `submitted_at` set only by the database clock; `sale_month` derived from it in EAT; RPC ignores client dates; previous-month draft warning; My Sales month selector with read-only past months (§22.4); finalized-month lock trigger on sales and related records. |
-| 1.5 | 20–26 Oct 2026 | D-41 / T-25 (26 Oct, Phase 9): audit rules, cases, links, history, email outbox (migration `20261026090000_audit_cases`); SELF_APPROVED rule; MULTI_AGENT_ATTEMPT on. D-40 (25 Oct): Team Leaders approve their own sales (`app.check_decider`); own switches keep the no-self-approval rule (`app.check_switch_decider`, migration `20261025150000_team_leader_self_approval`). D-39 (25 Oct): `product_equipment` (allowed device per product) checked by `app.check_equipment` in approve_sale / approve_switch (migration `20261025120000_product_equipment`). D-38 (25 Oct) and Phase 8 (migration `20261025090000_approvals_switches`): approve_sale / reject_sale, releasable identifiers, product switches with approval, approvals history, notifications; §10.3, §10.4, §18 updated. D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
+| 1.5 | 20 Oct – 3 Nov 2026 | D-42 / T-26 (3 Nov, Phase 10): `app.eligible_sale_facts()` / `app.eligible_sales(month)` and the `public.dashboard_*` read functions (migration `20261103090000_dashboard`); `sales.override_city` removed from Team Leaders; `dashboard.read` removed from Stock Officers; §7.2, §14.1, §14.2 updated. D-41 / T-25 (26 Oct, Phase 9): audit rules, cases, links, history, email outbox (migration `20261026090000_audit_cases`); SELF_APPROVED rule; MULTI_AGENT_ATTEMPT on. D-40 (25 Oct): Team Leaders approve their own sales (`app.check_decider`); own switches keep the no-self-approval rule (`app.check_switch_decider`, migration `20261025150000_team_leader_self_approval`). D-39 (25 Oct): `product_equipment` (allowed device per product) checked by `app.check_equipment` in approve_sale / approve_switch (migration `20261025120000_product_equipment`). D-38 (25 Oct) and Phase 8 (migration `20261025090000_approvals_switches`): approve_sale / reject_sale, releasable identifiers, product switches with approval, approvals history, notifications; §10.3, §10.4, §18 updated. D-37 (24 Oct): every sale pending until Team Leader / Supervisor approval; equipment recorded at approval (migration `20261024120000_sales_all_need_approval`); §10.2–10.3 updated. D-36 (24 Oct): close-match rule for Retention names, months paid 1–12, free month on any plan; Phase 7 built (migration `20261024090000_sales`, §10, §11.1). D-35 (22 Oct): stock by quantity, no serials; team stock with acceptance; returns by Stock Officer; §12 rewritten, stock tables updated (migration `20261022150000_stock`). D-32 (21 Oct): SMS OTP at sign-in for **every** user; `user_profiles.login_phone_e164` is every user's mobile number, unique per employment type; `admin_set_user_phone`, SQL-Editor-only `app.set_user_phone` (migration `20261021090000_otp_for_everyone`), §6.1 updated. D-31: no branch on users (column removed by migration `20261020190000_users_no_branch`); sale branch = money hand-in branch chosen per sale; stock locations Central Store → Team Leader/Supervisor → Agent (no branch stores). §8.3, §10.4, §12, §19 updated. Phase 4 authorization model as built: T-21…T-23. |
 
 ---
 
@@ -261,7 +261,7 @@ performance.read
 |---|---|---|---|---|---|---|---|
 | sales.create | own | own | – | – | – | – | all |
 | sales.read | own | team | – | – | all | all | all |
-| sales.override_city | – | team | – | – | – | – | all |
+| sales.override_city | – | – (D-42) | – | – | – | – | all |
 | customers.read (phone/Index) | own | team | due list | – | – | all | all |
 | customers.change_identity | – | – | – | – | – | – | all |
 | retention.review | – | team (not own) | – | – | – | – | all |
@@ -274,7 +274,7 @@ performance.read
 | stock.adjust.approve | – | – | – | – | – | – | all |
 | followup.update | – | – | all | – | – | – | all |
 | audit.read / manage | – | – | – | – | – | read; manage if assigned | all |
-| dashboard.read | own | team | – | stock widgets | all | all | all |
+| dashboard.read | own | team | – | – (stock part via stock.read, D-42) | all | all | all |
 | reports.export | – | team | – | stock | payroll | all | all |
 | payroll.read | own line | – | – | – | all | all | all |
 | payroll.calculate / finalize | – | – | – | – | all | – | all |
@@ -610,9 +610,26 @@ payroll_cutoff(m) = (m + 1 month) + (payroll_cutoff_day − 1) days, end of day 
 
 It also returns `on_hold` = linked to an Open/Under Review case. Unit tests and SQL fixture tests cover each condition. Dashboards label figures **Submitted** (all non-rejected) or **Eligible**.
 
+Built in Phase 10 as `app.eligible_sale_facts()` (every eligible sale with `counting_month` and `on_hold`) and `app.eligible_sales(month)`; the cutoff day is read from Settings (`payroll_cutoff_day`). Not callable through the API; reached only through the dashboard functions below and, later, targets, payroll and rankings.
+
 ## 14.2 Dashboard (Phase 10)
 
 Metrics per BRD §9.1. Server-side aggregation (SQL functions) only; no fetching all sales to the browser. Filters: period, city, branch, product, agent (within scope). Each widget shows its definition and freshness time. Charts use the categorical palette in §22.
+
+As built (D-42, T-26):
+
+| Function | Returns | Permission |
+|---|---|---|
+| `dashboard_context(p)` | Period (basis month/date, dates), current month, cutoff day, target and baseline units, scope, generated time | any active user |
+| `dashboard_figures(p)` | Units, revenue, New, Retention, on-hold per bucket (overall, month, last_month, period, submitted_month, submitted_period, pending) and per city / branch / product / agent | dashboard.read (own / team / all) |
+| `dashboard_trend(p, months)` | Monthly totals, by product and by city (counting months) | dashboard.read |
+| `dashboard_people(p)` | Active Sales Agents and Team Leaders in scope with city and team (city target = count × target units) | dashboard.read |
+| `dashboard_agents()` | Sellers for the agent filter | dashboard.read |
+| `dashboard_sales_list(p, bucket)` | The sales behind a figure (≤ 500, newest first) | dashboard.read |
+| `dashboard_stock(p)` | Per item: received into the Central Store (stock.read all only) and issued to customers (locations in scope; city / branch / agent / product filters through the sale or switch) | stock.read team or wider |
+| `dashboard_audit(p)` | Duplicate attempts in the period, open cases, cases open > 7 days | audit.read |
+
+Periods (`p.period`): `month`, `prev_month`, `ytd` use counting months (eligible rule); `today`, `week` (from `week_start_day`), `custom` (`from`, `to`, ≤ 366 days, not in the future) count approved sales by EAT submission date. Views: `/` Sales Overview, `/dashboard/branches`, `/dashboard/technology`, `/dashboard/trends`, `/dashboard/reports`, `/dashboard/operations`, and `/dashboard/sales?bucket=…` (drill-down).
 
 ## 14.3 Reports and exports (Phase 15, D-26)
 

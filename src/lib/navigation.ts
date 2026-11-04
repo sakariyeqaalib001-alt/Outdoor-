@@ -1,4 +1,5 @@
 import {
+  Activity,
   ArrowLeftRight,
   BadgeCheck,
   Bell,
@@ -9,14 +10,18 @@ import {
   FileBarChart,
   Gift,
   LayoutDashboard,
+  MapPinned,
   Palette,
   PhoneCall,
   ReceiptText,
+  Router,
   Settings,
   ShieldAlert,
   ShoppingBag,
+  Table2,
   Tags,
   Target,
+  TrendingUp,
   Trophy,
   UsersRound,
   Wallet,
@@ -45,9 +50,19 @@ export type NavGroup = { label: MessageKey; items: NavItem[] };
  */
 export const navigation: NavGroup[] = [
   {
+    label: "nav.dashboardGroup",
+    items: [
+      { key: "dashboard", label: "nav.dashboardOverview", href: "/", icon: LayoutDashboard, brd: ["9.1"], phase: 10, permission: ["dashboard.read"] },
+      { key: "dashboard-branches", label: "nav.dashboardBranches", href: "/dashboard/branches", icon: MapPinned, brd: ["9.1"], phase: 10, permission: ["dashboard.read"] },
+      { key: "dashboard-technology", label: "nav.dashboardTechnology", href: "/dashboard/technology", icon: Router, brd: ["9.1"], phase: 10, permission: ["dashboard.read"] },
+      { key: "dashboard-trends", label: "nav.dashboardTrends", href: "/dashboard/trends", icon: TrendingUp, brd: ["9.1"], phase: 10, permission: ["dashboard.read"] },
+      { key: "dashboard-reports", label: "nav.dashboardReports", href: "/dashboard/reports", icon: Table2, brd: ["9.1"], phase: 10, permission: ["dashboard.read"] },
+      { key: "dashboard-operations", label: "nav.dashboardOperations", href: "/dashboard/operations", icon: Activity, brd: ["9.1"], phase: 10, permission: ["dashboard.read", "stock.read", "audit.read"] },
+    ],
+  },
+  {
     label: "nav.main",
     items: [
-      { key: "dashboard", label: "nav.dashboard", href: "/", icon: LayoutDashboard, brd: ["9.1"] },
       { key: "performance", label: "nav.performance", href: "/performance", icon: Trophy, brd: ["6.13"], phase: 19, permission: ["performance.read"] },
       { key: "targets", label: "nav.targets", href: "/targets", icon: Target, brd: ["6.3"], phase: 14, permission: ["targets.read","targets.manage"] },
       { key: "notifications", label: "nav.notifications", href: "/notifications", icon: Bell, brd: ["6.16"], phase: 8 },
@@ -96,7 +111,7 @@ export const navigation: NavGroup[] = [
 ];
 
 /** Highest roadmap phase that has been built (menu items up to this phase are clickable). Update when a phase is built. */
-export const COMPLETED_PHASE = 9;
+export const COMPLETED_PHASE = 10;
 
 export function isAvailable(item: NavItem): boolean {
   return item.phase === undefined || item.phase <= COMPLETED_PHASE;

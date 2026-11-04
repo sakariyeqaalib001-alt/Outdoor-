@@ -392,6 +392,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Dashboard: units, units by product, revenue, by city/branch, New vs Retention, monthly trend, duplicate attempts and open cases, stock balances, top product/branch (simple), with Submitted vs Eligible labels.
 - Role-scoped views (agent own, Team Leader team, management all).
 - Filters: period, city, branch, product, agent.
+- Owner additions (D-42, 3 Nov 2026): views Sales Overview, Branch Performance, Technology Sales, Sales Trends, Performance Reports, Operations; FTTA/FTTH/FTTB/LTE separately; city target = (active Sales Agents + Team Leaders) × target units (no targets table until Phase 14); agent bands shown; stock received and issued to customers per device; Team Leaders lose `sales.override_city`; Stock Officer sees the stock part only.
 
 **Acceptance gate**
 - Dashboard totals reconcile with hand-checked fixture data.

@@ -49,7 +49,7 @@ describe("currency", () => {
 
 describe("translations", () => {
   it("returns messages and fills values", () => {
-    expect(t("nav.dashboard")).toBe("Dashboard");
+    expect(t("nav.dashboardOverview")).toBe("Sales Overview");
     expect(t("nav.comingInPhase", { phase: 7 })).toBe("Coming in Phase 7");
   });
 });
