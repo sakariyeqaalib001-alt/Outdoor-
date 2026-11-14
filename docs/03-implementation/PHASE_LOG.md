@@ -757,3 +757,4 @@ Not a roadmap phase. Owner request: make the layout look professional; functiona
 - **Not changed:** `src/server`, `supabase`, `tests`, `messages` — no behaviour, text, permission or database change. No SQL to paste.
 - **Check:** `npm run check` passed (lint, typecheck, 463 tests, build). Training site rebuilt. Reviewed by the owner on both sites.
 - **Skipped (would need more than styling):** table headers that stay in view while scrolling; breadcrumbs in the top bar.
+- **Side menu colour (owner, 14 Nov 2026):** the menu is brand green 900 `#00557C` with white text; hover and the open page use green 700 `#047B95` with a green 300 marker; the logo keeps its white block (logo rule). Colour tokens only (`globals.css`, `brand.ts`, menu components); `npm run check` passed (464 tests).

@@ -16,10 +16,10 @@ export async function UserCard() {
     <SidebarMenu>
       <SidebarMenuItem>
         <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:hidden">
-          <CircleUserRound className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <CircleUserRound className="size-8 shrink-0 text-white/70" aria-hidden="true" />
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="truncate font-semibold">{name}</span>
-            <span className="truncate text-xs text-muted-foreground">{role}</span>
+            <span className="truncate text-xs text-white/70">{role}</span>
           </span>
         </div>
       </SidebarMenuItem>

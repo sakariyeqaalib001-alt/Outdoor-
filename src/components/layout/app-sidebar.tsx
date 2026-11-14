@@ -7,7 +7,7 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 export function AppSidebar({ nav, footer }: { nav: React.ReactNode; footer: React.ReactNode }) {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border">
+      <SidebarHeader className="border-b border-sidebar-border bg-white">
         <Link href="/" className="flex items-center justify-center group-data-[collapsible=icon]:hidden">
           <BrandLogo variant="primary" height={44} priority />
         </Link>
