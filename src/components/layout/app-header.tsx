@@ -12,10 +12,10 @@ export function AppHeader({ title, actions }: { title: string; actions?: React.R
         aria-hidden="true"
         className="h-1 w-full bg-[url('/brand/pattern/so-triangle-pattern.jpg')] bg-cover bg-center"
       />
-      <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+      <div className="flex h-12 items-center gap-2 border-b border-border px-4">
         <SidebarTrigger className="-ml-1" aria-label={t("nav.toggleSidebar")} />
         <Separator orientation="vertical" className="mr-1 !h-5" />
-        <h1 className="text-xl text-foreground">{title}</h1>
+        <h1 className="text-lg text-foreground">{title}</h1>
         <div className="ml-auto flex items-center gap-2">
           {actions}
           <Suspense fallback={null}>

@@ -26,12 +26,12 @@ function PlaceDialog({ kind, place, cities, cityId, onClose }: { kind: Kind; pla
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(place ? TEXT[kind].edit : TEXT[kind].add)}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(place ? TEXT[kind].edit : TEXT[kind].add)}</DialogTitle>
         </DialogHeader>
         <form action={action} className="space-y-4">
           <input type="hidden" name="kind" value={kind} />
           {place ? <input type="hidden" name="id" value={place.id} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="cityId">{t("settings.city")}</Label>
             <NativeSelect id="cityId" name="cityId" defaultValue={place?.city_id ?? cityId}>
               {cities.map((c) => (
@@ -39,7 +39,7 @@ function PlaceDialog({ kind, place, cities, cityId, onClose }: { kind: Kind; pla
               ))}
             </NativeSelect>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="name">{t("settings.name")}</Label>
             <Input id="name" name="name" required minLength={2} maxLength={80} defaultValue={place?.name} className="h-11 md:h-9" />
           </div>
@@ -72,7 +72,7 @@ export function PlacesView({ kind, places, cities }: { kind: Kind; places: Place
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">{t(TEXT[kind].intro)}</p>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="w-full space-y-1 sm:w-56">
+        <div className="w-full space-y-1.5 sm:w-56">
           <Label htmlFor="city-filter">{t("settings.city")}</Label>
           <NativeSelect id="city-filter" value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}>
             <option value="all">{t("settings.allCities")}</option>
@@ -86,7 +86,7 @@ export function PlacesView({ kind, places, cities }: { kind: Kind; places: Place
           {t(TEXT[kind].add)}
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-lg border bg-white">
         <Table>
           <TableHeader>
             <TableRow>

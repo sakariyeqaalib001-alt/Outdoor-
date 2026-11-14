@@ -25,7 +25,7 @@ const REASONS = ["faulty", "refund", "switch", "retention_rejected", "other"] as
 
 function ItemSelect({ items }: { items: StockItem[] }) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <Label htmlFor="itemId">{t("stock.item")}</Label>
       <NativeSelect id="itemId" name="itemId" required>
         {items.map((i) => (
@@ -47,10 +47,10 @@ function RefundCollect({ rows }: { rows: CollectRow[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="brand-title text-lg">{t("refunds.collectTitle")}</CardTitle>
+        <CardTitle className="brand-title text-base">{t("refunds.collectTitle")}</CardTitle>
         <CardDescription>{t("refunds.collectIntro")}</CardDescription>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
+      <CardContent className="-mb-4 overflow-x-auto border-t px-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -85,11 +85,11 @@ function RefundCollect({ rows }: { rows: CollectRow[] }) {
                       <input type="hidden" name="refundId" value={r.refund_id} />
                       <input type="hidden" name="itemId" value={r.item_id} />
                       <p className="text-sm"><span className="font-semibold">{r.customer_name}</span> · {r.item}</p>
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <Label htmlFor="quantity">{t("refunds.quantity")}</Label>
                         <Input id="quantity" name="quantity" required inputMode="numeric" pattern="\d+" defaultValue={String(r.given - r.returned)} className="h-11 tabular-nums md:h-9" />
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <Label htmlFor="note">{t("refunds.returnNote")}</Label>
                         <Input id="note" name="note" maxLength={500} className="h-11 md:h-9" />
                       </div>
@@ -132,7 +132,7 @@ async function Returns() {
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
             <div className="space-y-1.5">
-              <CardTitle className="brand-title text-lg">{t("stock.recordReturn")}</CardTitle>
+              <CardTitle className="brand-title text-base">{t("stock.recordReturn")}</CardTitle>
               <CardDescription>{t("stock.returnIntro")}</CardDescription>
             </div>
             <ActionDialog
@@ -141,7 +141,7 @@ async function Returns() {
               action={recordReturn}
               trigger={<Button className="h-11 md:h-9"><Undo2 aria-hidden="true" />{t("stock.recordReturn")}</Button>}
             >
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="teamId">{t("stock.from")}</Label>
                 <NativeSelect id="teamId" name="teamId" required>
                   <option value="customer">{t("stock.fromCustomer")}</option>
@@ -152,12 +152,12 @@ async function Returns() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <ItemSelect items={items} />
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="quantity">{t("stock.quantity")}</Label>
                   <Input id="quantity" name="quantity" required inputMode="numeric" pattern="\d+" defaultValue="1" className="h-11 tabular-nums md:h-9" />
                 </div>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="reason">{t("stock.reason")}</Label>
                 <NativeSelect id="reason" name="reason" required>
                   {REASONS.map((r) => (
@@ -165,7 +165,7 @@ async function Returns() {
                   ))}
                 </NativeSelect>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="note">{t("stock.note")}</Label>
                 <Input id="note" name="note" maxLength={500} className="h-11 md:h-9" aria-describedby="note-hint" />
                 <p id="note-hint" className="text-xs text-muted-foreground">{t("stock.returnNoteHint")}</p>
@@ -182,7 +182,7 @@ async function Returns() {
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="space-y-1.5">
-            <CardTitle className="brand-title text-lg">{t("stock.adjustments")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("stock.adjustments")}</CardTitle>
             <CardDescription>{t("stock.adjustmentsIntro")}</CardDescription>
           </div>
           {canRequest ? (
@@ -192,7 +192,7 @@ async function Returns() {
               action={requestAdjustment}
               trigger={<Button className="h-11 md:h-9"><Plus aria-hidden="true" />{t("stock.requestAdjustment")}</Button>}
             >
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="locationId">{t("stock.location")}</Label>
                 <NativeSelect id="locationId" name="locationId" required>
                   {locations.map((l) => (
@@ -202,20 +202,20 @@ async function Returns() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <ItemSelect items={items} />
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label htmlFor="change">{t("stock.change")}</Label>
                   <Input id="change" name="change" required inputMode="numeric" pattern="-?\d+" className="h-11 tabular-nums md:h-9" aria-describedby="change-hint" />
                   <p id="change-hint" className="text-xs text-muted-foreground">{t("stock.changeHint")}</p>
                 </div>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="reason">{t("stock.reason")}</Label>
                 <Input id="reason" name="reason" required minLength={3} maxLength={500} className="h-11 md:h-9" />
               </div>
             </ActionDialog>
           ) : null}
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>

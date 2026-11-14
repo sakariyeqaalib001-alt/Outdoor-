@@ -39,11 +39,11 @@ async function Content({ searchParams }: { searchParams: Search }) {
       <Card className="gap-3 p-5 ring-border">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg text-brand-link">{t("readiness.summaryTitle", { city: city.name })}</h2>
+            <h2 className="text-base text-foreground">{t("readiness.summaryTitle", { city: city.name })}</h2>
             <p className="text-sm text-muted-foreground">{t("readiness.summary", { passed, total: required.length })}</p>
           </div>
           <form className="flex items-end gap-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="city">{t("readiness.city")}</Label>
               <NativeSelect id="city" name="city" defaultValue={city.id} className="w-44">
                 {cities.map((c) => (
@@ -61,7 +61,7 @@ async function Content({ searchParams }: { searchParams: Search }) {
       </Card>
 
       <Card className="gap-3 p-5 ring-border">
-        <h2 className="text-lg text-brand-link">{t("readiness.dataTitle")}</h2>
+        <h2 className="text-base text-foreground">{t("readiness.dataTitle")}</h2>
         <ul className="grid gap-3">
           {checks.map((c) => (
             <li key={c.check_key} className="flex gap-3 border-b border-border pb-3 last:border-0 last:pb-0">
@@ -80,7 +80,7 @@ async function Content({ searchParams }: { searchParams: Search }) {
       </Card>
 
       <Card className="gap-3 p-5 ring-border">
-        <h2 className="text-lg text-brand-link">{t("readiness.stockTitle")}</h2>
+        <h2 className="text-base text-foreground">{t("readiness.stockTitle")}</h2>
         <p className="text-sm text-muted-foreground">{t("readiness.stockBody")}</p>
         <Table>
           <TableHeader>
@@ -119,7 +119,7 @@ async function Content({ searchParams }: { searchParams: Search }) {
       </Card>
 
       <Card className="gap-3 p-5 ring-border">
-        <h2 className="text-lg text-brand-link">{t("readiness.envTitle")}</h2>
+        <h2 className="text-base text-foreground">{t("readiness.envTitle")}</h2>
         <p className="text-sm text-muted-foreground">{t("readiness.envBody")}</p>
         <ul className="grid gap-3">
           {env.map((e) => (

@@ -53,16 +53,16 @@ export function RequestRefundButton({ saleId, collected }: { saleId: string; col
         <Dialog open onOpenChange={(o) => !o && setOpen(false)}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="brand-title text-xl">{t("refunds.requestTitle")}</DialogTitle>
+              <DialogTitle className="brand-title text-lg">{t("refunds.requestTitle")}</DialogTitle>
               <DialogDescription>{t("refunds.requestIntro")}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="refund-amount">{t("refunds.amountLabel")}</Label>
                 <Input id="refund-amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-11 tabular-nums md:h-9" aria-describedby="refund-amount-hint" />
                 <p id="refund-amount-hint" className="text-xs text-muted-foreground">{t("refunds.amountHint", { amount: formatUSD(collected) })}</p>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="refund-reason">{t("refunds.reason")}</Label>
                 <NativeSelect id="refund-reason" value={reason} onChange={(e) => setReason(e.target.value as RefundReason)}>
                   {REFUND_REASONS.map((r) => (
@@ -70,7 +70,7 @@ export function RequestRefundButton({ saleId, collected }: { saleId: string; col
                   ))}
                 </NativeSelect>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="refund-note">{t("refunds.noteLabel")}</Label>
                 <Input id="refund-note" value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} className="h-11 md:h-9" aria-describedby="refund-note-hint" />
                 <p id="refund-note-hint" className="text-xs text-muted-foreground">{t("refunds.noteHint")}</p>
@@ -112,10 +112,10 @@ export function DecideRefund({ id }: { id: string }) {
         <Dialog open onOpenChange={(o) => !o && setMode(null)}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="brand-title text-xl">{t(mode === "approve" ? "refunds.approveTitle" : "refunds.rejectTitle")}</DialogTitle>
+              <DialogTitle className="brand-title text-lg">{t(mode === "approve" ? "refunds.approveTitle" : "refunds.rejectTitle")}</DialogTitle>
               {mode === "approve" ? <DialogDescription>{t("refunds.approveText")}</DialogDescription> : null}
             </DialogHeader>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor={`refund-note-${id}`}>{t(mode === "approve" ? "refunds.note" : "refunds.rejectReason")}</Label>
               <Input id={`refund-note-${id}`} value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} className="h-11 md:h-9" />
             </div>

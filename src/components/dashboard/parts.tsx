@@ -16,7 +16,7 @@ export function BasisTag({ basis }: { basis: "eligible" | "submitted" }) {
   return (
     <span
       className={cn(
-        "inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[11px] font-semibold",
+        "inline-flex h-5 shrink-0 items-center rounded border px-1.5 text-[11px] font-semibold",
         basis === "eligible" ? "border-brand-highlight/40 text-brand-link" : "border-border text-muted-foreground"
       )}
       title={t(basis === "eligible" ? "dashboard.definition.eligible" : "dashboard.definition.submitted")}
@@ -45,21 +45,19 @@ export function KpiCard({
   size?: "lg" | "md";
 }) {
   const body = (
-    <Card className="h-full gap-3 p-5 ring-border transition-shadow group-hover/kpi:shadow-md group-hover/kpi:ring-brand-highlight/60">
-      <div className="flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-brand-link" aria-hidden="true">
-          <Icon className="size-4.5" />
-        </span>
-        <p className="min-w-0 flex-1 pt-1.5 text-sm font-semibold text-muted-foreground">{label}</p>
+    <Card className="h-full gap-1 px-4 py-3 ring-border transition-colors group-hover/kpi:bg-muted/40 group-hover/kpi:ring-brand-highlight/60">
+      <div className="flex items-center gap-2">
+        <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <p className="min-w-0 flex-1 text-xs font-semibold text-muted-foreground">{label}</p>
         {basis ? <BasisTag basis={basis} /> : null}
       </div>
-      <p className={cn("font-semibold tracking-tight text-brand-link tabular-nums", size === "lg" ? "text-3xl" : "text-2xl")}>{value}</p>
+      <p className={cn("font-semibold tracking-tight text-foreground tabular-nums", size === "lg" ? "text-2xl" : "text-xl")}>{value}</p>
       {note ? <div className="text-xs text-muted-foreground">{note}</div> : null}
     </Card>
   );
   if (!href) return body;
   return (
-    <Link href={href} className="group/kpi block rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none" aria-label={`${label}: ${value}`}>
+    <Link href={href} className="group/kpi block rounded-lg focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none" aria-label={`${label}: ${value}`}>
       {body}
     </Link>
   );
@@ -80,10 +78,10 @@ export function Section({
   className?: string;
 }) {
   return (
-    <Card className={cn("gap-4 p-5 ring-border", className)}>
+    <Card className={cn("gap-4 p-4 ring-border", className)}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-lg text-brand-link">{title}</h2>
+          <h2 className="text-base text-foreground">{title}</h2>
           {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         </div>
         {action}
@@ -107,14 +105,14 @@ export function BandBadge({ band }: { band: Band }) {
 export function TargetBar({ pct, band, pace, label }: { pct: number | null; band: Band | null; pace?: number; label: string }) {
   const width = Math.min(pct ?? 0, 100);
   return (
-    <div className="relative h-2.5 w-full rounded-full bg-muted" role="img" aria-label={label}>
+    <div className="relative h-1.5 w-full rounded-full bg-muted" role="img" aria-label={label}>
       <div
         className="h-full rounded-full"
         style={{ width: `${width}%`, backgroundColor: band ? bandColors[band] : undefined }}
       />
       {pace !== undefined ? (
         <span
-          className="absolute -top-1 h-4.5 w-0.5 rounded bg-foreground/70"
+          className="absolute -top-1 h-3.5 w-0.5 rounded bg-foreground/70"
           style={{ left: `calc(${Math.min(pace, 100)}% - 1px)` }}
           title={t("dashboard.target.paceHint", { pct: pace })}
           aria-hidden="true"
@@ -163,7 +161,7 @@ export function Insight({ label, value, note, color }: { label: string; value: s
           <p className="text-sm text-muted-foreground">{label}</p>
           {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
         </div>
-        <p className="shrink-0 text-right font-semibold text-brand-link">{value}</p>
+        <p className="shrink-0 text-right font-semibold text-foreground tabular-nums">{value}</p>
       </div>
     </div>
   );

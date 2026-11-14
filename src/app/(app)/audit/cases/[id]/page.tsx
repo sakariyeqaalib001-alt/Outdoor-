@@ -43,7 +43,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
   if (!can(access, "audit.read")) return <AccessDenied />;
   const { id } = await params;
   const c = UUID.test(id) ? await getCase(id) : null;
-  if (!c) return <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("audit.errors.notFound")}</p>;
+  if (!c) return <p className="rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("audit.errors.notFound")}</p>;
   const isAdmin = access.permissions["audit.manage"] === "all";
   const supabase = await createSupabaseServerClient();
   const me = supabase ? (await getSessionId(supabase))?.userId : undefined;
@@ -75,7 +75,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
 
       {c.agents.length || c.customers.length ? (
         <Card>
-          <CardHeader><CardTitle className="brand-title text-lg">{t("audit.linkedTitle")}</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="brand-title text-base">{t("audit.linkedTitle")}</CardTitle></CardHeader>
           <CardContent>
             <dl>
               {c.agents.length ? (
@@ -96,7 +96,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
 
       {c.sales.length ? (
         <Card>
-          <CardHeader><CardTitle className="brand-title text-lg">{t("audit.salesTitle")}</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="brand-title text-base">{t("audit.salesTitle")}</CardTitle></CardHeader>
           <CardContent className="grid gap-2">
             {c.sales.map((s) => (
               <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 border-b py-2 text-sm last:border-b-0">
@@ -121,7 +121,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
       ) : null}
 
       <Card>
-        <CardHeader><CardTitle className="brand-title text-lg">{t("audit.historyTitle")}</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="brand-title text-base">{t("audit.historyTitle")}</CardTitle></CardHeader>
         <CardContent>
           <ol className="grid gap-3">
             {c.history.map((h, i) => (
@@ -135,7 +135,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         </CardContent>
       </Card>
 
-      <Button asChild variant="outline" className="h-11 justify-self-start">
+      <Button asChild variant="outline" className="h-11 justify-self-start md:h-9">
         <Link href="/audit"><ArrowLeft aria-hidden="true" />{t("audit.back")}</Link>
       </Button>
     </div>

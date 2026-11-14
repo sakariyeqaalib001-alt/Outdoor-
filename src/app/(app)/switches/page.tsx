@@ -27,9 +27,9 @@ async function Switches() {
       {canCreate ? <SwitchForm data={data} /> : <p className="rounded-lg border bg-white p-4 text-sm text-muted-foreground">{t("sales.errors.superAdmin")}</p>}
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("switches.mine")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("switches.mine")}</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>

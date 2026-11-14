@@ -98,7 +98,7 @@ export function UsersTable({
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-lg border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -198,7 +198,7 @@ export function UsersTable({
       <Dialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="brand-title text-xl">
+            <DialogTitle className="brand-title text-lg">
               {confirm ? t(confirm.kind === "reset" ? "users.resetPassword" : confirm.kind === "deactivate" ? "users.deactivate" : "users.reactivate") : ""}
             </DialogTitle>
             <DialogDescription>

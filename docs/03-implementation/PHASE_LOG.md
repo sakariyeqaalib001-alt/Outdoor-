@@ -746,3 +746,14 @@ Not yet run: the readiness page on staging (needs the SQL paste and the owner's 
 
 **Next prompt (not executed):**
 > Proceed with Phase 13 only: customer follow-up. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 13, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Visual redesign (between Phase 12 and Phase 13) — 14 Nov 2026
+
+Not a roadmap phase. Owner request: make the layout look professional; functionality (front and back) and the brand guide are locked. See T-29.
+
+- **Changed:** `src/app/globals.css`, `src/lib/brand.ts` (`--background` white, radius 6 px), shared components in `src/components/ui` (button, input, label, native-select, badge, card, table, dialog), `src/components/layout` (header, sidebar menu), `src/components/dashboard` (frame, parts, charts), `src/components/status-badge.tsx`, `access-denied.tsx`, and class names only on the pages under `src/app`.
+- **Not changed:** `src/server`, `supabase`, `tests`, `messages` — no behaviour, text, permission or database change. No SQL to paste.
+- **Check:** `npm run check` passed (lint, typecheck, 463 tests, build). Training site rebuilt. Reviewed by the owner on both sites.
+- **Skipped (would need more than styling):** table headers that stay in view while scrolling; breadcrumbs in the top bar.

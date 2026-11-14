@@ -44,7 +44,7 @@ async function Cases({ searchParams }: { searchParams: Search }) {
       </div>
       {email ? <EmailBox summary={email} /> : null}
       {cases.length === 0 ? (
-        <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("audit.noCases")}</p>
+        <p className="rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("audit.noCases")}</p>
       ) : (
         <Card>
           <CardContent className="overflow-x-auto p-0">

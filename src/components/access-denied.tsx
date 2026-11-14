@@ -8,7 +8,7 @@ export function AccessDenied() {
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
         <ShieldOff className="size-10 text-muted-foreground" aria-hidden="true" />
-        <h2 className="text-xl">{t("access.deniedTitle")}</h2>
+        <h2 className="text-lg">{t("access.deniedTitle")}</h2>
         <p className="max-w-md text-muted-foreground">{t("access.deniedBody")}</p>
       </CardContent>
     </Card>

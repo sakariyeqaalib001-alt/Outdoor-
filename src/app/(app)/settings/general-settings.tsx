@@ -94,7 +94,7 @@ export function GeneralSettings({ values }: { values: Record<string, unknown> })
       {SETTING_GROUPS.map((group) => (
         <Card key={group}>
           <CardHeader>
-            <CardTitle className="brand-title text-lg">{t(`settings.groups.${group}`)}</CardTitle>
+            <CardTitle className="brand-title text-base">{t(`settings.groups.${group}`)}</CardTitle>
           </CardHeader>
           <CardContent>
             {SETTINGS.filter((s) => s.group === group).map((s) => (

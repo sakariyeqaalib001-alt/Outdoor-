@@ -53,10 +53,10 @@ export function DashboardFrame({
   const { filters, ctx, options, query } = loaded;
   const scopeKey = ctx.scope === "all" ? "all" : ctx.scope === "team" ? "team" : ctx.scope === "own" ? "own" : "none";
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <DashboardTabs active={view} query={query} salesViews={can(loaded.access, "dashboard.read")} />
       <div className="flex flex-col gap-4">
-        <p className="text-muted-foreground">{description}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
         <FilterBar
           path={view}
           filters={filters}
@@ -67,19 +67,19 @@ export function DashboardFrame({
           showAgents={!hideAgentFilter && ctx.scope !== "own" && options.agents.length > 0}
           today={ctx.today}
         />
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>{t(`dashboard.scope.${scopeKey}`)}</span>
           <span aria-hidden="true">•</span>
           <span>{periodText(ctx, filters)}</span>
           <span aria-hidden="true">•</span>
           <span>{t("dashboard.updated", { time: formatBusinessDateTime(new Date(ctx.generated_at)) })}</span>
         </div>
-        <details className="group rounded-lg border border-border bg-white px-4 py-2 text-sm">
-          <summary className="flex cursor-pointer items-center gap-2 font-semibold text-brand-link">
-            <Info className="size-4" aria-hidden="true" />
+        <details className="group text-sm">
+          <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-brand-link hover:underline">
+            <Info className="size-3.5" aria-hidden="true" />
             {t("dashboard.definition.title")}
           </summary>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+          <ul className="mt-2 list-disc space-y-1 border-l-2 border-border py-1 pl-8 text-muted-foreground">
             <li>{t("dashboard.definition.eligibleLong", { day: ctx.cutoff_day })}</li>
             <li>{t("dashboard.definition.submitted")}</li>
             <li>{t("dashboard.definition.revenue")}</li>

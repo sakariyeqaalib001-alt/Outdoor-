@@ -94,21 +94,21 @@ async function History({ searchParams }: { searchParams: Promise<Record<string, 
     <div className="grid gap-4">
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("stock.report")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("stock.report")}</CardTitle>
           <CardDescription>{t("stock.reportIntro", { from: formatDateOnly(from), to: formatDateOnly(to) })}</CardDescription>
           <form className="flex flex-wrap items-end gap-3 pt-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="from">{t("stock.dateFrom")}</Label>
               <Input id="from" name="from" type="date" defaultValue={from} className="h-11 md:h-9" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="to">{t("stock.dateTo")}</Label>
               <Input id="to" name="to" type="date" defaultValue={to} className="h-11 md:h-9" />
             </div>
             <Button type="submit" variant="outline" className="h-11 md:h-9">{t("stock.show")}</Button>
           </form>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -137,11 +137,11 @@ async function History({ searchParams }: { searchParams: Promise<Record<string, 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="brand-title text-lg">{t("stock.receivedTitle")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("stock.receivedTitle")}</CardTitle>
             <CardDescription>{t("stock.receivedIntro")}</CardDescription>
             <Totals items={items} totals={receivedTotal} />
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="-mb-4 overflow-x-auto border-t px-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -180,11 +180,11 @@ async function History({ searchParams }: { searchParams: Promise<Record<string, 
 
         <Card>
           <CardHeader>
-            <CardTitle className="brand-title text-lg">{t("stock.issuedTitle")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("stock.issuedTitle")}</CardTitle>
             <CardDescription>{t("stock.issuedIntro")}</CardDescription>
             <Totals items={items} totals={issuedTotal} />
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="-mb-4 overflow-x-auto border-t px-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -226,10 +226,10 @@ async function History({ searchParams }: { searchParams: Promise<Record<string, 
 
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("stock.byLocation")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("stock.byLocation")}</CardTitle>
           <CardDescription>{t("stock.byLocationIntro", { date: formatDateOnly(to) })}</CardDescription>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -268,10 +268,10 @@ async function History({ searchParams }: { searchParams: Promise<Record<string, 
       <Card>
         <details>
           <summary className="cursor-pointer list-none p-6">
-            <span className="brand-title text-lg font-semibold">{t("stock.history")}</span>
+            <span className="brand-title text-base font-semibold">{t("stock.history")}</span>
             <span className="block text-sm text-muted-foreground">{t("stock.historyIntro")}</span>
           </summary>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="-mb-4 overflow-x-auto border-t px-0">
             <Table>
               <TableHeader>
                 <TableRow>

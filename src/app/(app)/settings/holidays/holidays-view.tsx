@@ -19,15 +19,15 @@ function HolidayDialog({ holiday, onClose }: { holiday?: HolidayRow; onClose: ()
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(holiday ? "settings.editHoliday" : "settings.addHoliday")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(holiday ? "settings.editHoliday" : "settings.addHoliday")}</DialogTitle>
         </DialogHeader>
         <form action={action} className="space-y-4">
           {holiday ? <input type="hidden" name="id" value={holiday.id} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="date">{t("settings.date")}</Label>
             <Input id="date" name="date" type="date" required defaultValue={holiday?.holiday_date} className="h-11 md:h-9" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="name">{t("settings.name")}</Label>
             <Input id="name" name="name" required minLength={2} maxLength={80} defaultValue={holiday?.name} className="h-11 md:h-9" />
           </div>
@@ -63,7 +63,7 @@ export function HolidaysView({ holidays }: { holidays: HolidayRow[] }) {
         </Button>
       </div>
       <FormMessage error={result?.error} />
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-lg border bg-white">
         <Table>
           <TableHeader>
             <TableRow>

@@ -52,11 +52,11 @@ function ProductDialog({ product, onClose }: { product?: ProductRow; onClose: ()
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(product ? "products.editProduct" : "products.addProduct")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(product ? "products.editProduct" : "products.addProduct")}</DialogTitle>
         </DialogHeader>
         <form action={action} className="space-y-4">
           {product ? <input type="hidden" name="id" value={product.id} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="code">{t("products.code")}</Label>
             {product ? (
               <div id="code" className="font-mono text-sm">{product.code}</div>
@@ -67,7 +67,7 @@ function ProductDialog({ product, onClose }: { product?: ProductRow; onClose: ()
               </>
             )}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="name">{t("products.name")}</Label>
             <Input id="name" name="name" required minLength={2} maxLength={60} defaultValue={product?.name} className="h-11 md:h-9" />
           </div>
@@ -87,11 +87,11 @@ function PlanDialog({ plan, products, productId, onClose }: { plan?: PlanRow; pr
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(plan ? "products.editPlan" : "products.addPlan")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(plan ? "products.editPlan" : "products.addPlan")}</DialogTitle>
         </DialogHeader>
         <form action={action} className="space-y-4">
           {plan ? <input type="hidden" name="id" value={plan.id} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="productId">{t("products.product")}</Label>
             <NativeSelect id="productId" name="productId" defaultValue={plan?.product_id ?? productId} disabled={Boolean(plan)} aria-describedby={plan ? "product-fixed" : undefined}>
               {choosable.map((p) => (
@@ -105,21 +105,21 @@ function PlanDialog({ plan, products, productId, onClose }: { plan?: PlanRow; pr
               </>
             ) : null}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="name">{t("products.name")}</Label>
             <Input id="name" name="name" required minLength={2} maxLength={60} defaultValue={plan?.name} className="h-11 md:h-9" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="download">{t("products.download")}</Label>
               <Input id="download" name="download" required inputMode="numeric" pattern="\d+" defaultValue={plan?.download_mbps} className="h-11 tabular-nums md:h-9" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="upload">{t("products.upload")}</Label>
               <Input id="upload" name="upload" required inputMode="numeric" pattern="\d+" defaultValue={plan?.upload_mbps} className="h-11 tabular-nums md:h-9" />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="data">{t("products.data")}</Label>
             <Input id="data" name="data" maxLength={40} defaultValue={plan?.data_allowance ?? "Unlimited"} className="h-11 md:h-9" aria-describedby="data-hint" />
             <p id="data-hint" className="text-xs text-muted-foreground">{t("products.dataHint")}</p>
@@ -149,11 +149,11 @@ function PriceDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(price ? "products.editPrice" : "products.addPrice")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(price ? "products.editPrice" : "products.addPrice")}</DialogTitle>
         </DialogHeader>
         <form action={action} className="space-y-4">
           {price ? <input type="hidden" name="id" value={price.id} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="planId">{t("products.plan")}</Label>
             <NativeSelect id="planId" name="planId" defaultValue={price?.plan_id ?? planId} required>
               {planOptions.map((o) => (
@@ -162,21 +162,21 @@ function PriceDialog({
             </NativeSelect>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="recharge">{t("products.recharge")}</Label>
               <Input id="recharge" name="recharge" required inputMode="decimal" pattern="\d+(\.\d{1,2})?" defaultValue={price?.recharge_amount} className="h-11 tabular-nums md:h-9" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="installation">{t("products.installation")}</Label>
               <Input id="installation" name="installation" required inputMode="decimal" pattern="\d+(\.\d{1,2})?" defaultValue={price?.installation_fee ?? 0} className="h-11 tabular-nums md:h-9" />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="from">{t("products.from")}</Label>
               <Input id="from" name="from" type="date" required defaultValue={price?.effective_from} className="h-11 md:h-9" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="to">{t("products.to")}</Label>
               <Input id="to" name="to" type="date" defaultValue={price?.effective_to ?? ""} className="h-11 md:h-9" aria-describedby="to-hint" />
             </div>
@@ -245,7 +245,7 @@ export function ProductsView({
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="space-y-1.5">
-            <CardTitle className="brand-title text-lg">{t("products.products")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("products.products")}</CardTitle>
             <CardDescription>{t("products.productsIntro")}</CardDescription>
           </div>
           {canManage ? (
@@ -255,7 +255,7 @@ export function ProductsView({
             </Button>
           ) : null}
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -285,7 +285,7 @@ export function ProductsView({
         </CardContent>
       </Card>
 
-      <div className="w-full space-y-1 sm:w-56">
+      <div className="w-full space-y-1.5 sm:w-56">
         <Label htmlFor="product-filter">{t("products.product")}</Label>
         <NativeSelect id="product-filter" value={productFilter} onChange={(e) => setProductFilter(e.target.value)}>
           <option value="all">{t("products.allProducts")}</option>
@@ -298,7 +298,7 @@ export function ProductsView({
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="space-y-1.5">
-            <CardTitle className="brand-title text-lg">{t("products.plans")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("products.plans")}</CardTitle>
             <CardDescription>{t("products.plansIntro")}</CardDescription>
           </div>
           {canManage ? (
@@ -308,7 +308,7 @@ export function ProductsView({
             </Button>
           ) : null}
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -358,7 +358,7 @@ export function ProductsView({
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="space-y-1.5">
-            <CardTitle className="brand-title text-lg">{t("products.priceHistory")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("products.priceHistory")}</CardTitle>
             <CardDescription>{t("products.priceHistoryIntro")}</CardDescription>
           </div>
           {canManage && planOptions.length > 0 ? (
@@ -368,7 +368,7 @@ export function ProductsView({
             </Button>
           ) : null}
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>

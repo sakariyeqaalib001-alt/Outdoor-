@@ -26,7 +26,7 @@ async function Events({ searchParams }: { searchParams: Search }) {
       <p className="text-sm text-muted-foreground">{t("audit.eventsIntro")}</p>
       <FilterChips items={chips} active={rule ?? "all"} />
       {events.length === 0 ? (
-        <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("audit.noEvents")}</p>
+        <p className="rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("audit.noEvents")}</p>
       ) : (
         <div className="grid gap-3">{events.map((e) => <EventCard key={e.id} event={e} />)}</div>
       )}

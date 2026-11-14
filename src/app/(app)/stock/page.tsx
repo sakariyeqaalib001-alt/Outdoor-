@@ -40,10 +40,10 @@ async function Overview() {
       {toAccept.length > 0 ? (
         <Card className="border-brand-highlight">
           <CardHeader>
-            <CardTitle className="brand-title text-lg">{t("stock.toAccept")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("stock.toAccept")}</CardTitle>
             <CardDescription>{t("stock.toAcceptIntro")}</CardDescription>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="-mb-4 overflow-x-auto border-t px-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -71,7 +71,7 @@ async function Overview() {
       ) : null}
 
       <Card>
-        <CardContent className="overflow-x-auto pt-6">
+        <CardContent className="-my-4 overflow-x-auto px-0">
           <Table>
             <TableHeader>
               <TableRow>

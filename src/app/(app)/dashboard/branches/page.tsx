@@ -122,7 +122,7 @@ async function Branches({ searchParams }: { searchParams: Search }) {
                     <span className="font-semibold text-muted-foreground tabular-nums">{i + 1}</span>
                     <span className="truncate font-semibold">{c.name}</span>
                     <TargetBar pct={c.pct} band={c.band} pace={pace.pct} label={`${c.name}: ${c.pct ?? 0}%`} />
-                    <span className="text-right font-semibold text-brand-link tabular-nums">{c.pct === null ? "—" : `${c.pct}%`}</span>
+                    <span className="text-right font-semibold text-foreground tabular-nums">{c.pct === null ? "—" : `${c.pct}%`}</span>
                   </li>
                 ))}
               </ol>
@@ -187,7 +187,7 @@ async function Branches({ searchParams }: { searchParams: Search }) {
             {(["met", "baseline", "under"] as const).map((band) => (
               <li key={band} className="flex items-center gap-2 text-sm">
                 <BandBadge band={band} />
-                <span className="font-semibold text-brand-link tabular-nums">{agents.filter((a) => a.band === band).length}</span>
+                <span className="font-semibold text-foreground tabular-nums">{agents.filter((a) => a.band === band).length}</span>
               </li>
             ))}
           </ul>
@@ -256,11 +256,11 @@ function CityCard({ city, monthName, pace, targetApplies, href, targetUnits }: {
         {cells.map(([k, v]) => (
           <div key={k}>
             <dt className="text-xs text-muted-foreground">{k}</dt>
-            <dd className="text-lg font-semibold text-brand-link tabular-nums">{v}</dd>
+            <dd className="text-base font-semibold text-foreground tabular-nums">{v}</dd>
           </div>
         ))}
       </dl>
-      <div className="grid gap-2 rounded-lg bg-muted/60 p-3">
+      <div className="grid gap-2 border-t border-border pt-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
           <span>
             <span className="text-muted-foreground">{t("dashboard.target.monthlyTarget")}: </span>
@@ -269,7 +269,7 @@ function CityCard({ city, monthName, pace, targetApplies, href, targetUnits }: {
           <span>
             <span className="text-muted-foreground">{t("dashboard.target.actual")}: </span>
             <span className="font-semibold tabular-nums">{formatCount(city.month.units)}</span>
-            <span className="ml-2 font-semibold text-brand-link tabular-nums">{city.pct === null ? "—" : `${city.pct}%`}</span>
+            <span className="ml-2 font-semibold text-foreground tabular-nums">{city.pct === null ? "—" : `${city.pct}%`}</span>
           </span>
         </div>
         <TargetBar pct={city.pct} band={band} pace={pace} label={`${city.name}: ${city.pct ?? 0}%`} />

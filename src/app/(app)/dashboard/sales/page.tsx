@@ -41,7 +41,7 @@ async function SalesBehind({ searchParams }: { searchParams: Search }) {
       </Link>
       <Card className="gap-3 p-5 ring-border">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg text-brand-link">{t(`dashboard.list.bucket.${bucket}`)}</h2>
+          <h2 className="text-base text-foreground">{t(`dashboard.list.bucket.${bucket}`)}</h2>
           <BasisTag basis={eligible ? "eligible" : "submitted"} />
         </div>
         <p className="text-sm text-muted-foreground">

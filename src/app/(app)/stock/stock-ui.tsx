@@ -15,9 +15,9 @@ import type { StockItem, TransferRow } from "@/server/stock/queries";
 export function QuantityFields({ items }: { items: StockItem[] }) {
   return (
     <fieldset className="grid gap-3 sm:grid-cols-3">
-      <legend className="mb-2 text-sm font-semibold">{t("stock.items")}</legend>
+      <legend className="mb-2 text-xs font-semibold text-muted-foreground">{t("stock.items")}</legend>
       {items.map((item) => (
-        <div key={item.id} className="space-y-1">
+        <div key={item.id} className="space-y-1.5">
           <Label htmlFor={`qty_${item.id}`}>{item.display_name}</Label>
           <Input id={`qty_${item.id}`} name={`qty_${item.id}`} inputMode="numeric" pattern="\d*" placeholder="0" className="h-11 tabular-nums md:h-9" />
         </div>
@@ -68,7 +68,7 @@ function ActionDialogBody({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(title)}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(title)}</DialogTitle>
           {description ? <DialogDescription>{t(description)}</DialogDescription> : null}
         </DialogHeader>
         <form action={formAction} className="space-y-4">
@@ -109,9 +109,9 @@ export function ActionButton({
         <Dialog open onOpenChange={(o) => !o && setAsking(false)}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="brand-title text-xl">{t(label)}</DialogTitle>
+              <DialogTitle className="brand-title text-lg">{t(label)}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="ask-text">{t(ask)}</Label>
               <Input id="ask-text" value={text} maxLength={500} onChange={(e) => setText(e.target.value)} className="h-11 md:h-9" />
             </div>

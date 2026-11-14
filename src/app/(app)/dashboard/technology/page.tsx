@@ -118,15 +118,15 @@ async function Technology({ searchParams }: { searchParams: Search }) {
 function ProductCard({ product: p, share, showPeriod, href }: { product: ProductRow; share: number | null; showPeriod: boolean; href: string }) {
   const cell = (label: string, value: string, big = false) => (
     <div>
-      <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{label}</p>
-      <p className={big ? "text-3xl font-semibold text-brand-link tabular-nums" : "text-xl font-semibold tabular-nums"}>{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={big ? "text-2xl font-semibold text-foreground tabular-nums" : "text-base font-semibold tabular-nums"}>{value}</p>
     </div>
   );
   return (
-    <Card className="gap-4 p-5 ring-border">
+    <Card className="gap-3 p-4 ring-border">
       <div className="flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-2 rounded-lg bg-muted px-3 py-1 text-base font-semibold text-foreground">
-          <span className="size-3 rounded-sm" style={{ backgroundColor: p.color }} aria-hidden="true" />
+        <span className="inline-flex items-center gap-2 text-base font-semibold text-foreground">
+          <span className="size-2.5 rounded-full" style={{ backgroundColor: p.color }} aria-hidden="true" />
           {p.code}
         </span>
         <span className="text-xs font-semibold text-muted-foreground">{t("dashboard.technology.shareOfUnits", { pct: share ?? 0 })}</span>
@@ -135,12 +135,12 @@ function ProductCard({ product: p, share, showPeriod, href }: { product: Product
         {cell(t("dashboard.technology.overallUnits"), formatCount(p.overall.units), true)}
         {cell(t("dashboard.technology.overallRevenue"), formatUSD(p.overall.revenue), true)}
       </div>
-      <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+      <div className="grid grid-cols-2 gap-4 border-t border-border pt-3">
         {cell(t("dashboard.technology.monthUnits"), formatCount(p.month.units))}
         {cell(t("dashboard.technology.monthRevenue"), formatUSD(p.month.revenue))}
       </div>
       {showPeriod ? (
-        <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+        <div className="grid grid-cols-2 gap-4 border-t border-border pt-3">
           {cell(t("dashboard.technology.periodUnits"), formatCount(p.period.units))}
           {cell(t("dashboard.technology.periodRevenue"), formatUSD(p.period.revenue))}
         </div>

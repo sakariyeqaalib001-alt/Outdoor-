@@ -32,7 +32,7 @@ function RuleCard({ rule, canEdit }: { rule: RuleRow; canEdit: boolean }) {
 
   return (
     <Card>
-      <CardContent className="grid gap-3 pt-6">
+      <CardContent className="grid gap-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <div className="flex flex-wrap items-center gap-2">

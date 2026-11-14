@@ -24,7 +24,7 @@ export function SidebarNav({ permissions }: { permissions: string[] }) {
     <>
       {visibleNavigation(permissions).map((group) => (
         <SidebarGroup key={group.label}>
-          <SidebarGroupLabel className="brand-title">{t(group.label)}</SidebarGroupLabel>
+          <SidebarGroupLabel className="brand-title h-7 text-muted-foreground">{t(group.label)}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {group.items.map((item) => {
@@ -39,7 +39,7 @@ export function SidebarNav({ permissions }: { permissions: string[] }) {
                         asChild
                         isActive={active}
                         tooltip={label}
-                        className="data-[active=true]:font-semibold data-[active=true]:shadow-[inset_3px_0_0_var(--brand-highlight)]"
+                        className="text-muted-foreground hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-brand-link data-[active=true]:shadow-[inset_2px_0_0_var(--brand-highlight)]"
                       >
                         <Link href={item.href} aria-current={active ? "page" : undefined}>
                           <Icon />

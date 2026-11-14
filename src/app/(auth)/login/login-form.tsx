@@ -16,7 +16,7 @@ export function LoginForm() {
 
   return (
     <form action={action} className="space-y-4" noValidate>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="identifier">{t("auth.identifier")}</Label>
         <Input
           id="identifier"
@@ -31,7 +31,7 @@ export function LoginForm() {
           {t("auth.identifierHint")}
         </p>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="password">{t("auth.password")}</Label>
         <Input id="password" name="password" type="password" autoComplete="current-password" required className="h-11" />
       </div>

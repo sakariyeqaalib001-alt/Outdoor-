@@ -79,9 +79,9 @@ async function Refunds() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("refunds.waiting")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("refunds.waiting")}</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>
@@ -127,9 +127,9 @@ async function Refunds() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("refunds.history")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("refunds.history")}</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="-mb-4 overflow-x-auto border-t px-0">
           <Table>
             <TableHeader>
               <TableRow>

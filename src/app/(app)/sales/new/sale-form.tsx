@@ -176,11 +176,11 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
 
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("sales.customerSection")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("sales.customerSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-semibold">{t("sales.customerType")}</legend>
+            <legend className="mb-1 text-xs font-semibold text-muted-foreground">{t("sales.customerType")}</legend>
             {(["new", "retention"] as const).map((type) => (
               <label key={type} className="flex items-start gap-2 text-sm">
                 <input type="radio" name="customerType" value={type} checked={v.customerType === type} onChange={() => set({ customerType: type })} className="mt-0.5 size-5 accent-[#047B95]" />
@@ -191,19 +191,19 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
               </label>
             ))}
           </fieldset>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="fullName">{t("sales.fullName")}</Label>
-            <Input id="fullName" required minLength={2} maxLength={120} autoComplete="off" value={v.fullName} onChange={(e) => set({ fullName: e.target.value })} className="h-11" />
+            <Input id="fullName" required minLength={2} maxLength={120} autoComplete="off" value={v.fullName} onChange={(e) => set({ fullName: e.target.value })} className="h-11 md:h-9" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="phone">{t("sales.phone")}</Label>
-              <Input id="phone" required inputMode="tel" autoComplete="off" value={v.phone} onChange={(e) => set({ phone: e.target.value })} className="h-11" aria-describedby="phone-hint" />
+              <Input id="phone" required inputMode="tel" autoComplete="off" value={v.phone} onChange={(e) => set({ phone: e.target.value })} className="h-11 md:h-9" aria-describedby="phone-hint" />
               <p id="phone-hint" className="text-xs text-muted-foreground">{t("sales.phoneHint")}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="index">{t("sales.index")}</Label>
-              <Input id="index" required inputMode="numeric" maxLength={8} pattern="[0-9]{8}" autoComplete="off" value={v.index} onChange={(e) => set({ index: e.target.value.replace(/\D/g, "") })} className="h-11 tabular-nums" aria-describedby="index-hint" />
+              <Input id="index" required inputMode="numeric" maxLength={8} pattern="[0-9]{8}" autoComplete="off" value={v.index} onChange={(e) => set({ index: e.target.value.replace(/\D/g, "") })} className="h-11 tabular-nums md:h-9" aria-describedby="index-hint" />
               <p id="index-hint" className="text-xs text-muted-foreground">{t("sales.indexHint")}</p>
             </div>
           </div>
@@ -212,11 +212,11 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
 
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("sales.saleSection")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("sales.saleSection")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="cityId">{t("sales.city")}</Label>
               <NativeSelect
                 id="cityId"
@@ -235,7 +235,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
                 <p id="city-hint" className="text-xs text-muted-foreground">{t("sales.cityLocked")}</p>
               ) : null}
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="districtId">{t("sales.district")}</Label>
               <NativeSelect id="districtId" required value={v.districtId} onChange={(e) => set({ districtId: e.target.value })}>
                 <option value="">{t("sales.choose")}</option>
@@ -246,11 +246,11 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
               {districts.length === 0 ? <p className="text-xs text-destructive">{t("sales.noDistricts")}</p> : null}
             </div>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="area">{t("sales.area")}</Label>
-            <Input id="area" required maxLength={100} value={v.area} onChange={(e) => set({ area: e.target.value })} className="h-11" placeholder={t("sales.areaHint")} />
+            <Input id="area" required maxLength={100} value={v.area} onChange={(e) => set({ area: e.target.value })} className="h-11 md:h-9" placeholder={t("sales.areaHint")} />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="branchId">{t("sales.branch")}</Label>
             <NativeSelect id="branchId" required value={v.branchId} onChange={(e) => set({ branchId: e.target.value })} aria-describedby="branch-hint">
               <option value="">{t("sales.choose")}</option>
@@ -261,7 +261,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
             <p id="branch-hint" className="text-xs text-muted-foreground">{t("sales.branchHint")}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="productId">{t("sales.productLabel")}</Label>
               <NativeSelect id="productId" required value={v.productId} onChange={(e) => set({ productId: e.target.value, planId: "" })}>
                 <option value="">{t("sales.choose")}</option>
@@ -270,7 +270,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
                 ))}
               </NativeSelect>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="planId">{t("sales.planLabel")}</Label>
               <NativeSelect id="planId" required value={v.planId} disabled={!v.productId} onChange={(e) => set({ planId: e.target.value })}>
                 <option value="">{t("sales.choose")}</option>
@@ -286,7 +286,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="monthsPaid">{t("sales.monthsPaid")}</Label>
               <NativeSelect id="monthsPaid" value={String(months)} disabled={freeMonth} onChange={(e) => set({ monthsPaid: Number(e.target.value) })}>
                 {Array.from({ length: MONTHS_PAID_MAX }, (_, i) => i + 1).map((n) => (
@@ -294,9 +294,9 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
                 ))}
               </NativeSelect>
             </div>
-            <div className="space-y-1">
-              <span className="text-sm font-semibold">&nbsp;</span>
-              <label className="flex min-h-11 items-center gap-2 text-sm">
+            <div className="space-y-1.5">
+              <span className="hidden text-xs leading-none font-semibold sm:block">&nbsp;</span>
+              <label className="flex min-h-11 items-center gap-2 text-sm md:min-h-9">
                 <input type="checkbox" checked={freeMonth} disabled={!freeOk} onChange={(e) => set({ freeMonth: e.target.checked })} className="size-5 accent-[#047B95]" />
                 {t("sales.freeMonthOption")}
               </label>
@@ -309,7 +309,7 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
       </Card>
 
       <Card>
-        <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-sm text-muted-foreground">{t("sales.total")}</div>
             <div className="text-2xl font-semibold tabular-nums">{total === null ? "—" : formatUSD(total)}</div>
@@ -320,8 +320,8 @@ export function SaleForm({ data, currentMonth }: { data: SaleFormData; currentMo
             ) : null}
           </div>
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={reset} disabled={pending} className="h-11">{t("sales.clearDraft")}</Button>
-            <Button type="submit" disabled={pending} className="h-11 px-6">{pending ? t("sales.submitting") : t("sales.submit")}</Button>
+            <Button type="button" variant="outline" onClick={reset} disabled={pending} className="h-11 md:h-9">{t("sales.clearDraft")}</Button>
+            <Button type="submit" disabled={pending} className="h-11 px-6 md:h-9">{pending ? t("sales.submitting") : t("sales.submit")}</Button>
           </div>
         </CardContent>
       </Card>

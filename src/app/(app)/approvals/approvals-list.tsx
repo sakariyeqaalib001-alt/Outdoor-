@@ -34,18 +34,18 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
   if (result?.ok) {
     return (
       <Card>
-        <CardContent className="pt-6"><FormMessage notice={`${row.customer_name} — ${result.message}`} /></CardContent>
+        <CardContent><FormMessage notice={`${row.customer_name} — ${result.message}`} /></CardContent>
       </Card>
     );
   }
 
   return (
     <Card>
-      <CardContent className="grid gap-4 pt-6">
+      <CardContent className="grid gap-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-lg font-semibold">{row.customer_name}</span>
+              <span className="text-base font-semibold">{row.customer_name}</span>
               <Badge variant="secondary">{t(row.kind === "sale" ? "approvals.sale" : "approvals.switch")}</Badge>
               {row.customer_type ? <Badge variant="outline">{t(`sales.types.${row.customer_type}`)}</Badge> : null}
             </div>
@@ -65,7 +65,7 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
           <p className="text-sm text-muted-foreground">{t("approvals.noEquipment")}</p>
         ) : (
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-semibold">{t("approvals.deviceGiven")}</legend>
+            <legend className="mb-1 text-xs font-semibold text-muted-foreground">{t("approvals.deviceGiven")}</legend>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               {items.filter((i) => row.allowed.includes(i.id)).map((item) => (
                 <label key={item.id} className="flex min-h-11 items-center gap-2 text-sm">
@@ -100,9 +100,9 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
         <Dialog open onOpenChange={(o) => !o && setRejecting(false)}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="brand-title text-xl">{t("approvals.rejectTitle")}</DialogTitle>
+              <DialogTitle className="brand-title text-lg">{t("approvals.rejectTitle")}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor={`reason-${row.id}`}>{t("approvals.reason")}</Label>
               <Input id={`reason-${row.id}`} value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} className="h-11 md:h-9" />
             </div>
@@ -119,7 +119,7 @@ function PendingCard({ row, items, available }: { row: PendingRow; items: StockI
 }
 
 export function ApprovalsList({ rows, items, available }: { rows: PendingRow[]; items: StockItem[]; available: Record<string, Record<string, number>> }) {
-  if (rows.length === 0) return <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("approvals.none")}</p>;
+  if (rows.length === 0) return <p className="rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("approvals.none")}</p>;
   return (
     <div className="grid gap-3">
       {rows.map((row) => (

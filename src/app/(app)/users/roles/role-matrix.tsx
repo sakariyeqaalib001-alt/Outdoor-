@@ -45,7 +45,7 @@ export function RoleMatrix({ data, canEdit }: { data: MatrixData; canEdit: boole
     <div className="space-y-3">
       <p className="max-w-3xl text-sm text-muted-foreground">{t("users.matrixIntro")}</p>
       <FormMessage error={error} />
-      <div className="overflow-x-auto rounded-xl border bg-white" aria-busy={pending}>
+      <div className="overflow-x-auto rounded-lg border bg-white" aria-busy={pending}>
         <Table>
           <TableHeader>
             <TableRow>

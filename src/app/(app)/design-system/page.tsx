@@ -61,7 +61,7 @@ export default function DesignSystemPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="brand-title text-lg">logo</CardTitle>
+            <CardTitle className="brand-title text-base">logo</CardTitle>
             <CardDescription>Official SVG files, white background only, 1.5x clear space.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap items-end gap-6">
@@ -73,7 +73,7 @@ export default function DesignSystemPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="brand-title text-lg">{t("designSystem.colors")}</CardTitle>
+            <CardTitle className="brand-title text-base">{t("designSystem.colors")}</CardTitle>
             <CardDescription>Brand kit palette. Lavender family is not used (source values are incorrect).</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
@@ -97,7 +97,7 @@ export default function DesignSystemPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="brand-title text-lg">{t("designSystem.typography")}</CardTitle>
+              <CardTitle className="brand-title text-base">{t("designSystem.typography")}</CardTitle>
               <CardDescription>Signika only. Titles semibold and lowercase.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -114,7 +114,7 @@ export default function DesignSystemPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="brand-title text-lg">{t("designSystem.buttons")}</CardTitle>
+              <CardTitle className="brand-title text-base">{t("designSystem.buttons")}</CardTitle>
               <CardDescription>All text/background pairs meet WCAG AA.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
@@ -135,7 +135,7 @@ export default function DesignSystemPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="brand-title text-lg">{t("designSystem.statuses")}</CardTitle>
+              <CardTitle className="brand-title text-base">{t("designSystem.statuses")}</CardTitle>
               <CardDescription>Always a text label, never colour alone.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">

@@ -24,7 +24,7 @@ async function Notifications() {
         </form>
       ) : null}
       {rows.length === 0 ? (
-        <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("notifications.none")}</p>
+        <p className="rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("notifications.none")}</p>
       ) : (
         <ul className="grid gap-2">
           {rows.map((n) => (

@@ -21,7 +21,7 @@ export const metadata: Metadata = { title: t("stock.tabDeliveries") };
 
 function NoteField() {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <Label htmlFor="note">{t("stock.note")}</Label>
       <Input id="note" name="note" maxLength={500} placeholder={t("stock.noteHint")} className="h-11 md:h-9" />
     </div>
@@ -64,7 +64,7 @@ async function Deliveries() {
               action={sendStock}
               trigger={<Button className="h-11 md:h-9"><Send aria-hidden="true" />{t("stock.send")}</Button>}
             >
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label htmlFor="teamId">{t("stock.supervisor")}</Label>
                 <NativeSelect id="teamId" name="teamId" required>
                   {supervisors.map((tm) => (
@@ -81,7 +81,7 @@ async function Deliveries() {
       ) : null}
 
       <Card>
-        <CardContent className="overflow-x-auto pt-6">
+        <CardContent className="-my-4 overflow-x-auto px-0">
           <Table>
             <TableHeader>
               <TableRow>

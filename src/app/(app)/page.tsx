@@ -88,7 +88,7 @@ async function Overview({ searchParams }: { searchParams: Search }) {
             ].map(([k, v]) => (
               <div key={k}>
                 <dt className="text-sm text-muted-foreground">{k}</dt>
-                <dd className="text-2xl font-semibold text-brand-link tabular-nums">{v}</dd>
+                <dd className="text-xl font-semibold text-foreground tabular-nums">{v}</dd>
               </div>
             ))}
           </dl>

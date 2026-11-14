@@ -15,7 +15,7 @@ async function NewSale() {
   const access = await getAccess();
   if (!can(access, "sales.create")) return <AccessDenied />;
   // D-38: Super Admins do not register sales (nobody could approve them).
-  if (access.roles.includes("super_admin")) return <p className="mx-auto max-w-2xl rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("sales.errors.superAdmin")}</p>;
+  if (access.roles.includes("super_admin")) return <p className="mx-auto max-w-2xl rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("sales.errors.superAdmin")}</p>;
   const data = await getSaleFormData(can(access, "sales.override_city"));
   return <SaleFormLoader data={data} currentMonth={businessMonth(new Date())} />;
 }

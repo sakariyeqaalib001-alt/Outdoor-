@@ -51,7 +51,7 @@ export const TAGLINE_BLUE = "#143885";
  *   The brand accent orange is `brand-accent`.
  */
 export const themeTokens = {
-  "--background": palette.gray100,
+  "--background": palette.white,
   "--foreground": palette.gray900,
   "--card": palette.white,
   "--card-foreground": palette.gray900,

@@ -16,7 +16,7 @@ export function VerifyForm() {
   return (
     <div className="space-y-4">
       <form action={action} className="space-y-4" noValidate>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="code">{t("auth.code")}</Label>
           <Input
             id="code"

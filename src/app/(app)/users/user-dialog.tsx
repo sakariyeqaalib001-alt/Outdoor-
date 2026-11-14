@@ -35,7 +35,7 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(editing ? "users.editUser" : "users.addUser")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(editing ? "users.editUser" : "users.addUser")}</DialogTitle>
           {editing ? <DialogDescription>{user?.email ?? user?.login_phone_e164}</DialogDescription> : null}
         </DialogHeader>
 
@@ -53,7 +53,7 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
 
             {!editing ? (
               <fieldset className="space-y-2">
-                <legend className="text-sm font-semibold">{t("users.employmentType")}</legend>
+                <legend className="text-xs font-semibold text-muted-foreground">{t("users.employmentType")}</legend>
                 {(["temporary", "permanent"] as const).map((value) => (
                   <label key={value} className="flex items-center gap-2 text-sm">
                     <input
@@ -70,18 +70,18 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
               </fieldset>
             ) : null}
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="fullName">{t("users.fullName")}</Label>
               <Input id="fullName" name="fullName" required value={name} onChange={(e) => setName(e.target.value)} className="h-11 md:h-9" />
             </div>
 
             {!editing && type === "permanent" ? (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="email">{t("users.email")}</Label>
                 <Input id="email" name="email" type="email" required autoComplete="off" className="h-11 md:h-9" />
               </div>
             ) : null}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="phone">{t("users.phone")}</Label>
               <Input
                 id="phone"
@@ -100,7 +100,7 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="cityId">{t("users.city")}</Label>
                 <NativeSelect id="cityId" name="cityId" value={cityId} onChange={(e) => setCityId(e.target.value)} required>
                   {lookups.cities.map((c) => (
@@ -108,7 +108,7 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
                   ))}
                 </NativeSelect>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="teamId">{t("users.team")}</Label>
                 <NativeSelect id="teamId" name="teamId" defaultValue={user?.team_id ?? ""} key={`team-${cityId}`}>
                   <option value="">{t("users.noTeam")}</option>
@@ -117,14 +117,14 @@ export function UserDialog({ open, onOpenChange, lookups, user }: Props) {
                   ))}
                 </NativeSelect>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="startDate">{t("users.startDate")}</Label>
                 <Input id="startDate" name="startDate" type="date" defaultValue={user?.start_date ?? ""} className="h-11 md:h-9" />
               </div>
             </div>
 
             <fieldset className="space-y-2">
-              <legend className="text-sm font-semibold">{t("users.roles")}</legend>
+              <legend className="text-xs font-semibold text-muted-foreground">{t("users.roles")}</legend>
               <p className="text-xs text-muted-foreground">{t("users.rolesHint")}</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {lookups.roles.map((role) => (

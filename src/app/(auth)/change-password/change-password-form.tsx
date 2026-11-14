@@ -12,7 +12,7 @@ export function ChangePasswordForm() {
   const [state, action, pending] = useActionState(changePassword, undefined);
   return (
     <form action={action} className="space-y-4" noValidate>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="password">{t("auth.newPassword")}</Label>
         <Input
           id="password"
@@ -27,7 +27,7 @@ export function ChangePasswordForm() {
           {t("auth.passwordRules")}
         </p>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="confirm">{t("auth.confirmPassword")}</Label>
         <Input id="confirm" name="confirm" type="password" autoComplete="new-password" required className="h-11" />
       </div>

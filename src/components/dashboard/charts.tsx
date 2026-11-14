@@ -147,8 +147,8 @@ export function DonutChart({
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 grid place-content-center text-center">
-          <span className="text-2xl font-semibold text-brand-link tabular-nums">{center}</span>
-          <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{centerLabel}</span>
+          <span className="text-2xl font-semibold text-foreground tabular-nums">{center}</span>
+          <span className="text-xs text-muted-foreground">{centerLabel}</span>
         </div>
       </div>
       <ul className="grid w-full gap-2 text-sm">
@@ -157,7 +157,7 @@ export function DonutChart({
             <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} aria-hidden="true" />
             <span className="flex-1 font-semibold">{d.label}</span>
             <span className="tabular-nums text-muted-foreground">{units.format(d.value)}</span>
-            <span className="w-11 text-right font-semibold text-brand-link tabular-nums">{total ? `${Math.round((d.value / total) * 100)}%` : "—"}</span>
+            <span className="w-11 text-right font-semibold text-foreground tabular-nums">{total ? `${Math.round((d.value / total) * 100)}%` : "—"}</span>
           </li>
         ))}
       </ul>

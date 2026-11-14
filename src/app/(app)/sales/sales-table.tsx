@@ -34,9 +34,9 @@ export function SalesTotals({ sales }: { sales: SaleRow[] }) {
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {cards.map((c) => (
         <Card key={c.label}>
-          <CardContent className="pt-5">
-            <div className="text-sm text-muted-foreground">{c.label}</div>
-            <div className="text-2xl font-semibold tabular-nums">{c.value}</div>
+          <CardContent className="grid gap-1">
+            <div className="text-xs text-muted-foreground">{c.label}</div>
+            <div className="text-xl font-semibold tabular-nums">{c.value}</div>
           </CardContent>
         </Card>
       ))}
@@ -54,7 +54,7 @@ const WIDTHS = ["14%", "15%", "12%", "15%", "8%", "10%", "11%", "15%"];
 export function SalesTable({ sales, agentNames }: { sales: SaleRow[]; agentNames?: Record<string, string> }) {
   const widths = agentNames ? WIDTHS_WITH_AGENT : WIDTHS;
   return (
-    <div className="overflow-x-auto rounded-xl border bg-white">
+    <div className="overflow-x-auto rounded-lg border bg-white">
       <Table className="min-w-[1100px] table-fixed [&_td]:px-4 [&_th]:px-4">
         <colgroup>
           {widths.map((w, i) => (

@@ -30,15 +30,15 @@ function TeamDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t(team ? "users.editTeam" : "users.addTeam")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t(team ? "users.editTeam" : "users.addTeam")}</DialogTitle>
         </DialogHeader>
         <form action={action} className="space-y-4">
           {team ? <input type="hidden" name="teamId" value={team.id} /> : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="name">{t("users.teamName")}</Label>
             <Input id="name" name="name" required defaultValue={team?.name} className="h-11 md:h-9" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="cityId">{t("users.city")}</Label>
             <NativeSelect id="cityId" name="cityId" defaultValue={team?.city_id ?? lookups.cities[0]?.id}>
               {lookups.cities.map((c) => (
@@ -46,7 +46,7 @@ function TeamDialog({
               ))}
             </NativeSelect>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="leaderId">{t("users.teamLeader")}</Label>
             <NativeSelect id="leaderId" name="leaderId" defaultValue={team?.team_leader_id ?? ""} aria-describedby="leaderHint">
               <option value="">{t("users.noLeader")}</option>
@@ -89,7 +89,7 @@ export function TeamsView({ lookups, users, canManage }: { lookups: Lookups; use
           </Button>
         </div>
       ) : null}
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-lg border bg-white">
         <Table>
           <TableHeader>
             <TableRow>

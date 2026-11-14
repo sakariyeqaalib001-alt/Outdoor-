@@ -30,23 +30,23 @@ function Body({ customerId, name, onClose }: { customerId: string; name: string;
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="brand-title text-xl">{t("customers.changeTitle")}</DialogTitle>
+          <DialogTitle className="brand-title text-lg">{t("customers.changeTitle")}</DialogTitle>
           <DialogDescription>{`${name} — ${t("customers.changeIntro")}`}</DialogDescription>
         </DialogHeader>
         <form action={action} className="space-y-4">
           <input type="hidden" name="customerId" value={customerId} />
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="kind">{t("customers.kind")}</Label>
             <NativeSelect id="kind" name="kind">
               <option value="phone">{t("customers.phone")}</option>
               <option value="index">{t("customers.index")}</option>
             </NativeSelect>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="value">{t("customers.newValue")}</Label>
             <Input id="value" name="value" required inputMode="numeric" maxLength={25} className="h-11 md:h-9" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="reason">{t("customers.reason")}</Label>
             <Input id="reason" name="reason" required minLength={3} maxLength={500} className="h-11 md:h-9" />
           </div>

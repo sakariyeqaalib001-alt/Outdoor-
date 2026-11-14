@@ -44,7 +44,7 @@ export function FilterBar({
 
   return (
     <form ref={form} action={path} className="grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap">
-      <div className="col-span-2 space-y-1 sm:w-44">
+      <div className="col-span-2 space-y-1.5 sm:w-44">
         <Label htmlFor="period">{t("dashboard.filter.period")}</Label>
         <NativeSelect
           id="period"
@@ -62,18 +62,18 @@ export function FilterBar({
       </div>
       {period === "custom" ? (
         <>
-          <div className="space-y-1 sm:w-40">
+          <div className="space-y-1.5 sm:w-40">
             <Label htmlFor="from">{t("dashboard.filter.from")}</Label>
             <Input id="from" name="from" type="date" required max={today} defaultValue={filters.from} className="h-11 md:h-9" />
           </div>
-          <div className="space-y-1 sm:w-40">
+          <div className="space-y-1.5 sm:w-40">
             <Label htmlFor="to">{t("dashboard.filter.to")}</Label>
             <Input id="to" name="to" type="date" required max={today} defaultValue={filters.to ?? today} className="h-11 md:h-9" />
           </div>
           <Button type="submit" className="col-span-2 h-11 sm:col-span-1 md:h-9">{t("dashboard.filter.apply")}</Button>
         </>
       ) : null}
-      <div className="space-y-1 sm:w-40">
+      <div className="space-y-1.5 sm:w-40">
         <Label htmlFor="city_id">{t("dashboard.filter.city")}</Label>
         <NativeSelect
           id="city_id"
@@ -90,7 +90,7 @@ export function FilterBar({
           ))}
         </NativeSelect>
       </div>
-      <div className="space-y-1 sm:w-44">
+      <div className="space-y-1.5 sm:w-44">
         <Label htmlFor="branch_id">{t("dashboard.filter.branch")}</Label>
         <NativeSelect id="branch_id" name="branch_id" defaultValue={filters.branch_id ?? ""} key={`b-${city}`} onChange={submit}>
           <option value="">{t("dashboard.filter.allBranches")}</option>
@@ -99,7 +99,7 @@ export function FilterBar({
           ))}
         </NativeSelect>
       </div>
-      <div className="space-y-1 sm:w-36">
+      <div className="space-y-1.5 sm:w-36">
         <Label htmlFor="product_id">{t("dashboard.filter.product")}</Label>
         <NativeSelect id="product_id" name="product_id" defaultValue={filters.product_id ?? ""} onChange={submit}>
           <option value="">{t("dashboard.filter.allProducts")}</option>
@@ -109,7 +109,7 @@ export function FilterBar({
         </NativeSelect>
       </div>
       {showAgents ? (
-        <div className="space-y-1 sm:w-48">
+        <div className="space-y-1.5 sm:w-48">
           <Label htmlFor="agent_id">{t("dashboard.filter.agent")}</Label>
           <NativeSelect id="agent_id" name="agent_id" defaultValue={filters.agent_id ?? ""} key={`a-${city}`} onChange={submit}>
             <option value="">{t("dashboard.filter.allAgents")}</option>

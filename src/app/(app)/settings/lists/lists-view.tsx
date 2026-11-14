@@ -20,7 +20,7 @@ function CustomerTypeForm({ row }: { row: CustomerTypeRow }) {
         <span className="text-xs text-muted-foreground">{t("settings.code")}</span>
         <div className="font-mono text-sm">{row.code}</div>
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <Label htmlFor={id}>{t("settings.name")}</Label>
         <Input id={id} name="name" required minLength={2} maxLength={40} defaultValue={row.name} className="h-11 md:h-9" />
         <FormMessage error={state?.error} notice={state?.ok ? state.message : undefined} />
@@ -42,7 +42,7 @@ function StockItemForm({ row }: { row: StockItemRow }) {
         <span className="text-xs text-muted-foreground">{t("settings.code")}</span>
         <div className="font-mono text-sm">{row.code}</div>
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <Label htmlFor={id}>{t("settings.displayName")}</Label>
         <Input id={id} name="name" required minLength={2} maxLength={60} defaultValue={row.display_name} className="h-11 md:h-9" />
         <FormMessage error={state?.error} notice={state?.ok ? state.message : undefined} />
@@ -64,7 +64,7 @@ export function ListsView({ customerTypes, stockItems }: { customerTypes: Custom
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("settings.customerTypes")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("settings.customerTypes")}</CardTitle>
           <CardDescription>{t("settings.customerTypesIntro")}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,7 +75,7 @@ export function ListsView({ customerTypes, stockItems }: { customerTypes: Custom
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="brand-title text-lg">{t("settings.stockItems")}</CardTitle>
+          <CardTitle className="brand-title text-base">{t("settings.stockItems")}</CardTitle>
           <CardDescription>{t("settings.stockItemsIntro")}</CardDescription>
         </CardHeader>
         <CardContent>

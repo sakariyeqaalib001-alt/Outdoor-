@@ -39,7 +39,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 async function Detail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const sale = UUID.test(id) ? await getSale(id) : null;
-  if (!sale) return <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("sales.notFound")}</p>;
+  if (!sale) return <p className="rounded-lg border bg-white p-6 text-center text-sm text-muted-foreground">{t("sales.notFound")}</p>;
   const saved = typeof query.saved === "string" ? SAVED[query.saved] : undefined;
   const [decisions, access, refunds] = await Promise.all([listDecisions("sales", sale.id), getAccess(), saleRefunds(sale.id)]);
   // Refund (Phase 12): an approved sale with no refund waiting or approved; the database checks scope again.
@@ -54,7 +54,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
       {saved ? <FormMessage notice={t(saved)} /> : null}
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2">
-          <CardTitle className="text-xl">{sale.customer_name}</CardTitle>
+          <CardTitle className="text-lg">{sale.customer_name}</CardTitle>
           <div className="flex flex-wrap gap-2">
             {sale.free_month ? <Badge variant="secondary">{t("sales.freeMonthBadge")}</Badge> : null}
             <SaleStatusBadge status={sale.status} />
@@ -118,7 +118,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
       </Card>
       {canRequestRefund ? <RequestRefundButton saleId={sale.id} collected={sale.amount_collected} /> : null}
       {canOpenCase ? <NewCaseButton saleId={sale.id} label={t("audit.openCaseForSale")} /> : null}
-      <Button asChild variant="outline" className="h-11 justify-self-start">
+      <Button asChild variant="outline" className="h-11 justify-self-start md:h-9">
         <Link href={`/sales?month=${monthKeyOf(sale.sale_month)}`}><ArrowLeft aria-hidden="true" />{t("sales.back")}</Link>
       </Button>
     </div>

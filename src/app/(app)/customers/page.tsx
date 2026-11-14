@@ -34,7 +34,7 @@ async function Customers({ searchParams }: { searchParams: SearchParams }) {
         <Input id="q" name="q" defaultValue={term} placeholder={t("customers.search")} className="h-11 md:h-9" />
         <Button type="submit" variant="outline" className="h-11 md:h-9" aria-label={t("customers.search")}><Search aria-hidden="true" /></Button>
       </form>
-      <div className="overflow-x-auto rounded-xl border bg-white">
+      <div className="overflow-x-auto rounded-lg border bg-white">
         <Table>
           <TableHeader>
             <TableRow>
