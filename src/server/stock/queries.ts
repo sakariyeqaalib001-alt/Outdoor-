@@ -124,6 +124,40 @@ export async function listMovements(): Promise<MovementRow[]> {
   return (data ?? []) as MovementRow[];
 }
 
+/** Start and end (exclusive) of a business-date range in EAT (UTC+3, no daylight saving), as ISO instants. */
+function rangeBounds(from: string, to: string): [string, string] {
+  const start = new Date(`${from}T00:00:00+03:00`);
+  const end = new Date(new Date(`${to}T00:00:00+03:00`).getTime() + 24 * 60 * 60 * 1000);
+  return [start.toISOString(), end.toISOString()];
+}
+
+/** Movements of the given types within the business-date range, oldest first (RLS limits the rows). */
+export async function listMovementsBetween(from: string, to: string, types: string[]): Promise<MovementRow[]> {
+  const [start, end] = rangeBounds(from, to);
+  const { data } = await (await client())
+    .from("stock_movements")
+    .select("id, movement_type, item_id, quantity, from_location_id, to_location_id, reason, actor_id, occurred_at")
+    .in("movement_type", types)
+    .gte("occurred_at", start)
+    .lt("occurred_at", end)
+    .order("occurred_at", { ascending: true })
+    .limit(2000);
+  return (data ?? []) as MovementRow[];
+}
+
+/** Stock issued to Outdoor Supervisors within the business-date range, oldest first. */
+export async function listTransfersBetween(from: string, to: string): Promise<TransferRow[]> {
+  const [start, end] = rangeBounds(from, to);
+  const { data } = await (await client())
+    .from("stock_transfers")
+    .select("id, to_location_id, status, note, sent_at, decided_at, lines:stock_transfer_lines(item_id, quantity)")
+    .gte("sent_at", start)
+    .lt("sent_at", end)
+    .order("sent_at", { ascending: true })
+    .limit(1000);
+  return (data ?? []) as TransferRow[];
+}
+
 export async function getReport(from: string, to: string): Promise<ReportRow[]> {
   const { data } = await (await client()).rpc("stock_report", { p_from: from, p_to: to });
   return (data ?? []) as ReportRow[];

@@ -44,6 +44,11 @@ export const SALE_ERRORS: Record<string, MessageKey> = {
   EQUIPMENT_REQUIRED: "sales.errors.equipmentRequired",
   EQUIPMENT_NOT_ALLOWED: "sales.errors.equipmentNotAllowed",
   EQUIPMENT_ONE: "sales.errors.equipmentOne",
+  SALE_NOT_REFUNDABLE: "sales.errors.saleNotRefundable",
+  REFUND_EXISTS: "sales.errors.refundExists",
+  REFUND_AMOUNT: "sales.errors.refundAmount",
+  REFUND_NOT_APPROVED: "sales.errors.refundNotApproved",
+  RETURN_TOO_MANY: "sales.errors.returnTooMany",
 };
 
 /** Duplicate results (status "duplicate") → message keys, by rule and field. */

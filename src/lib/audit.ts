@@ -33,6 +33,7 @@ export const RULE_CODES = [
   "POST_APPROVAL_EDIT",
   "IDENTITY_CORRECTED",
   "SELF_APPROVED",
+  "HIGH_REFUND_RATE",
 ] as const;
 export type RuleCode = (typeof RULE_CODES)[number];
 
@@ -49,6 +50,11 @@ export const RULE_THRESHOLDS: Partial<Record<RuleCode, { key: string; label: Mes
   BURST: [
     { key: "sales", label: "audit.threshold.sales", min: 2, max: 50 },
     { key: "minutes", label: "audit.threshold.minutes", min: 5, max: 1440 },
+  ],
+  HIGH_REFUND_RATE: [
+    { key: "percent", label: "audit.threshold.percent", min: 1, max: 100 },
+    { key: "refunds", label: "audit.threshold.refunds", min: 1, max: 50 },
+    { key: "days", label: "audit.threshold.days", min: 1, max: 365 },
   ],
 };
 

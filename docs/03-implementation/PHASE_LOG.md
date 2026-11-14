@@ -703,3 +703,46 @@ Not yet run: the readiness page on staging (needs the SQL paste and the owner's 
 
 **Next prompt (not executed):** once the gate is passed and the pilot has started —
 > Proceed with Phase 12 only: refunds. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 12, run `npm run check`, update the logs, report the gate and stop.
+
+---
+
+## Phase 12 — Refunds
+
+**Date:** 7 Nov 2026 · **Status:** ✅ **Built — awaiting owner test** (no open business decision). Started at the owner's request ("START PHASE 12") before the Hargeisa pilot began — hosting and the production database (D-43) are still open.
+
+**Scope delivered (Roadmap Phase 12; BRD §6.5, BR-03; SDD §10.5; T-28)**
+- Migration `20261107090000_refunds.sql`: `refunds` (one pending or approved per sale; snapshot of customer name, product, branch, amount collected — no phone or Index; decided rows cannot change; RLS: requester, sale agent in scope, Team Leader of the team, `sales.read` holders, Super Admin); `payroll_pending_adjustments` (append-only, Finance / Super Admin read); `public.create_refund` (refunds.submit in scope, approved sales only, amount > 0 and ≤ collected, five reasons with Other note, idempotent); `public.decide_refund` (Super Admin only, never their own request or sale; reject needs a reason and changes nothing; approve sets the sale to `reversed`, records the counting month and payroll effect, writes a pending adjustment when the month is finalized via `app.month_finalized`, false until Phase 16); `public.refund_record_return`, `public.refunds_to_collect`, `public.refund_equipment` (devices back to Central / faulty store, linked to the refund); notifications refund_pending / approved / rejected / return; audit rule **HIGH_REFUND_RATE** (off; thresholds percent / refunds / days, editable in Audit → Rules).
+- Phase 11 fix: opening-stock reconciliation nets devices returned by customers from "issued" (the Difference stayed 0 only without customer returns).
+- App: **Refunds** page (waiting list with Approve / Reject for Super Admin; decided list with decision, payroll effect and devices returned); **Request refund** on the sale page with the refund history; **refunds: devices to collect** on Stock → Returns (Stock Officer); waiting-refunds link on Approvals; menu item enabled (`COMPLETED_PHASE = 12`).
+- Documents: `docs/06-operations/refunds.md`; refund sections in the agent and Team Leader guides; T-28; BRD / SDD change history, SDD §8.3 and §10.5; roadmap status; traceability.
+
+**Commands run**
+| Command | Result |
+|---|---|
+| `npx vitest run tests/db/refunds.test.ts` | 17 passed |
+| `npm run db:sql-editor` | `supabase/sql-editor/20261107090000_refunds.sql` and the fresh-project file written |
+| `npm run check` | lint clean, typecheck clean, **26 files / 463 tests passed**, build OK (`/refunds` added) |
+| Browser (signed out) | `/refunds` redirects to sign-in; no server errors |
+
+**Acceptance gate (UAT-07, 17)**
+| Criterion | Result |
+|---|---|
+| Only Super Admin approves; rejected refunds change nothing | ✅ tests: agent, Team Leader, Stock Officer, Finance refused; requester Super Admin refused (SELF_APPROVAL); rejection leaves the sale approved, eligible and stock untouched |
+| Approved refunds remove the sale from eligible sales for unfinalized months | ✅ tests: sale `reversed`, gone from `app.eligible_sales`, payroll effect "excluded"; finalized month → pending adjustment (−1 unit, −amount) |
+| Original sale and stock history preserved | ✅ tests: sale row, its approval and its stock issue remain; refund rows cannot be edited or deleted |
+| Owner test on staging and training | ⏳ pending |
+
+**Changes during owner testing (10 Nov 2026, no database change)**
+- Refunds page: a how-to line with a link to Sales for people who can request refunds.
+- Stock → Report & history redesigned at the owner's request (FR-STK-04 unchanged in content): summary by item (start, received from supplier, returned by customers, given to customers, adjustments, end, issued to Supervisors), separate **received** and **issued** lists, stock by location, and the movement history folded underneath. `npm run check` re-run 14 Nov: 26 files / 463 tests passed, build OK; checked in the browser as Super Admin on both sites.
+
+**Manual steps for the owner:** paste `supabase/sql-editor/20261107090000_refunds.sql` into **Outdoor** and **Outdoor Training**; rebuild and restart the training site; test as in the gate report.
+
+**Risks / open items**
+- With only one Super Admin, a refund that Super Admin requests cannot be decided — let the agent or Team Leader request it, or add a second Super Admin (readiness advice).
+- An approved refund reverses the whole sale even for a partial amount (SDD §10.5); partial-amount accounting would need a business decision.
+- Pay corrections for finalized months are recorded now but only applied when payroll exists (Phase 16).
+- HIGH_REFUND_RATE looks at agents only; refund rate by product, branch or reason (BRD §7) is reporting work (Phase 15).
+
+**Next prompt (not executed):**
+> Proceed with Phase 13 only: customer follow-up. Follow BRD/SDD v1.5 and CLAUDE.md, inspect first, implement only Phase 13, run `npm run check`, update the logs, report the gate and stop.

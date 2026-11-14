@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { NOTIFICATION_KINDS, notificationLink, notificationText } from "@/lib/notifications";
 
 describe("notifications (SDD §18)", () => {
-  it("cover exactly the kinds the database allows (latest constraint: Phase 9)", () => {
-    const migration = readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations/20261026090000_audit_cases.sql"), "utf8");
+  it("cover exactly the kinds the database allows (latest constraint: Phase 12)", () => {
+    const migration = readFileSync(path.resolve(import.meta.dirname, "../../supabase/migrations/20261107090000_refunds.sql"), "utf8");
     const check = migration.match(/notifications_kind_check check \(kind in \(([^)]+)\)\)/);
     const kinds = [...(check?.[1] ?? "").matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
     expect(kinds).toEqual([...NOTIFICATION_KINDS].sort());

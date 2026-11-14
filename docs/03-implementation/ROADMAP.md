@@ -438,6 +438,7 @@ STOP after reporting. Wait for my explicit instruction.
 - Super Admin approval/rejection; approval sets sale reversed; links equipment return.
 - Payroll effect hook: if the counting month is finalized, create a pending adjustment record (consumed in Phase 16).
 - HIGH_REFUND_RATE rule available (disabled by default).
+- Status (T-28, 7 Nov 2026): built at the owner's request before the pilot started (D-43 still open); see PHASE_LOG.
 
 **Acceptance gate (UAT-07, 17)**
 - Only Super Admin approves; rejected refunds change nothing.

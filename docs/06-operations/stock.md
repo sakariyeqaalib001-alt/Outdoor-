@@ -24,7 +24,7 @@ Supabase → "Outdoor" → **SQL Editor** → **New query** → paste the whole 
 | | The receiving Outdoor Supervisor, or Super Admin | **Accept** once the items arrived — only then does the team's stock go up |
 | **Returns & adjustments** | Stock Officer | **Record a return** from a team or a customer, with a reason (faulty, refund, product switch, Retention rejected, other) |
 | | Stock Officer → Super Admin | **Request adjustment** (lost, damaged, miscount, with reason) → Super Admin **Approves** or **Rejects**. Nobody approves their own request |
-| **Report & history** | Everyone with stock access | Report for chosen dates: opening, received, in, out, issued, returned, adjusted, closing. Movement history: every movement, who and when — never changed or deleted |
+| **Report & history** | Everyone with stock access | Report for chosen dates: summary by item (start, received from supplier, returned by customers, given to customers, adjustments, end; issued to Supervisors shown separately), a **received** list, an **issued** list and stock by location. Movement history (click to open): every movement, who and when — never changed or deleted |
 
 When the Supervisor approves a sale (Phase 8), the equipment they record is taken from the **team's** accepted stock. Approval is refused if the team does not have enough (D-37).
 
@@ -43,7 +43,7 @@ You need: a **Stock Officer** user (Users → edit a user → tick **Stock Offic
 | **Request adjustment**: Central Store, WiFi Router, −2, "Two units damaged in store" | "Waiting for approval"; the balance is unchanged |
 | As the same person, try to approve it | No Approve button (you cannot approve your own request) |
 | As another Super Admin (or ask the Stock Officer to request it) → **Approve** | Central routers go down by 2 |
-| Report & history | The report adds up (closing = opening + in − out); history lists every step with who did it |
+| Report & history | The report adds up (end = start + received + returned by customers − given to customers ± adjustments); history lists every step with who did it |
 | Sign in as the test agent | Stock shows only their team, no Receive/Issue/Return buttons |
 
 ## 4. Clearing test stock before go-live (one time)

@@ -667,7 +667,7 @@
     "adjRejected": "Rejected",
     "noAdjustments": "No adjustments yet.",
     "report": "stock report",
-    "reportIntro": "Per location and item for the chosen dates. Closing = opening + received + transferred in − transferred out − issued to customers + returned in − returned out ± adjustments.",
+    "reportIntro": "What came into stock and what went out, {from} to {to}. End = start + received from supplier + returned by customers − given to customers ± adjustments. Issued to Supervisors only moves stock from the Central Store to a team, so it does not change the total.",
     "dateFrom": "From",
     "dateTo": "To",
     "show": "Show",
@@ -681,7 +681,7 @@
     "adjusted": "Adj.",
     "closing": "Closing",
     "history": "movement history",
-    "historyIntro": "Every stock movement, newest first (last 300). Movements can never be changed or deleted.",
+    "historyIntro": "Every stock movement, newest first (last 300). Movements can never be changed or deleted. Click to open.",
     "when": "When",
     "type": "Type",
     "by": "By",
@@ -715,7 +715,27 @@
     },
     "supervisor": "Outdoor Supervisor",
     "noSupervisor": "No team has an Outdoor Supervisor yet. Set one on Users → Teams.",
-    "noSupervisorShort": "no Outdoor Supervisor"
+    "noSupervisorShort": "no Outdoor Supervisor",
+    "total": "Total",
+    "sumStart": "In stock at start ({date})",
+    "sumFromSupplier": "Received from supplier",
+    "sumReturned": "Returned by customers",
+    "sumIssued": "Issued to Supervisors",
+    "sumUsed": "Given to customers (sales)",
+    "sumAdjusted": "Adjustments (+ / −)",
+    "sumEnd": "In stock at end ({date})",
+    "receivedTitle": "received",
+    "receivedIntro": "Stock that came in: deliveries from the supplier into the Central Store, and devices returned back.",
+    "issuedTitle": "issued",
+    "issuedIntro": "Stock the Stock Officer issued from the Central Store to Outdoor Supervisors.",
+    "supplier": "Supplier",
+    "into": "Into",
+    "noneReceived": "Nothing received in these dates.",
+    "noneIssued": "Nothing issued in these dates.",
+    "cancelledNotCounted": "Crossed-out issues were cancelled and are not counted.",
+    "byLocation": "stock by location",
+    "byLocationIntro": "What each store and Outdoor Supervisor holds on {date} (faulty devices are not counted as usable stock).",
+    "sumFaulty": "of which in the faulty store"
   },
   "environment": {
     "trainingLabel": "Training site",
@@ -835,7 +855,12 @@
       "switchStale": "The customer's product changed since this switch was submitted. Reject it and submit a new one.",
       "equipmentRequired": "Choose the device given to the customer.",
       "equipmentNotAllowed": "That device is not given with this product (FTTA: WiFi Router; FTTH / FTTB: PDCOM or CALIX; LTE: none).",
-      "equipmentOne": "Exactly one device is given per sale."
+      "equipmentOne": "Exactly one device is given per sale.",
+      "saleNotRefundable": "Only an approved sale can be refunded.",
+      "refundExists": "This sale already has a refund waiting or approved.",
+      "refundAmount": "Enter an amount above $0 and not more than the amount collected (cents at most).",
+      "refundNotApproved": "The refund is not approved yet.",
+      "returnTooMany": "That is more than was given on the sale (or already returned)."
     },
     "dup": {
       "phone": "Blocked: this phone number is already registered to a customer. The attempt was recorded for review.",
@@ -945,7 +970,11 @@
       "switch_rejected": "Your product switch for {customer} was rejected: {reason}",
       "stock_to_accept": "Stock was issued to your team — check it arrived and accept it.",
       "audit_alert": "Audit alert: {rule} (case #{caseNo}) — open the case to review it.",
-      "audit_case_assigned": "Audit case #{caseNo} was assigned to you."
+      "audit_case_assigned": "Audit case #{caseNo} was assigned to you.",
+      "refund_pending": "{agent} asked for a refund for {customer} — waiting for your decision.",
+      "refund_approved": "The refund for {customer} was approved.",
+      "refund_rejected": "The refund for {customer} was rejected: {reason}",
+      "refund_return": "A refund for {customer} was approved — collect the device and record the return."
     }
   },
   "audit": {
@@ -1047,7 +1076,9 @@
       "agents": "Agents (at least)",
       "days": "Within days",
       "sales": "Sales (at least)",
-      "minutes": "Within minutes"
+      "minutes": "Within minutes",
+      "percent": "Refund rate (%) at least",
+      "refunds": "Refunds (at least)"
     },
     "fields": {
       "full_name": "Name entered",
@@ -1107,6 +1138,10 @@
       "SELF_APPROVED": {
         "name": "Self-approved sale",
         "explain": "A Team Leader approved their own sale (allowed, D-40). Recorded for review only: no case, no hold."
+      },
+      "HIGH_REFUND_RATE": {
+        "name": "High refund rate",
+        "explain": "An agent's approved refunds reached the set share of their approved sales within the period (at least the set number of refunds)."
       }
     },
     "email": {
@@ -1242,5 +1277,82 @@
         "hint": "Accounts or customers that look like tests ({n}). Production starts clean (D-21)."
       }
     }
+  },
+  "refunds": {
+    "title": "refunds",
+    "intro": "Refunds of approved sales. Agents and Team Leaders ask; only a Super Admin approves or rejects. Approving marks the sale Refunded — it is kept but no longer counts for targets or pay. A rejected refund changes nothing.",
+    "waiting": "waiting for decision",
+    "history": "decided",
+    "noneWaiting": "No refunds are waiting.",
+    "noneDecided": "No decided refunds yet.",
+    "requested": "Requested",
+    "customer": "Customer",
+    "product": "Product",
+    "amount": "Refund",
+    "collected": "Collected",
+    "reason": "Reason",
+    "branch": "Branch",
+    "requestedBy": "Requested by",
+    "agent": "Agent",
+    "status": "Status",
+    "decision": "Decision",
+    "equipment": "Devices returned",
+    "equipmentNone": "None given",
+    "equipmentLine": "{item}: {returned} of {given}",
+    "payrollExcluded": "Not counted in {month}",
+    "payrollAdjustment": "Correction in the next payroll run ({month} was finalized)",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approveTitle": "approve refund",
+    "approveText": "The sale will be marked Refunded and stop counting for targets and pay. This cannot be undone.",
+    "rejectTitle": "reject refund",
+    "note": "Note (optional)",
+    "rejectReason": "Reason (shown to the person who asked)",
+    "confirmApprove": "Approve refund",
+    "confirmReject": "Reject refund",
+    "cancel": "Cancel",
+    "approved": "Refund approved. The sale is now Refunded.",
+    "rejected": "Refund rejected. Nothing changed on the sale.",
+    "ownRequest": "You asked for this refund — another Super Admin must decide it.",
+    "openSale": "Open sale",
+    "statuses": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "reasons": {
+      "out_of_boundary": "Out of boundary",
+      "technical_delay": "Technical delay",
+      "refused": "Refused",
+      "no_signal": "No signal",
+      "other": "Other"
+    },
+    "request": "Request refund",
+    "requestTitle": "request refund",
+    "requestIntro": "A Super Admin decides. The sale keeps counting until the refund is approved.",
+    "amountLabel": "Refund amount (USD)",
+    "amountHint": "At most {amount}, the amount collected on this sale.",
+    "noteLabel": "Note",
+    "noteHint": "Required when the reason is Other.",
+    "submit": "Send request",
+    "submitting": "Sending…",
+    "submitted": "Refund requested. A Super Admin will decide.",
+    "saleSection": "refund",
+    "waitingLink": "{count} refunds waiting for your decision",
+    "collectTitle": "refunds: devices to collect",
+    "collectIntro": "Approved refunds whose devices have not all come back. Record each device when you receive it.",
+    "collectNone": "No devices to collect.",
+    "recordReturn": "Record return",
+    "returnTitle": "record refund return",
+    "item": "Device",
+    "quantity": "Quantity",
+    "faulty": "Faulty — put in the faulty store",
+    "returnNote": "Note (optional)",
+    "returned": "Return recorded.",
+    "team": "Team",
+    "outstanding": "{returned} of {given} back",
+    "decidedAt": "Approved",
+    "howTo": "To ask for a refund, open the sale in Sales (it must be Approved) and press Request refund.",
+    "goToSales": "Go to Sales"
   }
 }

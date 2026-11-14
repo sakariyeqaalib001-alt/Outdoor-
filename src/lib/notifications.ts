@@ -11,6 +11,10 @@ export const NOTIFICATION_KINDS = [
   "stock_to_accept",
   "audit_alert",
   "audit_case_assigned",
+  "refund_pending",
+  "refund_approved",
+  "refund_rejected",
+  "refund_return",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -31,5 +35,7 @@ export function notificationLink(kind: string, entityId: string): string {
   if (kind === "switch_approved" || kind === "switch_rejected") return "/switches";
   if (kind === "stock_to_accept") return "/stock";
   if (kind === "audit_alert" || kind === "audit_case_assigned") return `/audit/cases/${entityId}`;
+  if (kind === "refund_return") return "/stock/returns";
+  if (kind.startsWith("refund_")) return "/refunds";
   return "/";
 }

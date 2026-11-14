@@ -12,6 +12,8 @@ import { t } from "@/lib/i18n";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { can, getAccess } from "@/server/auth/access";
 import { getSessionId } from "@/server/auth/session";
+import { recordRefundReturn } from "@/server/refunds/actions";
+import { refundsToCollect, type CollectRow } from "@/server/refunds/queries";
 import { decideAdjustment, recordReturn, requestAdjustment } from "@/server/stock/actions";
 import { getStockContext, listAdjustments, namesOf, type StockItem } from "@/server/stock/queries";
 import { StockShell } from "../stock-shell";
@@ -40,6 +42,73 @@ const ADJ_STATUS = {
   rejected: { badge: "rejected", label: "stock.adjRejected" },
 } as const;
 
+/** Approved refunds whose devices have not all come back (FR-REF-08): the Stock Officer records each one here. */
+function RefundCollect({ rows }: { rows: CollectRow[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="brand-title text-lg">{t("refunds.collectTitle")}</CardTitle>
+        <CardDescription>{t("refunds.collectIntro")}</CardDescription>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("refunds.decidedAt")}</TableHead>
+              <TableHead>{t("refunds.customer")}</TableHead>
+              <TableHead>{t("refunds.team")}</TableHead>
+              <TableHead>{t("refunds.item")}</TableHead>
+              <TableHead>{t("refunds.equipment")}</TableHead>
+              <TableHead className="w-40"><span className="sr-only">{t("refunds.recordReturn")}</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">{t("refunds.collectNone")}</TableCell>
+              </TableRow>
+            ) : (
+              rows.map((r) => (
+                <TableRow key={`${r.refund_id}-${r.item_id}`}>
+                  <TableCell className="whitespace-nowrap tabular-nums">{formatBusinessDateTime(new Date(r.decided_at))}</TableCell>
+                  <TableCell className="font-semibold">{r.customer_name}<span className="block text-xs font-normal text-muted-foreground">{r.agent ?? "—"}</span></TableCell>
+                  <TableCell>{r.team ?? "—"}</TableCell>
+                  <TableCell>{r.item}</TableCell>
+                  <TableCell className="tabular-nums">{t("refunds.outstanding", { returned: String(r.returned), given: String(r.given) })}</TableCell>
+                  <TableCell className="text-right">
+                    <ActionDialog
+                      title="refunds.returnTitle"
+                      description="refunds.collectIntro"
+                      action={recordRefundReturn}
+                      trigger={<Button size="sm"><Undo2 aria-hidden="true" />{t("refunds.recordReturn")}</Button>}
+                    >
+                      <input type="hidden" name="refundId" value={r.refund_id} />
+                      <input type="hidden" name="itemId" value={r.item_id} />
+                      <p className="text-sm"><span className="font-semibold">{r.customer_name}</span> · {r.item}</p>
+                      <div className="space-y-1">
+                        <Label htmlFor="quantity">{t("refunds.quantity")}</Label>
+                        <Input id="quantity" name="quantity" required inputMode="numeric" pattern="\d+" defaultValue={String(r.given - r.returned)} className="h-11 tabular-nums md:h-9" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="note">{t("refunds.returnNote")}</Label>
+                        <Input id="note" name="note" maxLength={500} className="h-11 md:h-9" />
+                      </div>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="faulty" value="true" className="size-4 accent-[#047B95]" />
+                        {t("refunds.faulty")}
+                      </label>
+                    </ActionDialog>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
 async function Returns() {
   const supabase = await createSupabaseServerClient();
   const [{ items, locations, teams }, adjustments, access, ids] = await Promise.all([
@@ -52,11 +121,13 @@ async function Returns() {
   const canReturn = can(access, "stock.transfer");
   const canRequest = can(access, "stock.adjust.request");
   const canApprove = can(access, "stock.adjust.approve");
+  const collect = access.permissions["stock.transfer"] === "all" ? await refundsToCollect() : null;
   const itemName = Object.fromEntries(items.map((i) => [i.id, i.display_name]));
   const locationLabel = Object.fromEntries(locations.map((l) => [l.id, l.label]));
 
   return (
     <div className="grid gap-4">
+      {collect ? <RefundCollect rows={collect} /> : null}
       {canReturn ? (
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">

@@ -17,7 +17,9 @@ import { saleAuditCases } from "@/server/audit/queries";
 import { can, getAccess } from "@/server/auth/access";
 import { CaseStatusBadge } from "../../audit/audit-ui";
 import { NewCaseButton } from "../../audit/case-forms";
+import { saleRefunds } from "@/server/refunds/queries";
 import { getSale } from "@/server/sales/queries";
+import { RefundStatusBadge, RequestRefundButton } from "../../refunds/refund-ui";
 import { SaleStatusBadge } from "../sales-table";
 
 export const metadata: Metadata = { title: t("sales.detailTitle") };
@@ -39,7 +41,10 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
   const sale = UUID.test(id) ? await getSale(id) : null;
   if (!sale) return <p className="rounded-lg border bg-white p-6 text-center text-muted-foreground">{t("sales.notFound")}</p>;
   const saved = typeof query.saved === "string" ? SAVED[query.saved] : undefined;
-  const [decisions, access] = await Promise.all([listDecisions("sales", sale.id), getAccess()]);
+  const [decisions, access, refunds] = await Promise.all([listDecisions("sales", sale.id), getAccess(), saleRefunds(sale.id)]);
+  // Refund (Phase 12): an approved sale with no refund waiting or approved; the database checks scope again.
+  const canRequestRefund =
+    can(access, "refunds.submit") && sale.status === "approved" && !refunds.some((r) => r.status !== "rejected");
   // Audit cases about this sale (Phase 9): visible to audit.read holders only (RLS); Super Admin may open one.
   const auditCases = can(access, "audit.read") ? await saleAuditCases(sale.id) : [];
   const canOpenCase = access.permissions["audit.manage"] === "all";
@@ -82,6 +87,22 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
                 ))}
               </Row>
             ) : null}
+            {refunds.length ? (
+              <Row label={t("nav.refunds")}>
+                {refunds.map((r) => (
+                  <span key={r.id} className="block">
+                    <span className="flex flex-wrap items-center gap-2">
+                      {formatUSD(r.amount)} · {t(`refunds.reasons.${r.reason}`)}
+                      <RefundStatusBadge status={r.status} />
+                    </span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {formatBusinessDateTime(new Date(r.requested_at))} · {r.requester}
+                      {r.decision_note ? ` · ${r.decision_note}` : ""}
+                    </span>
+                  </span>
+                ))}
+              </Row>
+            ) : null}
             {auditCases.length ? (
               <Row label={t("audit.saleCases")}>
                 {auditCases.map((c) => (
@@ -95,6 +116,7 @@ async function Detail({ params, searchParams }: { params: Promise<{ id: string }
           </dl>
         </CardContent>
       </Card>
+      {canRequestRefund ? <RequestRefundButton saleId={sale.id} collected={sale.amount_collected} /> : null}
       {canOpenCase ? <NewCaseButton saleId={sale.id} label={t("audit.openCaseForSale")} /> : null}
       <Button asChild variant="outline" className="h-11 justify-self-start">
         <Link href={`/sales?month=${monthKeyOf(sale.sale_month)}`}><ArrowLeft aria-hidden="true" />{t("sales.back")}</Link>

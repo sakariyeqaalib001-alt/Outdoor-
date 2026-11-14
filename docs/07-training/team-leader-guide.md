@@ -20,5 +20,8 @@ Reject the sale and explain; every blocked attempt is already recorded for the S
 ## Your own sales
 You may register and approve your own sales (D-40). Your own product switches and refunds need the Super Admin. You cannot sell in another city.
 
+## Refunds
+You may request a refund for any approved sale of your team (your own included): open the sale → **Request refund**. Only the Super Admin approves or rejects; you are notified either way. An approved refund marks the sale **Refunded** — it stops counting for the team. Make sure the device goes back to the Stock Officer.
+
 ## Your dashboard
 **Dashboard → Branch Performance** shows your team: each agent's sales this month against the target of 20, and the band (Target met ≥ 20, Baseline 15–19, Underperforming below 15). **Operations** shows your team's devices issued and sales waiting for approval.

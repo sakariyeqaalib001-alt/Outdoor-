@@ -27,5 +27,8 @@ There is no date field: the system records the time itself. A sale submitted aft
 | Already has a sale this month | One sale per customer per month |
 | Index must be 8 digits | Check the document again |
 
+## Refunds
+If a customer must get money back (out of boundary, technical delay, refused, no signal, other): open the sale in **My Sales** → **Request refund**, enter the amount (not more than collected) and the reason. Only the Super Admin decides. Until it is approved the sale still counts; once approved it shows **Refunded** and no longer counts for your target or pay. Bring any device back to the Stock Officer.
+
 ## Your dashboard
 **Dashboard → Sales Overview** shows your own sales: this month, overall, New and Retention. Target: **20 eligible sales a month** (Target met); 15–19 is Baseline.
