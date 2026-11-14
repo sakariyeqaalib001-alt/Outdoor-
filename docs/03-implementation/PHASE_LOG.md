@@ -708,7 +708,7 @@ Not yet run: the readiness page on staging (needs the SQL paste and the owner's 
 
 ## Phase 12 — Refunds
 
-**Date:** 7 Nov 2026 · **Status:** ✅ **Built — awaiting owner test** (no open business decision). Started at the owner's request ("START PHASE 12") before the Hargeisa pilot began — hosting and the production database (D-43) are still open.
+**Date:** 7 Nov 2026 · **Status:** ✅ **PASSED — accepted by the owner on 14 Nov 2026 (commit 7ee82b0, CI green)** (no open business decision). The repository moved to github.com/sakariyeqaalib001-alt/Outdoor- on 14 Nov 2026 after the owner lost access to the previous GitHub account. Started at the owner's request ("START PHASE 12") before the Hargeisa pilot began — hosting and the production database (D-43) are still open.
 
 **Scope delivered (Roadmap Phase 12; BRD §6.5, BR-03; SDD §10.5; T-28)**
 - Migration `20261107090000_refunds.sql`: `refunds` (one pending or approved per sale; snapshot of customer name, product, branch, amount collected — no phone or Index; decided rows cannot change; RLS: requester, sale agent in scope, Team Leader of the team, `sales.read` holders, Super Admin); `payroll_pending_adjustments` (append-only, Finance / Super Admin read); `public.create_refund` (refunds.submit in scope, approved sales only, amount > 0 and ≤ collected, five reasons with Other note, idempotent); `public.decide_refund` (Super Admin only, never their own request or sale; reject needs a reason and changes nothing; approve sets the sale to `reversed`, records the counting month and payroll effect, writes a pending adjustment when the month is finalized via `app.month_finalized`, false until Phase 16); `public.refund_record_return`, `public.refunds_to_collect`, `public.refund_equipment` (devices back to Central / faulty store, linked to the refund); notifications refund_pending / approved / rejected / return; audit rule **HIGH_REFUND_RATE** (off; thresholds percent / refunds / days, editable in Audit → Rules).
@@ -730,7 +730,7 @@ Not yet run: the readiness page on staging (needs the SQL paste and the owner's 
 | Only Super Admin approves; rejected refunds change nothing | ✅ tests: agent, Team Leader, Stock Officer, Finance refused; requester Super Admin refused (SELF_APPROVAL); rejection leaves the sale approved, eligible and stock untouched |
 | Approved refunds remove the sale from eligible sales for unfinalized months | ✅ tests: sale `reversed`, gone from `app.eligible_sales`, payroll effect "excluded"; finalized month → pending adjustment (−1 unit, −amount) |
 | Original sale and stock history preserved | ✅ tests: sale row, its approval and its stock issue remain; refund rows cannot be edited or deleted |
-| Owner test on staging and training | ⏳ pending |
+| Owner test on staging and training | ✅ owner confirmed, 14 Nov 2026 |
 
 **Changes during owner testing (10 Nov 2026, no database change)**
 - Refunds page: a how-to line with a link to Sales for people who can request refunds.
